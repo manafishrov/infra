@@ -22,19 +22,19 @@ provider "aws" {
   }
 }
 
-resource "aws_s3_bucket" "mcu_firmware" {
-  bucket = "manafishrov-mcu-firmware"
+resource "aws_s3_bucket" "firmware" {
+  bucket = "manafishrov-firmware"
 }
 
-resource "aws_s3_bucket_policy" "mcu_firmware_public_read" {
-  bucket = aws_s3_bucket.mcu_firmware.id
+resource "aws_s3_bucket_policy" "firmware_public_read" {
+  bucket = aws_s3_bucket.firmware.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
       Effect    = "Allow"
       Principal = "*"
       Action    = "s3:GetObject"
-      Resource  = "${aws_s3_bucket.mcu_firmware.arn}/*"
+      Resource  = "${aws_s3_bucket.firmware.arn}/*"
     }]
   })
 }
