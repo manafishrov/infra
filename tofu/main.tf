@@ -9,8 +9,8 @@ terraform {
 
 provider "aws" {
   region                      = "us-east-1"
-  access_key                  = var.rustfs_access_key
-  secret_key                  = var.rustfs_secret_key
+  access_key                  = var.RUSTFS_ACCESS_KEY
+  secret_key                  = var.RUSTFS_SECRET_KEY
   s3_use_path_style           = true
   skip_credentials_validation = true
   skip_region_validation      = true

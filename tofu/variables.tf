@@ -2,12 +2,12 @@ variable "rustfs_endpoint" {
   type = string
 }
 
-variable "rustfs_access_key" {
+variable "RUSTFS_ACCESS_KEY" {
   type      = string
   sensitive = true
 }
 
-variable "rustfs_secret_key" {
+variable "RUSTFS_SECRET_KEY" {
   type      = string
   sensitive = true
 }
