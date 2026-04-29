@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-tofu:
+    runs-on: ubuntu-24.04
+    env:
+      OPENTOFU_VERSION: 1.11.5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: opentofu/setup-opentofu@9745e0c822f844dbd421dbf4d2c9cbb21ed56ab7 # v2.0.1
+        with:
+          tofu_version: ${{ env.OPENTOFU_VERSION }}
+          tofu_wrapper: false
+      - name: Check OpenTofu formatting
+        run: tofu -chdir=tofu fmt -check
+      - name: Initialize OpenTofu
+        run: tofu -chdir=tofu init -backend=false
+      - name: Validate OpenTofu
+        run: tofu -chdir=tofu validate
