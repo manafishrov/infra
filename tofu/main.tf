@@ -61,19 +61,28 @@ provider "minio" {
 resource "minio_iam_policy" "firmware_ci" {
   name = "manafishrov-firmware-ci"
 
+  # Shape mirrors what MinIO returns via the aminueza/minio v3.33.1 read path:
+  # explicit empty Sid/ID/Condition fields and Resource as a single-element
+  # array. awspolicyequivalence (used as DiffSuppressFunc) does not treat
+  # `Condition = {}` as equivalent to an omitted Condition, so omitting it
+  # caused a perpetual drift loop in tf-controller. Keep these fields explicit.
   policy = jsonencode({
+    ID      = ""
     Version = "2012-10-17"
     Statement = [
       {
+        Sid    = ""
         Effect = "Allow"
         Action = [
           "s3:GetBucketLocation",
           "s3:ListBucket",
           "s3:ListBucketMultipartUploads",
         ]
-        Resource = aws_s3_bucket.firmware.arn
+        Resource  = [aws_s3_bucket.firmware.arn]
+        Condition = {}
       },
       {
+        Sid    = ""
         Effect = "Allow"
         Action = [
           "s3:AbortMultipartUpload",
@@ -82,7 +91,8 @@ resource "minio_iam_policy" "firmware_ci" {
           "s3:ListMultipartUploadParts",
           "s3:PutObject",
         ]
-        Resource = "${aws_s3_bucket.firmware.arn}/*"
+        Resource  = ["${aws_s3_bucket.firmware.arn}/*"]
+        Condition = {}
       },
     ]
   })
