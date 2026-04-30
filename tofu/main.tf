@@ -58,10 +58,8 @@ provider "minio" {
   minio_password = var.rustfs_secret_key
 }
 
-resource "minio_iam_policy" "firmware_ci" {
-  name = "manafishrov-firmware-ci"
-
-  policy = jsonencode({
+locals {
+  firmware_ci_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
@@ -86,6 +84,26 @@ resource "minio_iam_policy" "firmware_ci" {
       },
     ]
   })
+}
+
+# aminueza/minio v3.33.1 returns Action arrays in non-deterministic order on
+# every read (server-side normalization is unstable) and its DiffSuppressFunc
+# does not absorb the difference, so every reconcile re-plans a no-op change.
+# We ignore policy drift on the resource and use a sha256(...) trigger so a
+# real edit still forces a recreate. Cosmetic side-effect: the tf-controller
+# Plan condition can stay TerraformPlannedWithChanges - check Ready/NoDrift.
+resource "terraform_data" "firmware_ci_policy_version" {
+  input = sha256(local.firmware_ci_policy)
+}
+
+resource "minio_iam_policy" "firmware_ci" {
+  name   = "manafishrov-firmware-ci"
+  policy = local.firmware_ci_policy
+
+  lifecycle {
+    ignore_changes       = [policy]
+    replace_triggered_by = [terraform_data.firmware_ci_policy_version]
+  }
 }
 
 resource "minio_iam_user" "firmware_ci" {
