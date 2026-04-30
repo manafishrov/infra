@@ -58,8 +58,10 @@ provider "minio" {
   minio_password = var.rustfs_secret_key
 }
 
-locals {
-  firmware_ci_policy = jsonencode({
+resource "minio_iam_policy" "firmware_ci" {
+  name = "manafishrov-firmware-ci"
+
+  policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
@@ -84,25 +86,6 @@ locals {
       },
     ]
   })
-}
-
-# aminueza/minio v3.33.1 normalizes the policy server-side (scalar Resource
-# becomes array, Action order is non-deterministic across reads) and its
-# DiffSuppressFunc fails to absorb the difference, so every reconcile re-plans
-# a no-op change. We ignore policy drift on the resource and use a content
-# hash via replace_triggered_by so a real edit still forces a recreate.
-resource "terraform_data" "firmware_ci_policy_version" {
-  input = sha256(local.firmware_ci_policy)
-}
-
-resource "minio_iam_policy" "firmware_ci" {
-  name   = "manafishrov-firmware-ci"
-  policy = local.firmware_ci_policy
-
-  lifecycle {
-    ignore_changes       = [policy]
-    replace_triggered_by = [terraform_data.firmware_ci_policy_version]
-  }
 }
 
 resource "minio_iam_user" "firmware_ci" {
