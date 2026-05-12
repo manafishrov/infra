@@ -125,6 +125,18 @@ data "cloudflare_zone" "manafishrov" {
 
 locals {
   dns_records = {
+
+    website = {
+      name    = "@"
+      type    = "A"
+      content = "185.158.133.1"
+    }
+    lovable_website = {
+      name    = "_lovable"
+      type    = "TXT"
+      content = "lovable_verify=d08e77b7813bf8ea7c8ba5b4595fa0ac678d5f323b53024fec04d291f60e061d"
+    }
+
     files = {
       name    = "files"
       type    = "A"
