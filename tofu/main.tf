@@ -134,7 +134,7 @@ locals {
     lovable_website = {
       name    = "_lovable.www"
       type    = "TXT"
-      content = "lovable_verify=d08e77b7813bf8ea7c8ba5b4595fa0ac678d5f323b53024fec04d291f60e061d"
+      content = "lovable_verify=9d45e49616e85ed56fb7a8f0b4b37e3fe60b1b69f88acad682aeb158a6ef3bc6"
     }
 
     files = {
