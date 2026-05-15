@@ -14,6 +14,10 @@ terraform {
       source  = "aminueza/minio"
       version = "3.33.1"
     }
+    pocketid = {
+      source  = "trozz/pocketid"
+      version = "0.1.7"
+    }
   }
 }
 
@@ -56,6 +60,11 @@ provider "minio" {
   minio_ssl      = startswith(var.rustfs_endpoint, "https://")
   minio_user     = var.rustfs_access_key
   minio_password = var.rustfs_secret_key
+}
+
+provider "pocketid" {
+  base_url  = "http://pocket-id.manafishrov-pocket-id.svc.cluster.local"
+  api_token = var.pocketid_api_token
 }
 
 locals {
@@ -181,6 +190,16 @@ locals {
       type    = "CNAME"
       content = "router.gullhaugveien.michaelbrusegard.com"
     }
+    id = {
+      name    = "id"
+      type    = "CNAME"
+      content = "router.gullhaugveien.michaelbrusegard.com"
+    }
+    vault = {
+      name    = "vault"
+      type    = "CNAME"
+      content = "router.gullhaugveien.michaelbrusegard.com"
+    }
 
     dmarc = {
       name    = "_dmarc"
@@ -268,4 +287,18 @@ resource "cloudflare_dns_record" "manafishrov" {
   ttl      = try(each.value.ttl, 1)
   proxied  = try(each.value.proxied, false)
   priority = try(each.value.priority, null)
+}
+
+resource "pocketid_group" "vaultwarden" {
+  name          = "vaultwarden"
+  friendly_name = "Vaultwarden Users"
+}
+
+resource "pocketid_client" "vaultwarden" {
+  name                = "Vaultwarden"
+  client_id           = "vaultwarden"
+  callback_urls       = ["https://vault.manafishrov.com/identity/connect/oidc-signin"]
+  launch_url          = "https://vault.manafishrov.com"
+  pkce_enabled        = true
+  allowed_user_groups = [pocketid_group.vaultwarden.id]
 }
