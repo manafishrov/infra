@@ -11,8 +11,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  validate-kubernetes:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+      - uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39 # v13
+      - name: Install Tools
+        run: nix profile install nixpkgs#kustomize nixpkgs#kubeconform
+      - name: Validate Kubernetes Manifests
+        run: |
+          kustomize build . | \
+          kubeconform \
+            -strict \
+            -ignore-missing-schemas \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            -verbose
+
   validate-tofu:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        stack:
+          - storage
+          - dns
+          - identity
     env:
       OPENTOFU_VERSION: 1.11.5
     steps:
@@ -22,8 +47,8 @@ jobs:
           tofu_version: ${{ env.OPENTOFU_VERSION }}
           tofu_wrapper: false
       - name: Check OpenTofu formatting
-        run: tofu -chdir=tofu fmt -check
+        run: tofu -chdir=tofu/${{ matrix.stack }} fmt -check
       - name: Initialize OpenTofu
-        run: tofu -chdir=tofu init -backend=false
+        run: tofu -chdir=tofu/${{ matrix.stack }} init -backend=false
       - name: Validate OpenTofu
-        run: tofu -chdir=tofu validate
+        run: tofu -chdir=tofu/${{ matrix.stack }} validate
