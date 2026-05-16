@@ -6,9 +6,20 @@ Kubernetes infrastructure for Manafishrov managed via
 ## Development
 
 ```sh
-tofu fmt tofu/
-tofu validate tofu/
+nix develop
+
+kustomize build . | kubeconform -strict -ignore-missing-schemas \
+  -schema-location default \
+  -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+
+# Per stack: storage, dns, identity
+tofu -chdir=tofu/<stack> fmt -check
+tofu -chdir=tofu/<stack> init -backend=false
+tofu -chdir=tofu/<stack> validate
 ```
+
+See [`AGENTS.md`](AGENTS.md) for the full Flux contract, state migration
+runbook, and operational rules.
 
 ## License
 

@@ -2,104 +2,77 @@
 
 ## Purpose
 
-Kubernetes infrastructure for Manafishrov. Apps are reconciled by FluxCD from
-this repo; cluster bootstrap and external resources are managed by OpenTofu.
-Encrypted secrets live in the sibling repo `../infra-secrets` (separate
-GitRepository in flux; see that repo's `AGENTS.md`).
+Kubernetes infrastructure for Manafishrov. Apps are reconciled by FluxCD;
+external resources (DNS, object storage, identity) are managed by OpenTofu
+via tf-controller. Encrypted secrets live in the sibling repo
+`../infra-secrets`.
 
-## Stack
-
-- Kubernetes + Kustomize
-- FluxCD (GitOps; pushing to `main` deploys)
-- OpenTofu
-- Nix flake for the dev shell
+This repo stays cluster-agnostic. Flux + tf-controller wiring lives in the
+consumer cluster repo, not here.
 
 ## Structure
 
-- `kustomization.yaml` — root, references each app
-- `apps/<name>/` — per-app Kustomize bundle (Namespace, NetworkPolicy,
-  HTTPRoute, Services, StatefulSet/Deployment). Secret manifests live in
-  `../infra-secrets/gitops/<name>/` and are applied by a separate flux
-  Kustomization.
-  - Current apps: `pocket-id`, `vaultwarden`
-- `tofu/` — OpenTofu root module (`main.tf`, `variables.tf`, `outputs.tf`)
-- `flake.nix` — dev shell with `opentofu`
+- `kustomization.yaml` — root, references each app + `public-redirects`
+- `apps/<name>/` — per-app bundle (Namespace, NetworkPolicy, HTTPRoute,
+  Services, StatefulSet/Deployment). App secrets live at
+  `../infra-secrets/gitops/<name>/`.
+  - Apps: `pocket-id`, `vaultwarden`
+- `public-redirects/` — shared public namespace + redirect HTTPRoutes
+- `tofu/<stack>/` — one OpenTofu root module per stack:
+  - `storage` (aws + minio) — firmware S3 bucket and matching CI IAM
+    user/policy. Reads `rustfs_endpoint`, `rustfs_access_key`,
+    `rustfs_secret_key`, `firmware_ci_secret_key`,
+    `firmware_ci_secret_key_version`.
+  - `dns` (cloudflare) — records for `manafishrov.com`. Reads
+    `CLOUDFLARE_API_TOKEN` from the runner env.
+  - `identity` (pocketid) — OIDC clients against the company pocket-id.
+    Reads `pocketid_api_token`. Writes `vaultwarden_pocketid_client_id` +
+    `vaultwarden_pocketid_client_secret` into Secret
+    `manafishrov-tofu-outputs` (consumed by `apps/vaultwarden/`).
+- `flake.nix` — dev shell
 
 ## Commands
 
-Use the dev shell (`nix develop` or direnv). Then:
-
-### Validate without applying
+Use the dev shell (`nix develop` or direnv).
 
 ```sh
 kustomize build . | kubeconform -strict -ignore-missing-schemas \
   -schema-location default \
   -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+
+tofu -chdir=tofu/<stack> fmt -check
+tofu -chdir=tofu/<stack> init -backend=false
+tofu -chdir=tofu/<stack> validate
 ```
 
-For a single app: `kustomize build apps/<name> | kubeconform …`.
-
-### OpenTofu
-
-```sh
-tofu -chdir=tofu fmt -check
-tofu -chdir=tofu init -backend=false
-tofu -chdir=tofu validate
-```
-
-Auto-format: `tofu -chdir=tofu fmt`.
-
-Tofu is applied **in-cluster by tf-controller**, not locally. Variable
-values come from Kubernetes Secrets in `flux-system` via `varsFrom` on the
-`manafishrov-infra` Terraform CR (defined in the personal espresso flux
-config). Adding a new sensitive variable requires:
-
-1. Declare it in `tofu/variables.tf`.
-2. Add the value to the appropriate Secret in
-   `../infra-secrets/gitops/<app>/secrets.yaml` (or create a new
-   `<app>-terraform-env` Secret).
-3. Reference it in the personal `manafishrov-infra` Terraform CR's
-   `varsFrom`.
+Tofu is applied **in-cluster by tf-controller**, never locally. To add a
+sensitive variable: declare in `tofu/<stack>/variables.tf`, add the value
+to `../infra-secrets/gitops/<app>/secrets.yaml`, then ask the consumer
+operator to wire it into the matching `Terraform` CR.
 
 ## Rules
 
-- Pushing to `main` is deploying — only push when the change is meant to
-  roll out. Don't push without being asked.
-- **No secrets — encrypted or plaintext — in this repo.** All secret
-  manifests live in `../infra-secrets`. If you need to add one, add it
-  there.
-- Each app stays self-contained under `apps/<name>/` and is wired into the
-  root `kustomization.yaml`. Its secrets (if any) live at
-  `../infra-secrets/gitops/<name>/`.
-- Match existing manifest style and label/namespace conventions.
+- Pushing to `main` is deploying. Don't push without being asked.
+- **No secrets in this repo** — they live in `../infra-secrets`.
+- Each app self-contained under `apps/<name>/`. Each tofu stack
+  self-contained under `tofu/<stack>/` (no cross-stack refs — duplicate
+  via a Secret).
+- The `apps/pocket-id/` instance is the **company's own** pocket-id; do
+  not share with personal infrastructure.
 - Run the validate commands above before considering a change done.
-
-## Releases
-
-There are no versioned releases. Pushing to `main` is the release — FluxCD
-reconciles the cluster from this repo and tf-controller reconciles the
-`tofu/` module from the same source. Don't push without being asked.
 
 ## Commits
 
 Conventional Commits, focused on **why**.
 
-```
-<type>(<scope>): <subject>
-
-[body explaining why, ~72 char wrap]
-```
-
 - Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `ci`, `revert`.
   `chore(deps)` reserved for Renovate.
-- Scopes: `pocket-id`, `vaultwarden`, `tofu`, `flux`, `flake`, `ci`,
-  or a new app name.
+- Scopes: `pocket-id`, `vaultwarden`, `public-redirects`, `tofu/storage`,
+  `tofu/dns`, `tofu/identity`, `flake`, `ci`, or a new app name.
 - Subject: imperative, lowercase, ≤72 chars, no period.
-- Body when the why isn't obvious (especially for cluster-affecting
-  changes).
 
 ## Keep this file useful
 
-If you add an app under `apps/`, change the tofu layout, alter validation
-commands, or change how Flux watches paths — update this file (and the
-matching Renovate `managerFilePatterns`) in the same commit.
+If you add/rename an app or tofu stack, change validation commands, or
+change Flux watch paths — update this file (and Renovate
+`managerFilePatterns`) in the same commit.

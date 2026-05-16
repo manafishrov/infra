@@ -22,8 +22,3 @@ variable "firmware_ci_secret_key_version" {
   type    = number
   default = 1
 }
-
-variable "pocketid_api_token" {
-  type      = string
-  sensitive = true
-}
