@@ -23,8 +23,7 @@ GitRepository in flux; see that repo's `AGENTS.md`).
   Kustomization.
   - Current apps: `pocket-id`, `vaultwarden`
 - `tofu/` — OpenTofu root module (`main.tf`, `variables.tf`, `outputs.tf`)
-- `flake.nix` — dev shell (`kubectl`, `kustomize`, `fluxcd`, `opentofu`,
-  `gh`, `jq`, `yq-go`, `age`, `sops`)
+- `flake.nix` — dev shell with `opentofu`
 
 ## Commands
 
