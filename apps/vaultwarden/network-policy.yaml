@@ -35,5 +35,5 @@ spec:
             dns:
               - matchPattern: "*"
     - toEntities:
-        - ingress
+        - cluster
         - world
