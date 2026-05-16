@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: public-https-redirect
+  namespace: manafishrov-public
+spec:
+  parentRefs:
+    - name: public
+      namespace: gateway
+      sectionName: http
+  hostnames:
+    - id.manafishrov.com
+    - vault.manafishrov.com
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
