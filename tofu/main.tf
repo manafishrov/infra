@@ -296,7 +296,6 @@ resource "pocketid_group" "vaultwarden" {
 
 resource "pocketid_client" "vaultwarden" {
   name                = "Vaultwarden"
-  client_id           = "vaultwarden"
   callback_urls       = ["https://vault.manafishrov.com/identity/connect/oidc-signin"]
   launch_url          = "https://vault.manafishrov.com"
   pkce_enabled        = true

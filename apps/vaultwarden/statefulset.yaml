@@ -21,6 +21,11 @@ spec:
             - secretRef:
                 name: vaultwarden-env
           env:
+            - name: SSO_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: manafishrov-tofu-outputs
+                  key: vaultwarden_pocketid_client_id
             - name: SSO_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
