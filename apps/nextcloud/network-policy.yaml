@@ -89,6 +89,7 @@ spec:
             - port: "8081"
               protocol: TCP
     - toEntities:
+        - cluster
         - world
 ---
 apiVersion: cilium.io/v2
