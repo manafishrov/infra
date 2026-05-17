@@ -32,6 +32,9 @@ spec:
         - matchLabels:
             k8s:app: vaultwarden
             k8s:io.kubernetes.pod.namespace: manafishrov-vaultwarden
+        - matchLabels:
+            k8s:app: nextcloud
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
       toPorts:
         - ports:
             - port: "1411"
