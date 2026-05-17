@@ -43,6 +43,8 @@ data:
       'files_external_allow_create_new_local' => false,
       'updatechecker' => false,
       'has_internet_connection' => true,
+      'trashbin_retention_obligation' => 'auto, 30',
+      'versions_retention_obligation' => 'auto, 90',
     ];
   bootstrap.sh: |
     #!/bin/sh
@@ -115,7 +117,8 @@ data:
         retry occ app:enable "$app"
       done
       for app in $APPS_DISABLE; do
-        occ app:disable "$app" || true
+        occ app:disable "$app" 2>/dev/null || true
+        occ app:remove "$app" 2>/dev/null || true
       done
 
       retry occ user_oidc:provider 'pocket-id' \
