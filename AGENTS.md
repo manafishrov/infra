@@ -16,7 +16,7 @@ consumer cluster repo, not here.
 - `apps/<name>/` — per-app bundle (Namespace, NetworkPolicy, HTTPRoute,
   Services, StatefulSet/Deployment). App secrets live at
   `../infra-secrets/gitops/<name>/`.
-  - Apps: `pocket-id`, `vaultwarden`
+  - Apps: `nextcloud`, `pocket-id`, `vaultwarden`
 - `public-redirects/` — shared public namespace + redirect HTTPRoutes
 - `tofu/<stack>/` — one OpenTofu root module per stack:
   - `storage` (aws + minio) — firmware S3 bucket and matching CI IAM
@@ -26,9 +26,16 @@ consumer cluster repo, not here.
   - `dns` (cloudflare) — records for `manafishrov.com`. Reads
     `CLOUDFLARE_API_TOKEN` from the runner env.
   - `identity` (pocketid) — OIDC clients against the company pocket-id.
-    Reads `pocketid_api_token`. Writes `vaultwarden_pocketid_client_id` +
-    `vaultwarden_pocketid_client_secret` into Secret
-    `manafishrov-tofu-outputs` (consumed by `apps/vaultwarden/`).
+    Reads `pocketid_api_token`. Writes `vaultwarden_pocketid_client_id`,
+    `vaultwarden_pocketid_client_secret`, `nextcloud_pocketid_client_id`,
+    `nextcloud_pocketid_client_secret` into Secret
+    `manafishrov-tofu-outputs` (consumed by `apps/vaultwarden/`,
+    `apps/nextcloud/`).
+  - `database` (postgresql) — application role + database on the shared
+    cluster Postgres at `postgres.postgres.svc.cluster.local`. Reads
+    `pg_admin_user`, `pg_admin_password`, `nextcloud_db_password`. Writes
+    `nextcloud_db_password` into `manafishrov-tofu-outputs` (consumed by
+    `apps/nextcloud/`).
 - `flake.nix` — dev shell
 
 ## Commands
@@ -67,8 +74,9 @@ Conventional Commits, focused on **why**.
 
 - Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `ci`, `revert`.
   `chore(deps)` reserved for Renovate.
-- Scopes: `pocket-id`, `vaultwarden`, `public-redirects`, `tofu/storage`,
-  `tofu/dns`, `tofu/identity`, `flake`, `ci`, or a new app name.
+- Scopes: `nextcloud`, `pocket-id`, `vaultwarden`, `public-redirects`,
+  `tofu/storage`, `tofu/dns`, `tofu/identity`, `tofu/database`, `flake`,
+  `ci`, or a new app name.
 - Subject: imperative, lowercase, ≤72 chars, no period.
 
 ## Keep this file useful
