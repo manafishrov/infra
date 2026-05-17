@@ -100,7 +100,7 @@ data:
 
       APPS_ENABLE="user_oidc notify_push groupfolders \
                    richdocuments spreed whiteboard collectives files_3dmodelviewer \
-                   deck forms announcementcenter audit"
+                   deck forms announcementcenter admin_audit"
       APPS_DISABLE="dashboard firstrunwizard recommendations support survey_client weather_status \
                     mail notes tasks contacts calendar bookmarks photos \
                     contactsinteraction files_reminders sharebymail \
@@ -167,11 +167,13 @@ data:
       # jq is not in the base image, so parse JSON via the bundled python3.
       ensure_groupfolder() {
         mount=$1; group=$2; quota=$3
+        occ group:list --output=json 2>/dev/null | python3 -c 'import json,sys; sys.exit(0 if sys.argv[1] in json.load(sys.stdin) else 1)' "$group" \
+          || occ group:add "$group" >/dev/null 2>&1 || true
         id=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); print(next((f["id"] for f in folders if f.get("mount_point")==sys.argv[1]),""))' "$mount")
         if [ -z "$id" ]; then
           id=$(occ groupfolders:create "$mount" --output=json | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
         fi
-        occ groupfolders:group "$id" "$group" || true
+        occ groupfolders:group "$id" "$group" read write share delete || true
         occ groupfolders:quota "$id" "$quota" || true
       }
       ensure_groupfolder "Manafishrov" "manafishrov-team" "1 TB"
