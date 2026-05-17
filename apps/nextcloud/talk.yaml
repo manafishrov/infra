@@ -21,7 +21,7 @@ spec:
         kubernetes.io/hostname: espresso-1
       containers:
         - name: talk
-          image: nextcloud/aio-talk:latest@sha256:e82dce1fabf9326c0b0d0d169fe532a1205eee165382ecae76203d8ae1f94bea
+          image: nextcloud/aio-talk:20260515_145717@sha256:27db23e79ee7462a442f116c5adb5b2d7f81e781e400636990ac184cac2b32b0
           env:
             - name: NC_DOMAIN
               value: cloud.manafishrov.com
