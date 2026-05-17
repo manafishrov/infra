@@ -29,6 +29,20 @@ data:
       ],
       'preview_imaginary_url' => 'http://imaginary:9000',
       'allow_local_remote_servers' => true,
+      'default_quota' => '0 B',
+      'quota_preset' => ['0 B', '1 GB', '5 GB'],
+      'shareapi_enabled' => true,
+      'shareapi_allow_links' => false,
+      'shareapi_allow_public_upload' => false,
+      'shareapi_allow_mail_notification' => false,
+      'shareapi_allow_resharing' => false,
+      'shareapi_allow_share_dialog_user_enumeration' => false,
+      'shareapi_only_share_with_group_members' => true,
+      'shareapi_restrict_user_enumeration_to_group' => true,
+      'gs.enabled' => false,
+      'files_external_allow_create_new_local' => false,
+      'updatechecker' => false,
+      'has_internet_connection' => true,
     ];
   bootstrap.sh: |
     #!/bin/sh
@@ -84,8 +98,15 @@ data:
         /etc/nextcloud-extras/additional.config.php \
         /var/www/html/config/additional.config.php
 
-      APPS_ENABLE="user_oidc notify_push richdocuments spreed whiteboard mail calendar contacts notes deck tasks groupfolders"
-      APPS_DISABLE="dashboard firstrunwizard recommendations support survey_client weather_status"
+      APPS_ENABLE="user_oidc notify_push groupfolders \
+                   richdocuments spreed whiteboard collectives files_3dmodelviewer \
+                   deck forms announcementcenter audit"
+      APPS_DISABLE="dashboard firstrunwizard recommendations support survey_client weather_status \
+                    mail notes tasks contacts calendar bookmarks photos \
+                    contactsinteraction files_reminders sharebymail \
+                    federatedfilesharing federation lookup_server_connector \
+                    nextcloud_announcements oauth2 twofactor_backupcodes \
+                    updatenotification user_status"
 
       for app in $APPS_ENABLE; do
         retry occ app:install "$app" || true
@@ -136,6 +157,30 @@ data:
 
       retry occ config:app:set whiteboard collabBackendUrl --value='https://whiteboard.manafishrov.com'
       retry occ config:app:set whiteboard jwt_secret_key --value="${WHITEBOARD_JWT_SECRET}"
+
+      # Org-only storage: zero personal namespace, all content via
+      # Groupfolders bound to pocket-id groups. "manafishrov-team" must
+      # exist in pocket-id and include every employee; "admin" is the
+      # default Nextcloud admin group, fed by pocket-id's admin group.
+      # jq is not in the base image, so parse JSON via the bundled python3.
+      ensure_groupfolder() {
+        mount=$1; group=$2; quota=$3
+        id=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); print(next((f["id"] for f in folders if f.get("mount_point")==sys.argv[1]),""))' "$mount")
+        if [ -z "$id" ]; then
+          id=$(occ groupfolders:create "$mount" --output=json | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+        fi
+        occ groupfolders:group "$id" "$group" || true
+        occ groupfolders:quota "$id" "$quota" || true
+      }
+      ensure_groupfolder "Manafishrov" "manafishrov-team" "1 TB"
+      ensure_groupfolder "Admin" "admin" "100 GB"
+
+      # Sweep any pre-existing user quota down to zero so the org-only
+      # invariant holds after upgrades from earlier installs that defaulted
+      # to "default" (unlimited).
+      for u in $(occ user:list --output=json 2>/dev/null | python3 -c 'import json,sys; print(" ".join(json.load(sys.stdin).keys()))'); do
+        occ user:setting "$u" files quota '0 B' >/dev/null 2>&1 || true
+      done
 
       mimetype_marker="/var/www/html/data/.mimetype-repair-$(occ status --output=json 2>/dev/null | sed -n 's/.*"versionstring":"\([^"]*\)".*/\1/p')"
       if [ ! -f "$mimetype_marker" ]; then
