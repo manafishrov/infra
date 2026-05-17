@@ -29,13 +29,13 @@ consumer cluster repo, not here.
     Reads `pocketid_api_token`. Writes `vaultwarden_pocketid_client_id`,
     `vaultwarden_pocketid_client_secret`, `nextcloud_pocketid_client_id`,
     `nextcloud_pocketid_client_secret` into Secret
-    `manafishrov-tofu-outputs` (consumed by `apps/vaultwarden/`,
+    `manafishrov-identity-outputs` (consumed by `apps/vaultwarden/`,
     `apps/nextcloud/`).
   - `database` (postgresql) — application role + database on the shared
     cluster Postgres at `postgres.postgres.svc.cluster.local`. Reads
     `pg_admin_user`, `pg_admin_password`, `nextcloud_db_password`. Writes
-    `nextcloud_db_password` into `manafishrov-tofu-outputs` (consumed by
-    `apps/nextcloud/`).
+    `nextcloud_db_password` into `manafishrov-database-outputs` (consumed
+    by `apps/nextcloud/`).
 - `flake.nix` — dev shell
 
 ## Commands
