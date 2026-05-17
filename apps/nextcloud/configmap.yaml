@@ -28,6 +28,7 @@ data:
         'OC\\Preview\\Imaginary',
       ],
       'preview_imaginary_url' => 'http://imaginary:9000',
+      'allow_local_remote_servers' => true,
     ];
   bootstrap.sh: |
     #!/bin/sh
