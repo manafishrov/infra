@@ -1,0 +1,267 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: nextcloud
+  namespace: manafishrov-nextcloud
+spec:
+  endpointSelector:
+    matchLabels:
+      app: nextcloud
+  ingress:
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+            - port: "7867"
+              protocol: TCP
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+            - port: "7867"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: collabora
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: whiteboard
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: valkey
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: imaginary
+      toPorts:
+        - ports:
+            - port: "9000"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: whiteboard
+      toPorts:
+        - ports:
+            - port: "3002"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: postgres
+            k8s:app: postgres
+      toPorts:
+        - ports:
+            - port: "5432"
+              protocol: TCP
+    - toEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "8081"
+              protocol: TCP
+    - toEntities:
+        - world
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: valkey
+  namespace: manafishrov-nextcloud
+spec:
+  endpointSelector:
+    matchLabels:
+      app: valkey
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: nextcloud
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: whiteboard
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: imaginary
+  namespace: manafishrov-nextcloud
+spec:
+  endpointSelector:
+    matchLabels:
+      app: imaginary
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: nextcloud
+      toPorts:
+        - ports:
+            - port: "9000"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: collabora
+  namespace: manafishrov-nextcloud
+spec:
+  endpointSelector:
+    matchLabels:
+      app: collabora
+  ingress:
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "9980"
+              protocol: TCP
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "9980"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: nextcloud
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+    - toEntities:
+        - world
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: whiteboard
+  namespace: manafishrov-nextcloud
+spec:
+  endpointSelector:
+    matchLabels:
+      app: whiteboard
+  ingress:
+    - fromEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "3002"
+              protocol: TCP
+    - fromEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "3002"
+              protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: nextcloud
+      toPorts:
+        - ports:
+            - port: "3002"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: valkey
+      toPorts:
+        - ports:
+            - port: "6379"
+              protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: nextcloud
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP

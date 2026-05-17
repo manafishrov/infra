@@ -1,0 +1,193 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: valkey
+  namespace: manafishrov-nextcloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: valkey
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: valkey
+    spec:
+      containers:
+        - name: valkey
+          image: valkey/valkey:8-alpine@sha256:b027235326507cfdade9b6684056ec1d0b0c0757412e628245129b5d7b788618
+          args:
+            - --maxmemory
+            - 256mb
+            - --maxmemory-policy
+            - allkeys-lru
+            - --save
+            - ""
+            - --appendonly
+            - "no"
+          ports:
+            - containerPort: 6379
+              name: redis
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command: ["valkey-cli", "ping"]
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 320Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imaginary
+  namespace: manafishrov-nextcloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: imaginary
+  template:
+    metadata:
+      labels:
+        app: imaginary
+    spec:
+      containers:
+        - name: imaginary
+          image: h2non/imaginary:1.2.4@sha256:7facb4221047a5e79b9e902f380247f4e5bf4376400d0badbeb738d3e1c2f654
+          args:
+            - -log-level
+            - warn
+            - -concurrency
+            - "20"
+            - -return-size
+          ports:
+            - containerPort: 9000
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collabora
+  namespace: manafishrov-nextcloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: collabora
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: collabora
+    spec:
+      containers:
+        - name: collabora
+          image: collabora/code:24.04.13.1.1@sha256:0398c25fa8e787d6a4480ef30ffac5a9e13943945e8c2484b331c53855bb928f
+          env:
+            - name: aliasgroup1
+              value: https://cloud.manafishrov.com
+            - name: server_name
+              value: office.manafishrov.com
+            - name: extra_params
+              value: --o:ssl.enable=false --o:ssl.termination=true --o:net.proto=IPv4
+            - name: dictionaries
+              value: en_GB en_US nb_NO
+          ports:
+            - containerPort: 9980
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /hosting/discovery
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /hosting/discovery
+              port: http
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whiteboard
+  namespace: manafishrov-nextcloud
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: whiteboard
+  template:
+    metadata:
+      labels:
+        app: whiteboard
+    spec:
+      containers:
+        - name: whiteboard
+          image: ghcr.io/nextcloud-releases/whiteboard:v1.5.8@sha256:fd34087710a3d9fac521b8b54665ce4f425377d67a1ed89c5dfa5d11e9d7064a
+          env:
+            - name: NEXTCLOUD_URL
+              value: http://nextcloud
+            - name: STORAGE_STRATEGY
+              value: redis
+            - name: REDIS_URL
+              value: redis://valkey:6379/1
+            - name: PORT
+              value: "3002"
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: WHITEBOARD_JWT_SECRET
+          ports:
+            - containerPort: 3002
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi

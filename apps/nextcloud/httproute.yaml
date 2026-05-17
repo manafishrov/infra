@@ -1,0 +1,96 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nextcloud-public
+  namespace: manafishrov-nextcloud
+spec:
+  parentRefs:
+    - name: public
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - cloud.manafishrov.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /.well-known/carddav
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /remote.php/dav
+            statusCode: 301
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /.well-known/caldav
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /remote.php/dav
+            statusCode: 301
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /push
+      backendRefs:
+        - name: notify-push
+          port: 7867
+    - backendRefs:
+        - name: nextcloud
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: collabora-public
+  namespace: manafishrov-nextcloud
+spec:
+  parentRefs:
+    - name: public
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - office.manafishrov.com
+  rules:
+    - backendRefs:
+        - name: collabora
+          port: 9980
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nextcloud-talk-public
+  namespace: manafishrov-nextcloud
+spec:
+  parentRefs:
+    - name: public
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - talk.manafishrov.com
+  rules:
+    - backendRefs:
+        - name: nextcloud-talk-signaling
+          port: 8081
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: whiteboard-public
+  namespace: manafishrov-nextcloud
+spec:
+  parentRefs:
+    - name: public
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - whiteboard.manafishrov.com
+  rules:
+    - backendRefs:
+        - name: whiteboard
+          port: 3002

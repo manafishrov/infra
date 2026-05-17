@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-talk
+  namespace: manafishrov-nextcloud
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nextcloud-talk
+  template:
+    metadata:
+      labels:
+        app: nextcloud-talk
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: espresso-1
+      containers:
+        - name: talk
+          image: nextcloud/aio-talk:latest@sha256:e82dce1fabf9326c0b0d0d169fe532a1205eee165382ecae76203d8ae1f94bea
+          env:
+            - name: NC_DOMAIN
+              value: cloud.manafishrov.com
+            - name: TALK_HOST
+              value: talk.manafishrov.com
+            - name: TALK_PORT
+              value: "5349"
+            - name: TZ
+              value: Europe/Oslo
+            - name: TURN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: TURN_SECRET
+            - name: SIGNALING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: SIGNALING_SECRET
+            - name: INTERNAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: INTERNAL_SECRET
+          ports:
+            - name: turn-udp
+              containerPort: 5349
+              protocol: UDP
+              hostPort: 5349
+            - name: turn-tcp
+              containerPort: 5349
+              protocol: TCP
+              hostPort: 5349
+            - name: signaling
+              containerPort: 8081
+              protocol: TCP
+              hostPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /api/v1/welcome
+              port: signaling
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /api/v1/welcome
+              port: signaling
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 2Gi
