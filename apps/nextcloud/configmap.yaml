@@ -141,7 +141,7 @@ data:
       # in-cluster service URL would fail WOPI signature checks.
       retry occ config:app:set richdocuments wopi_url --value='https://office.manafishrov.com'
       retry occ config:app:set richdocuments public_wopi_url --value='https://office.manafishrov.com'
-      retry occ config:app:set richdocuments wopi_allowlist --value='10.42.0.0/16'
+      retry occ config:app:set richdocuments wopi_allowlist --value='10.42.0.0/16,fd42::/48'
       retry occ richdocuments:activate-config
 
       # Talk has no `:delete` subcommands, so re-running `:add` would create
@@ -166,17 +166,23 @@ data:
       # default Nextcloud admin group, fed by pocket-id's admin group.
       # jq is not in the base image, so parse JSON via the bundled python3.
       ensure_groupfolder() {
-        mount=$1; group=$2; quota=$3
+        mount=$1; group=$2; quota=$3; rename_from=${4:-}
         occ group:list --output=json 2>/dev/null | python3 -c 'import json,sys; sys.exit(0 if sys.argv[1] in json.load(sys.stdin) else 1)' "$group" \
           || occ group:add "$group" >/dev/null 2>&1 || true
         id=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); print(next((f["id"] for f in folders if f.get("mount_point")==sys.argv[1]),""))' "$mount")
+        if [ -z "$id" ] && [ -n "$rename_from" ]; then
+          old_id=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); print(next((f["id"] for f in folders if f.get("mount_point")==sys.argv[1]),""))' "$rename_from")
+          if [ -n "$old_id" ]; then
+            occ groupfolders:rename "$old_id" "$mount" && id=$old_id
+          fi
+        fi
         if [ -z "$id" ]; then
           id=$(occ groupfolders:create "$mount" --output=json | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
         fi
         occ groupfolders:group "$id" "$group" read write share delete || true
         occ groupfolders:quota "$id" "$quota" || true
       }
-      ensure_groupfolder "Manafishrov" "manafishrov-team" "1 TB"
+      ensure_groupfolder "Manafish" "manafishrov-team" "1 TB" "Manafishrov"
       ensure_groupfolder "Admin" "admin" "100 GB"
 
       # Sweep any pre-existing user quota down to zero so the org-only
