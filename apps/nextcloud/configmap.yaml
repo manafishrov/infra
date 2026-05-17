@@ -118,6 +118,7 @@ data:
       # in-cluster service URL would fail WOPI signature checks.
       retry occ config:app:set richdocuments wopi_url --value='https://office.manafishrov.com'
       retry occ config:app:set richdocuments public_wopi_url --value='https://office.manafishrov.com'
+      retry occ config:app:set richdocuments wopi_allowlist --value='10.42.0.0/16'
       retry occ richdocuments:activate-config
 
       # Talk has no `:delete` subcommands, so re-running `:add` would create
@@ -135,6 +136,12 @@ data:
 
       retry occ config:app:set whiteboard collabBackendUrl --value='https://whiteboard.manafishrov.com'
       retry occ config:app:set whiteboard jwt_secret_key --value="${WHITEBOARD_JWT_SECRET}"
+
+      mimetype_marker="/var/www/html/data/.mimetype-repair-$(occ status --output=json 2>/dev/null | sed -n 's/.*"versionstring":"\([^"]*\)".*/\1/p')"
+      if [ ! -f "$mimetype_marker" ]; then
+        log "running one-time mimetype migration for $(basename "$mimetype_marker")"
+        retry occ maintenance:repair --include-expensive && touch "$mimetype_marker"
+      fi
     }
 
     # Continuous reconciliation loop. Idempotent commands re-run every 5
