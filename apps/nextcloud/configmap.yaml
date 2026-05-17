@@ -182,8 +182,8 @@ data:
         occ groupfolders:group "$id" "$group" read write share delete || true
         occ groupfolders:quota "$id" "$quota" || true
       }
-      ensure_groupfolder "Manafish" "manafishrov-team" "1 TB" "Manafishrov"
-      ensure_groupfolder "Admin" "admin" "100 GB"
+      ensure_groupfolder "Manafish" "nextcloud" "400 GB" "Manafishrov"
+      ensure_groupfolder "Admin" "admin" "20 GB"
 
       # Sweep any pre-existing user quota down to zero so the org-only
       # invariant holds after upgrades from earlier installs that defaulted
