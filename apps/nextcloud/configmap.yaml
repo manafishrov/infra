@@ -117,8 +117,12 @@ data:
         retry occ app:enable "$app"
       done
       for app in $APPS_DISABLE; do
-        occ app:disable "$app" 2>/dev/null || true
-        occ app:remove "$app" 2>/dev/null || true
+        if [ -d "/var/www/html/custom_apps/$app" ] || [ -d "/var/www/html/apps/$app" ]; then
+          occ app:enable "$app" >/dev/null 2>&1 || true
+          occ app:remove "$app" >/dev/null 2>&1 || occ app:disable "$app" >/dev/null 2>&1 || true
+        else
+          occ app:disable "$app" >/dev/null 2>&1 || true
+        fi
       done
 
       retry occ user_oidc:provider 'pocket-id' \
