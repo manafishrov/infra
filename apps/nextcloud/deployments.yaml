@@ -62,7 +62,7 @@ spec:
     spec:
       containers:
         - name: imaginary
-          image: h2non/imaginary:1.2.4@sha256:7facb4221047a5e79b9e902f380247f4e5bf4376400d0badbeb738d3e1c2f654
+          image: nextcloud/aio-imaginary:20260515_145717@sha256:7da4087a68bbec348d2194810d7ecf2b8b5f13b1e51296f923fb262bb1073ec5
           args:
             - -log-level
             - warn
