@@ -72,6 +72,26 @@ locals {
       type    = "CNAME"
       content = "router.gullhaugveien.michaelbrusegard.com"
     }
+    cloud = {
+      name    = "cloud"
+      type    = "CNAME"
+      content = "router.gullhaugveien.michaelbrusegard.com"
+    }
+    office = {
+      name    = "office"
+      type    = "CNAME"
+      content = "router.gullhaugveien.michaelbrusegard.com"
+    }
+    talk = {
+      name    = "talk"
+      type    = "CNAME"
+      content = "router.gullhaugveien.michaelbrusegard.com"
+    }
+    whiteboard = {
+      name    = "whiteboard"
+      type    = "CNAME"
+      content = "router.gullhaugveien.michaelbrusegard.com"
+    }
 
     dmarc = {
       name    = "_dmarc"
