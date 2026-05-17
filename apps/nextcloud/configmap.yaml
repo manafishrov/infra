@@ -109,7 +109,9 @@ data:
                     updatenotification user_status"
 
       for app in $APPS_ENABLE; do
-        retry occ app:install "$app" || true
+        if ! occ app:list --output=json 2>/dev/null | python3 -c 'import json,sys; d=json.load(sys.stdin); sys.exit(0 if sys.argv[1] in d.get("enabled",{}) or sys.argv[1] in d.get("disabled",{}) else 1)' "$app"; then
+          retry occ app:install "$app"
+        fi
         retry occ app:enable "$app"
       done
       for app in $APPS_DISABLE; do
