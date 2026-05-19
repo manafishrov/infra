@@ -53,7 +53,7 @@ data:
         "name": "Nextcloud Talk HPB",
         "type": "http",
         "parent_name": "manafish[0]",
-        "url": "https://talk.manafishrov.com",
+        "url": "https://talk.manafishrov.com/api/v1/welcome",
         "interval": 60,
         "max_retries": 3,
         "retry_interval": 30,
