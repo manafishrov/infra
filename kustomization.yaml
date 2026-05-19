@@ -3,5 +3,7 @@ kind: Kustomization
 resources:
   - apps/nextcloud
   - apps/pocket-id
+  - apps/uptime-kuma-monitors
+  - apps/uptime-kuma-status-pages
   - apps/vaultwarden
   - public-redirects
