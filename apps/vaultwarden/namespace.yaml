@@ -4,3 +4,4 @@ metadata:
   name: manafishrov-vaultwarden
   labels:
     gateway-access: public
+    pod-security.kubernetes.io/enforce: baseline

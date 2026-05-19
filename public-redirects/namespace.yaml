@@ -4,3 +4,4 @@ metadata:
   name: manafishrov-public
   labels:
     gateway-access: public
+    pod-security.kubernetes.io/enforce: restricted

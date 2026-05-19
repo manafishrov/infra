@@ -4,3 +4,4 @@ metadata:
   name: manafishrov-nextcloud
   labels:
     gateway-access: public
+    pod-security.kubernetes.io/enforce: privileged
