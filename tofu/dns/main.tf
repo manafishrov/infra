@@ -92,8 +92,8 @@ locals {
       type    = "CNAME"
       content = "router.gullhaugveien.michaelbrusegard.com"
     }
-    uptime = {
-      name    = "uptime"
+    status = {
+      name    = "status"
       type    = "CNAME"
       content = "router.gullhaugveien.michaelbrusegard.com"
     }

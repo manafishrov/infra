@@ -23,7 +23,7 @@ data:
       "showTags": false,
       "showPoweredBy": false,
       "showCertificateExpiry": false,
-      "domainNameList": ["uptime.manafishrov.com"],
+      "domainNameList": ["status.manafishrov.com"],
       "publicGroupList": [
         {
           "name": "Manafish",
