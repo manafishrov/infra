@@ -76,3 +76,56 @@ spec:
               memory: 512Mi
             limits:
               memory: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-talk-recording
+  namespace: manafishrov-nextcloud
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nextcloud-talk-recording
+  template:
+    metadata:
+      labels:
+        app: nextcloud-talk-recording
+    spec:
+      containers:
+        - name: recording
+          image: nextcloud/aio-talk-recording:20260515_145717@sha256:4969c18187154b23a2491be244185359163790e4df72c28dc1a6dce7934b2100
+          env:
+            - name: NC_DOMAIN
+              value: cloud.manafishrov.com
+            - name: TZ
+              value: Europe/Oslo
+            - name: RECORDING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: TALK_RECORDING_SECRET
+            - name: INTERNAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: INTERNAL_SECRET
+          ports:
+            - name: http
+              containerPort: 1234
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 4Gi

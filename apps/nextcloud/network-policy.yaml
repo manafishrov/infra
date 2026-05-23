@@ -88,6 +88,14 @@ spec:
         - ports:
             - port: "8081"
               protocol: TCP
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: nextcloud-talk-recording
+      toPorts:
+        - ports:
+            - port: "1234"
+              protocol: TCP
     - toEntities:
         - cluster
         - world
@@ -265,4 +273,51 @@ spec:
       toPorts:
         - ports:
             - port: "80"
+              protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: nextcloud-talk-recording
+  namespace: manafishrov-nextcloud
+spec:
+  endpointSelector:
+    matchLabels:
+      app: nextcloud-talk-recording
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: nextcloud
+      toPorts:
+        - ports:
+            - port: "1234"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
+            k8s:app: nextcloud
+      toPorts:
+        - ports:
+            - port: "80"
+              protocol: TCP
+    - toEntities:
+        - host
+        - remote-node
+      toPorts:
+        - ports:
+            - port: "8081"
               protocol: TCP

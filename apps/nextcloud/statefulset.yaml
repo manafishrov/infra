@@ -48,6 +48,11 @@ spec:
                 secretKeyRef:
                   name: nextcloud-env
                   key: SIGNALING_SECRET
+            - name: TALK_RECORDING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: TALK_RECORDING_SECRET
             - name: WHITEBOARD_JWT_SECRET
               valueFrom:
                 secretKeyRef:
