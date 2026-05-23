@@ -108,7 +108,7 @@ spec:
     spec:
       containers:
         - name: collabora
-          image: collabora/code:24.04.13.1.1@sha256:0398c25fa8e787d6a4480ef30ffac5a9e13943945e8c2484b331c53855bb928f
+          image: collabora/code:25.04.9.4.1@sha256:fe49c08c27e102c1877ad4ef2ac1a7bd8ccd2dfaa6641d4533389c204a92bb88
           env:
             - name: aliasgroup1
               value: https://cloud.manafishrov.com
