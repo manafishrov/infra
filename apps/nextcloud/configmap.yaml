@@ -188,9 +188,9 @@ data:
         mount=$1; group=$2; quota=$3; rename_from=${4:-}
         occ group:list --output=json 2>/dev/null | python3 -c 'import json,sys; sys.exit(0 if sys.argv[1] in json.load(sys.stdin) else 1)' "$group" \
           || occ group:add "$group" >/dev/null 2>&1 || true
-        id=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); print(next((f["id"] for f in folders if f.get("mount_point")==sys.argv[1]),""))' "$mount")
+        id=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); print(next((f["id"] for f in folders if (f.get("mountPoint") or f.get("mount_point"))==sys.argv[1]),""))' "$mount")
         if [ -z "$id" ] && [ -n "$rename_from" ]; then
-          old_id=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); print(next((f["id"] for f in folders if f.get("mount_point")==sys.argv[1]),""))' "$rename_from")
+          old_id=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); print(next((f["id"] for f in folders if (f.get("mountPoint") or f.get("mount_point"))==sys.argv[1]),""))' "$rename_from")
           if [ -n "$old_id" ]; then
             occ groupfolders:rename "$old_id" "$mount" && id=$old_id
           fi
@@ -198,8 +198,8 @@ data:
         if [ -z "$id" ]; then
           id=$(occ groupfolders:create "$mount" --output=json | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
         fi
-        occ groupfolders:group "$id" "$group" read write share delete || true
-        occ groupfolders:quota "$id" "$quota" || true
+        occ groupfolders:group "$id" "$group" read write share delete >/dev/null 2>&1 || true
+        occ groupfolders:quota "$id" "$quota" >/dev/null 2>&1 || true
         echo "$id"
       }
       manafish_id=$(ensure_groupfolder "Manafish" "nextcloud" "400 GB" "Manafishrov")
@@ -211,7 +211,7 @@ data:
         retry occ groupfolders:scan "$manafish_id" >/dev/null 2>&1 || true
       fi
       for u in $(occ user:list --output=json 2>/dev/null | python3 -c 'import json,sys; print(" ".join(json.load(sys.stdin).keys()))'); do
-        current=$(occ user:setting "$u" photos photosSourceFolders 2>/dev/null || true)
+        current=$(occ user:setting "$u" photos photosSourceFolders --default-value='' 2>/dev/null || true)
         if [ -z "$current" ] || [ "$current" = "[]" ]; then
           occ user:setting "$u" photos photosSourceFolders '["/Manafish/Media"]' >/dev/null 2>&1 || true
         fi
