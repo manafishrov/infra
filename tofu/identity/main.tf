@@ -21,6 +21,11 @@ resource "pocketid_group" "admin" {
   friendly_name = "Administrators"
 }
 
+resource "pocketid_group" "management" {
+  name          = "management"
+  friendly_name = "Management Team"
+}
+
 resource "pocketid_client" "nextcloud" {
   name          = "Nextcloud"
   callback_urls = ["https://cloud.manafishrov.com/apps/user_oidc/code"]
@@ -29,5 +34,6 @@ resource "pocketid_client" "nextcloud" {
   allowed_user_groups = [
     pocketid_group.nextcloud.id,
     pocketid_group.admin.id,
+    pocketid_group.management.id,
   ]
 }
