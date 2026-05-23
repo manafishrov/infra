@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: vaultwarden
-          image: vaultwarden/server:1.35.8@sha256:1e6ebcede9be39fc1a7617eec4c984899edd954c09bd651b121cd89732e7aef4
+          image: vaultwarden/server:1.36.0@sha256:ae4bcc7bf8ac933eb1854fe3b849c74bd94dffef56c2490f9fdeac0c3f916d92
           envFrom:
             - secretRef:
                 name: vaultwarden-env
