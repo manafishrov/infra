@@ -210,7 +210,7 @@ data:
           || occ group:add "$group" >/dev/null 2>&1 || true
         id=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); print(next((f["id"] for f in folders if (f.get("mountPoint") or f.get("mount_point"))==sys.argv[1]),""))' "$mount")
         if [ -z "$id" ]; then
-          id=$(occ groupfolders:create "$mount" --output=json | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')
+          id=$(occ groupfolders:create "$mount" --output=json | python3 -c 'import json,sys; v=json.load(sys.stdin); print(v["id"] if isinstance(v, dict) else v)')
         fi
         bound=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); f=next((f for f in folders if str(f.get("id"))==sys.argv[1]),None); print(" ".join((f or {}).get("groups",{}).keys()))' "$id")
         for g in $bound; do
