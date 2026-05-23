@@ -18,7 +18,7 @@ spec:
         kubernetes.io/arch: amd64
       containers:
         - name: nextcloud
-          image: nextcloud:31.0.14-apache@sha256:cbe9aaba3bca1093510ff51b48c84abb412b70fb037c1b77b77e703b1ee63bb7
+          image: nextcloud:32.0.9-apache@sha256:f667841b36fb8050ce994fbb408761cc44af4b95bacb9f5ecadc5f6d147e036f
           envFrom:
             - secretRef:
                 name: nextcloud-env
@@ -95,7 +95,7 @@ spec:
               mountPath: /etc/nextcloud-extras
               readOnly: true
         - name: cron
-          image: nextcloud:31.0.14-apache@sha256:cbe9aaba3bca1093510ff51b48c84abb412b70fb037c1b77b77e703b1ee63bb7
+          image: nextcloud:32.0.9-apache@sha256:f667841b36fb8050ce994fbb408761cc44af4b95bacb9f5ecadc5f6d147e036f
           command:
             - /bin/sh
             - -c
@@ -116,7 +116,7 @@ spec:
             - name: data
               mountPath: /var/www/html
         - name: notify-push
-          image: nextcloud:31.0.14-apache@sha256:cbe9aaba3bca1093510ff51b48c84abb412b70fb037c1b77b77e703b1ee63bb7
+          image: nextcloud:32.0.9-apache@sha256:f667841b36fb8050ce994fbb408761cc44af4b95bacb9f5ecadc5f6d147e036f
           command:
             - /bin/sh
             - -c
