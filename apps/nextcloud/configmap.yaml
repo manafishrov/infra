@@ -84,7 +84,8 @@ data:
     # can be running occ upgrade even after installed:true, so the extra
     # gates prevent racing app/config changes against schema migrations.
     wait_for_quiescent() {
-      while true; do
+      i=0
+      while [ "$i" -lt 360 ]; do
         status=$(runuser -u www-data -- php -f /var/www/html/occ status --output=json 2>/dev/null || echo '{}')
         if echo "$status" | grep -q '"installed":true' \
           && echo "$status" | grep -q '"needsDbUpgrade":false' \
@@ -92,7 +93,10 @@ data:
           return 0
         fi
         sleep 5
+        i=$((i + 1))
       done
+      log "quiescent wait exceeded 30m; last status: $status"
+      return 1
     }
 
     converge() {
@@ -152,15 +156,19 @@ data:
       retry occ richdocuments:activate-config
 
       # Talk has no `:delete` subcommands, so re-running `:add` would create
-      # duplicate entries every restart. Mirror the AIO entrypoint pattern:
-      # list first, only add if missing.
-      if ! occ talk:turn:list --output=plain 2>/dev/null | grep -q ' talk\.manafishrov\.com:5349'; then
+      # duplicate entries every restart. List in JSON (stable across versions
+      # unlike --output=plain column widths) and only add when missing.
+      talk_has() {
+        occ "$1" --output=json 2>/dev/null \
+          | python3 -c 'import json,sys; d=json.load(sys.stdin); sys.exit(0 if any(sys.argv[1] in (s.get("server") or "") for s in d) else 1)' "$2"
+      }
+      if ! talk_has talk:turn:list 'talk.manafishrov.com:5349'; then
         retry occ talk:turn:add turn talk.manafishrov.com:5349 udp,tcp --secret="${TURN_SECRET}"
       fi
-      if ! occ talk:stun:list --output=plain 2>/dev/null | grep -q ' talk\.manafishrov\.com:5349'; then
+      if ! talk_has talk:stun:list 'talk.manafishrov.com:5349'; then
         retry occ talk:stun:add talk.manafishrov.com:5349
       fi
-      if ! occ talk:signaling:list --output=plain 2>/dev/null | grep -q 'https://talk\.manafishrov\.com'; then
+      if ! talk_has talk:signaling:list 'https://talk.manafishrov.com'; then
         retry occ talk:signaling:add 'https://talk.manafishrov.com' "${SIGNALING_SECRET}" --verify
       fi
 
@@ -192,14 +200,8 @@ data:
       ensure_groupfolder "Manafish" "nextcloud" "400 GB" "Manafishrov"
       ensure_groupfolder "Admin" "admin" "20 GB"
 
-      # Sweep any pre-existing user quota down to zero so the org-only
-      # invariant holds after upgrades from earlier installs that defaulted
-      # to "default" (unlimited).
-      for u in $(occ user:list --output=json 2>/dev/null | python3 -c 'import json,sys; print(" ".join(json.load(sys.stdin).keys()))'); do
-        occ user:setting "$u" files quota '0 B' >/dev/null 2>&1 || true
-      done
-
-      mimetype_marker="/var/www/html/data/.mimetype-repair-$(occ status --output=json 2>/dev/null | sed -n 's/.*"versionstring":"\([^"]*\)".*/\1/p')"
+      version=$(occ status --output=json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("versionstring",""))')
+      mimetype_marker="/var/www/html/data/.mimetype-repair-${version}"
       if [ ! -f "$mimetype_marker" ]; then
         log "running one-time mimetype migration for $(basename "$mimetype_marker")"
         retry occ maintenance:repair --include-expensive && touch "$mimetype_marker"
@@ -211,9 +213,9 @@ data:
     # self-heals without waiting for the next pod restart.
     while true; do
       log "waiting for nextcloud to be quiescent..."
-      wait_for_quiescent
-      log "running convergence"
-      converge
-      log "convergence pass complete; sleeping 5m"
+      if wait_for_quiescent; then
+        log "running convergence"
+        converge
+      fi
       sleep 300
     done
