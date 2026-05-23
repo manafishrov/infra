@@ -74,15 +74,16 @@ data:
 
     retry() {
       n=0
+      desc="$1${2:+ $2}"
       until [ "$n" -ge 5 ]; do
         if "$@"; then
           return 0
         fi
         n=$((n + 1))
-        log "retry $n/5 for: $*"
+        log "retry $n/5 for: $desc"
         sleep $((n * 5))
       done
-      log "giving up on: $*"
+      log "giving up on: $desc"
       return 1
     }
 
@@ -187,12 +188,10 @@ data:
         done
         retry occ talk:signaling:add 'https://talk.manafishrov.com' "${SIGNALING_SECRET}" --verify
       fi
-      if [ "$(talk_count talk:recording:list 'http://nextcloud-talk-recording:1234')" != "1" ]; then
-        while [ "$(talk_count talk:recording:list 'http://nextcloud-talk-recording:1234')" != "0" ]; do
-          occ talk:recording:delete 'http://nextcloud-talk-recording:1234' >/dev/null 2>&1 || break
-        done
-        retry occ talk:recording:add 'http://nextcloud-talk-recording:1234' "${TALK_RECORDING_SECRET}"
-      fi
+      # Talk recording has no `:add` subcommand in NC 33; the recording_servers
+      # config is set directly as a JSON blob (same shape as signaling_servers).
+      # config:app:set is idempotent so this is safe to run every reconcile.
+      retry occ config:app:set spreed recording_servers --value="{\"servers\":[{\"server\":\"http://nextcloud-talk-recording:1234\",\"verify\":true}],\"secret\":\"${TALK_RECORDING_SECRET}\"}"
 
       retry occ config:app:set whiteboard collabBackendUrl --value='https://whiteboard.manafishrov.com'
       retry occ config:app:set whiteboard jwt_secret_key --value="${WHITEBOARD_JWT_SECRET}"
