@@ -200,9 +200,22 @@ data:
         fi
         occ groupfolders:group "$id" "$group" read write share delete || true
         occ groupfolders:quota "$id" "$quota" || true
+        echo "$id"
       }
-      ensure_groupfolder "Manafish" "nextcloud" "400 GB" "Manafishrov"
-      ensure_groupfolder "Admin" "admin" "20 GB"
+      manafish_id=$(ensure_groupfolder "Manafish" "nextcloud" "400 GB" "Manafishrov")
+      ensure_groupfolder "Admin" "admin" "20 GB" >/dev/null
+
+      media_dir="/var/www/html/data/__groupfolders/${manafish_id}/Media"
+      if [ -n "$manafish_id" ] && [ ! -d "$media_dir" ]; then
+        install -d -o www-data -g www-data -m 0750 "$media_dir"
+        retry occ groupfolders:scan "$manafish_id" >/dev/null 2>&1 || true
+      fi
+      for u in $(occ user:list --output=json 2>/dev/null | python3 -c 'import json,sys; print(" ".join(json.load(sys.stdin).keys()))'); do
+        current=$(occ user:setting "$u" photos photosSourceFolders 2>/dev/null || true)
+        if [ -z "$current" ] || [ "$current" = "[]" ]; then
+          occ user:setting "$u" photos photosSourceFolders '["/Manafish/Media"]' >/dev/null 2>&1 || true
+        fi
+      done
 
       version=$(occ status --output=json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("versionstring",""))')
       mimetype_marker="/var/www/html/data/.mimetype-repair-${version}"
