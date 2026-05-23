@@ -15,7 +15,7 @@ consumer cluster repo, not here.
 - `kustomization.yaml` — root, references each app + `public-redirects`
 - `apps/<name>/` — per-app bundle (Namespace, NetworkPolicy, HTTPRoute,
   Services, StatefulSet/Deployment). App secrets live at
-  `../infra-secrets/gitops/<name>/`.
+  `../infra-secrets/apps/<name>/`.
   - Apps: `nextcloud`, `pocket-id`, `vaultwarden`
 - `public-redirects/` — shared public namespace + redirect HTTPRoutes
 - `tofu/<stack>/` — one OpenTofu root module per stack:
@@ -54,7 +54,7 @@ tofu -chdir=tofu/<stack> validate
 
 Tofu is applied **in-cluster by tf-controller**, never locally. To add a
 sensitive variable: declare in `tofu/<stack>/variables.tf`, add the value
-to `../infra-secrets/gitops/<app>/secrets.yaml`, then ask the consumer
+to `../infra-secrets/apps/<app>/secrets.yaml`, then ask the consumer
 operator to wire it into the matching `Terraform` CR.
 
 ## Rules

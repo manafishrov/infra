@@ -26,6 +26,7 @@ data:
       'config_server_id' => 'manafishrov-nextcloud',
       'simpleSignUpLink.shown' => false,
       'lost_password_link' => 'disabled',
+      'skeletondirectory' => '',
       'enabledPreviewProviders' => [
         'OC\\Preview\\Imaginary',
       ],
@@ -242,6 +243,11 @@ data:
         if [ -z "$current" ] || [ "$current" = "/Talk" ]; then
           occ user:setting "$u" spreed attachment_folder '/Manafish/Talk' >/dev/null 2>&1 || true
         fi
+        for pair in 'timezone Europe/Oslo' 'lang en'; do
+          key=${pair% *}; val=${pair#* }
+          current=$(occ user:setting "$u" core "$key" --default-value='' 2>/dev/null || true)
+          [ -z "$current" ] && occ user:setting "$u" core "$key" "$val" >/dev/null 2>&1 || true
+        done
       done
 
       version=$(occ status --output=json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("versionstring",""))')
