@@ -22,6 +22,8 @@ data:
       'loglevel' => 2,
       'upgrade.disable-web' => true,
       'auth.bruteforce.protection.enabled' => true,
+      'twofactor_enforced' => 'false',
+      'config_server_id' => 'manafishrov-nextcloud',
       'simpleSignUpLink.shown' => false,
       'lost_password_link' => 'disabled',
       'enabledPreviewProviders' => [
@@ -112,10 +114,10 @@ data:
                    deck extract files files_3dmodelviewer forms \
                    groupfolders mail notify_push photos richdocuments \
                    spreed user_oidc whiteboard"
-      APPS_DISABLE="announcementcenter bookmarks contactsinteraction dashboard \
+      APPS_DISABLE="announcementcenter app_api bookmarks contactsinteraction dashboard \
                     federatedfilesharing federation files_reminders firstrunwizard \
-                    lookup_server_connector nextcloud_announcements notes oauth2 \
-                    recommendations sharebymail support survey_client tasks \
+                    logreader lookup_server_connector nextcloud_announcements notes \
+                    oauth2 recommendations sharebymail support survey_client tasks \
                     twofactor_backupcodes updatenotification user_status weather_status"
 
       for app in $APPS_ENABLE; do
@@ -159,20 +161,30 @@ data:
       retry occ config:app:set richdocuments wopi_allowlist --value='10.42.0.0/16,fd42::/48'
       retry occ richdocuments:activate-config
 
-      # Talk has no `:delete` subcommands, so re-running `:add` would create
-      # duplicate entries every restart. List in JSON (stable across versions
-      # unlike --output=plain column widths) and only add when missing.
-      talk_has() {
+      # Talk's :add commands have no dedupe and most have no matching :delete,
+      # so we must check existence before adding. The list outputs have three
+      # different JSON shapes that need uniform handling:
+      #   turn:list      -> [ {server, protocols, secret} ]
+      #   stun:list      -> [ "host:port" ]
+      #   signaling:list -> { "servers": [ {server, verify} ], "secret": "..." }
+      talk_count() {
         occ "$1" --output=json 2>/dev/null \
-          | python3 -c 'import json,sys; d=json.load(sys.stdin); sys.exit(0 if any(sys.argv[1] in (s.get("server") or "") for s in d) else 1)' "$2"
+          | python3 -c 'import json,sys; d=json.load(sys.stdin); items=d.get("servers",[]) if isinstance(d,dict) else d; t=sys.argv[1]; print(sum(1 for s in items if t in (s.get("server","") if isinstance(s,dict) else str(s))))' "$2"
       }
-      if ! talk_has talk:turn:list 'talk.manafishrov.com:5349'; then
+      if [ "$(talk_count talk:turn:list 'talk.manafishrov.com:5349')" = "0" ]; then
         retry occ talk:turn:add turn talk.manafishrov.com:5349 udp,tcp --secret="${TURN_SECRET}"
       fi
-      if ! talk_has talk:stun:list 'talk.manafishrov.com:5349'; then
+      if [ "$(talk_count talk:stun:list 'talk.manafishrov.com:5349')" = "0" ]; then
         retry occ talk:stun:add talk.manafishrov.com:5349
       fi
-      if ! talk_has talk:signaling:list 'https://talk.manafishrov.com'; then
+      # signaling:list has no :delete, but :signaling:delete exists. Wipe
+      # duplicates (a previous version of this script with a broken JSON
+      # parser added one entry per reconcile) and ensure exactly one.
+      sig_count=$(talk_count talk:signaling:list 'https://talk.manafishrov.com')
+      if [ "$sig_count" != "1" ]; then
+        while [ "$(talk_count talk:signaling:list 'https://talk.manafishrov.com')" != "0" ]; do
+          occ talk:signaling:delete 'https://talk.manafishrov.com' >/dev/null 2>&1 || break
+        done
         retry occ talk:signaling:add 'https://talk.manafishrov.com' "${SIGNALING_SECRET}" --verify
       fi
 
@@ -222,6 +234,11 @@ data:
       if [ ! -f "$mimetype_marker" ]; then
         log "running one-time mimetype migration for $(basename "$mimetype_marker")"
         retry occ maintenance:repair --include-expensive && touch "$mimetype_marker"
+      fi
+      indices_marker="/var/www/html/data/.db-indices-${version}"
+      if [ ! -f "$indices_marker" ]; then
+        log "running one-time db:add-missing-indices for $(basename "$indices_marker")"
+        retry occ db:add-missing-indices && touch "$indices_marker"
       fi
     }
 
