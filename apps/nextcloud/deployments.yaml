@@ -115,7 +115,13 @@ spec:
             - name: server_name
               value: office.manafishrov.com
             - name: extra_params
-              value: --o:ssl.enable=false --o:ssl.termination=true --o:net.proto=IPv4
+              value: >-
+                --o:ssl.enable=false
+                --o:ssl.termination=true
+                --o:net.proto=IPv4
+                --o:net.post_allow.host[0]=10\.42\..*
+                --o:net.post_allow.host[1]=::ffff:10\.42\..*
+                --o:net.post_allow.host[2]=fd42:.*
             - name: dictionaries
               value: en_GB en_US nb_NO
           ports:
