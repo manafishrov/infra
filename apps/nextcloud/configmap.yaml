@@ -100,15 +100,15 @@ data:
         /etc/nextcloud-extras/additional.config.php \
         /var/www/html/config/additional.config.php
 
-      APPS_ENABLE="user_oidc notify_push groupfolders \
-                   richdocuments spreed whiteboard collectives files_3dmodelviewer \
-                   deck forms announcementcenter admin_audit"
-      APPS_DISABLE="dashboard firstrunwizard recommendations support survey_client weather_status \
-                    mail notes tasks contacts calendar bookmarks photos \
-                    contactsinteraction files_reminders sharebymail \
-                    federatedfilesharing federation lookup_server_connector \
-                    nextcloud_announcements oauth2 twofactor_backupcodes \
-                    updatenotification user_status"
+      APPS_ENABLE="activity admin_audit calendar collectives contacts \
+                   deck extract files files_3dmodelviewer forms \
+                   groupfolders mail notify_push photos richdocuments \
+                   spreed user_oidc whiteboard"
+      APPS_DISABLE="announcementcenter bookmarks contactsinteraction dashboard \
+                    federatedfilesharing federation files_reminders firstrunwizard \
+                    lookup_server_connector nextcloud_announcements notes oauth2 \
+                    recommendations sharebymail support survey_client tasks \
+                    twofactor_backupcodes updatenotification user_status weather_status"
 
       for app in $APPS_ENABLE; do
         if ! occ app:list --output=json 2>/dev/null | python3 -c 'import json,sys; d=json.load(sys.stdin); sys.exit(0 if sys.argv[1] in d.get("enabled",{}) or sys.argv[1] in d.get("disabled",{}) else 1)' "$app"; then
