@@ -60,42 +60,42 @@ locals {
     s3 = {
       name    = "s3"
       type    = "CNAME"
-      content = "router.gullhaugveien.michaelbrusegard.com"
+      content = "router.asgard.michaelbrusegard.com"
     }
     id = {
       name    = "id"
       type    = "CNAME"
-      content = "router.gullhaugveien.michaelbrusegard.com"
+      content = "router.asgard.michaelbrusegard.com"
     }
     vault = {
       name    = "vault"
       type    = "CNAME"
-      content = "router.gullhaugveien.michaelbrusegard.com"
+      content = "router.asgard.michaelbrusegard.com"
     }
     cloud = {
       name    = "cloud"
       type    = "CNAME"
-      content = "router.gullhaugveien.michaelbrusegard.com"
+      content = "router.asgard.michaelbrusegard.com"
     }
     office = {
       name    = "office"
       type    = "CNAME"
-      content = "router.gullhaugveien.michaelbrusegard.com"
+      content = "router.asgard.michaelbrusegard.com"
     }
     talk = {
       name    = "talk"
       type    = "CNAME"
-      content = "router.gullhaugveien.michaelbrusegard.com"
+      content = "router.asgard.michaelbrusegard.com"
     }
     whiteboard = {
       name    = "whiteboard"
       type    = "CNAME"
-      content = "router.gullhaugveien.michaelbrusegard.com"
+      content = "router.asgard.michaelbrusegard.com"
     }
     status = {
       name    = "status"
       type    = "CNAME"
-      content = "router.gullhaugveien.michaelbrusegard.com"
+      content = "router.asgard.michaelbrusegard.com"
     }
 
     dmarc = {
