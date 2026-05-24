@@ -151,6 +151,40 @@ data:
 
       retry occ config:app:set user_oidc allow_multiple_user_backends --value=0
 
+      # Mail App provisioning for manafishrov.com.
+      #
+      # Stalwart is on the personal cluster at mail.asgard.michaelbrusegard.com.
+      # Per-user manafishrov accounts (e.g. michael@manafishrov.com) are
+      # created manually in the stalwart admin UI with NO password; access
+      # happens via IMAP master-user impersonation.
+      #
+      # Email is driven by the pocket-id user's email claim (flows through
+      # user_oidc as the nextcloud user record's email field). Pocket-id
+      # users MUST be created with an @manafishrov.com email address.
+      #
+      # Stalwart's master-user syntax is `target%authcid`. We compose:
+      #   imap/smtp username = %EMAIL%%mail-master@michaelbrusegard.com
+      #   imap/smtp password = $MAIL_MASTER_PASSWORD
+      # Stalwart parses the `%`, validates as mail-master with the master pw,
+      # and Authenticate+Impersonate permissions grant access to the target
+      # user's mailbox.
+      #
+      # mail-master itself is declared in the stalwart plan in the personal
+      # infra repo, password sourced from $MAIL_MASTER_PASSWORD in stalwart-env.
+      PROV_ID=$(occ mail:account:provisioning:list --output=json 2>/dev/null \
+        | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next((p["id"] for p in d if p.get("provisioningDomain")=="manafishrov.com"),""))')
+      if [ -z "$PROV_ID" ]; then
+        retry occ mail:account:provisioning:add \
+          --provisioningDomain='manafishrov.com' \
+          --emailTemplate='%EMAIL%' \
+          --imapHost='mail.asgard.michaelbrusegard.com' --imapPort=993 --imapSslMode=ssl \
+          --imapUser='%EMAIL%%mail-master@michaelbrusegard.com' \
+          --smtpHost='mail.asgard.michaelbrusegard.com' --smtpPort=465 --smtpSslMode=ssl \
+          --smtpUser='%EMAIL%%mail-master@michaelbrusegard.com' \
+          --masterPasswordEnabled=true \
+          --masterPassword="${MAIL_MASTER_PASSWORD}"
+      fi
+
       # notify_push:setup stores the PUBLIC websocket endpoint that clients
       # connect to; internal pod-to-pod traffic is unrelated and routed via
       # the in-cluster Service named "notify-push".
