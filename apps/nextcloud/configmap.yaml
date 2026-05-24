@@ -23,7 +23,6 @@ data:
       'upgrade.disable-web' => true,
       'auth.bruteforce.protection.enabled' => true,
       'twofactor_enforced' => 'false',
-      'config_server_id' => 'manafishrov-nextcloud',
       'serverid' => 0,
       'integrity.check.disabled' => true,
       'simpleSignUpLink.shown' => false,
