@@ -176,7 +176,7 @@ data:
           *@${MAIL_DOMAIN}) ;;
           *) continue ;;
         esac
-        if occ mail:account:export "$uid" 2>/dev/null | grep -q '"name"'; then
+        if occ mail:account:export "$uid" 2>/dev/null | grep -q "E-Mail: $email"; then
           continue
         fi
         log "provisioning Mail account for $uid ($email)"
