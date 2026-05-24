@@ -154,20 +154,6 @@ locals {
       content = "protonmail-verification=acc7d667357e78d99f1a07a06b39bf6ffe63b11f"
     }
 
-  }
-}
-    send_updates_spf = {
-      name    = "send.updates"
-      type    = "TXT"
-      content = "v=spf1 include:amazonses.com -all"
-    }
-
-    resend_domainkey_updates = {
-      name    = "resend._domainkey.updates"
-      type    = "TXT"
-      content = "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDL3dpUyho6F57ks3Gkl6l5v8goijjgshbz3WRr3KLapemuhKoGoHothE3YKyHlw7hSIreChyoWHr4QACFNNHZivJD1vfhb+f3UBMp+4TSfZkGVs1IM3jKTMZWo28gUk4qOXVyztN4TktgAP7Yw+RT/elZAT2cL5WMk1mvvB5QBUQIDAQAB"
-    }
-
     stalwart_dkim_rsa = {
       name    = "stalwart-rsa._domainkey"
       type    = "TXT"
