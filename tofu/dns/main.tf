@@ -171,6 +171,69 @@ locals {
       type    = "TXT"
       content = "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDL3dpUyho6F57ks3Gkl6l5v8goijjgshbz3WRr3KLapemuhKoGoHothE3YKyHlw7hSIreChyoWHr4QACFNNHZivJD1vfhb+f3UBMp+4TSfZkGVs1IM3jKTMZWo28gUk4qOXVyztN4TktgAP7Yw+RT/elZAT2cL5WMk1mvvB5QBUQIDAQAB"
     }
+
+    stalwart_dkim_rsa = {
+      name    = "stalwart-rsa._domainkey"
+      type    = "TXT"
+      content = "v=DKIM1; k=rsa; p=${var.dkim_rsa_pub_manafishrov}"
+    }
+    stalwart_dkim_ed25519 = {
+      name    = "stalwart-ed25519._domainkey"
+      type    = "TXT"
+      content = "v=DKIM1; k=ed25519; p=${var.dkim_ed25519_pub_manafishrov}"
+    }
+    stalwart_tlsrpt = {
+      name    = "_smtp._tls"
+      type    = "TXT"
+      content = "v=TLSRPTv1; rua=mailto:postmaster@manafishrov.com"
+    }
+    stalwart_mta_sts_policy = {
+      name    = "_mta-sts"
+      type    = "TXT"
+      content = "v=STSv1; id=${var.mta_sts_id_manafishrov}"
+    }
+    stalwart_mta_sts = {
+      name    = "mta-sts"
+      type    = "CNAME"
+      content = "mail.asgard.michaelbrusegard.com"
+    }
+    stalwart_autoconfig = {
+      name    = "autoconfig"
+      type    = "CNAME"
+      content = "mail.asgard.michaelbrusegard.com"
+    }
+    stalwart_autodiscover = {
+      name    = "autodiscover"
+      type    = "CNAME"
+      content = "mail.asgard.michaelbrusegard.com"
+    }
+    stalwart_mx = {
+      name     = "@"
+      type     = "MX"
+      content  = "mail.asgard.michaelbrusegard.com"
+      priority = 10
+    }
+    stalwart_spf = {
+      name    = "@"
+      type    = "TXT"
+      content = "v=spf1 mx include:spf.smtp2go.com -all"
+    }
+
+    smtp2go_returnpath = {
+      name    = "em661465"
+      type    = "CNAME"
+      content = "return.smtp2go.net"
+    }
+    smtp2go_dkim = {
+      name    = "s661465._domainkey"
+      type    = "CNAME"
+      content = "dkim.smtp2go.net"
+    }
+    smtp2go_link = {
+      name    = "link"
+      type    = "CNAME"
+      content = "track.smtp2go.net"
+    }
   }
 }
 
