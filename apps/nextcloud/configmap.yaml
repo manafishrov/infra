@@ -221,6 +221,29 @@ data:
       retry occ config:app:set whiteboard collabBackendUrl --value='https://whiteboard.manafishrov.com'
       retry occ config:app:set whiteboard jwt_secret_key --value="${WHITEBOARD_JWT_SECRET}"
 
+      # System mail (password resets, share notifications, etc) sent
+      # via stalwart using mail-master's authenticate+impersonate.
+      # From header is noreply@manafishrov.com; SMTP auth is mail-master.
+      retry occ config:system:set mail_smtpmode --value='smtp'
+      retry occ config:system:set mail_smtphost --value='mail.asgard.michaelbrusegard.com'
+      retry occ config:system:set mail_smtpport --value='465' --type=integer
+      retry occ config:system:set mail_smtpsecure --value='ssl'
+      retry occ config:system:set mail_smtpauth --value=1 --type=integer
+      retry occ config:system:set mail_smtpauthtype --value='LOGIN'
+      retry occ config:system:set mail_smtpname --value='mail-master@michaelbrusegard.com'
+      retry occ config:system:set mail_smtppassword --value="${MAIL_MASTER_PASSWORD}"
+      retry occ config:system:set mail_from_address --value='noreply'
+      retry occ config:system:set mail_domain --value='manafishrov.com'
+
+      # Manafish branding.
+      retry occ theming:config name 'Manafish'
+      retry occ theming:config url 'https://github.com/manafishrov'
+      retry occ theming:config slogan ''
+      retry occ theming:config primary_color '#2b7fff'
+      retry occ theming:config background_color '#09090b'
+      retry occ theming:config background backgroundColor
+      retry occ theming:config disable-user-theming yes
+
       # Org-only storage: zero personal namespace, all content via
       # Groupfolders bound to pocket-id groups. "manafishrov-team" must
       # exist in pocket-id and include every employee; "admin" is the
@@ -257,7 +280,6 @@ data:
         retry occ groupfolders:scan "$manafish_id" >/dev/null 2>&1 || true
       fi
       for u in $(occ user:list --output=json 2>/dev/null | python3 -c 'import json,sys; print(" ".join(json.load(sys.stdin).keys()))'); do
-        [ "$u" = "admin" ] && continue
         current=$(occ user:setting "$u" files quota --default-value='' 2>/dev/null || true)
         if [ "$current" != '0 B' ]; then
           occ user:setting "$u" files quota '0 B' >/dev/null 2>&1 || true
