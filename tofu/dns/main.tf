@@ -154,12 +154,8 @@ locals {
       content = "protonmail-verification=acc7d667357e78d99f1a07a06b39bf6ffe63b11f"
     }
 
-    send_updates_mx = {
-      name     = "send.updates"
-      type     = "MX"
-      content  = "feedback-smtp.eu-west-1.amazonses.com"
-      priority = 10
-    }
+  }
+}
     send_updates_spf = {
       name    = "send.updates"
       type    = "TXT"
@@ -216,23 +212,24 @@ locals {
     stalwart_spf = {
       name    = "@"
       type    = "TXT"
-      content = "v=spf1 mx include:spf.smtp2go.com -all"
+      content = "v=spf1 mx -all"
     }
 
-    smtp2go_returnpath = {
-      name    = "em661465"
-      type    = "CNAME"
-      content = "return.smtp2go.net"
+    resend_dkim = {
+      name    = "resend._domainkey"
+      type    = "TXT"
+      content = "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCkYxvtpXbMgl49rXHgqEpUTaEuqo5vlpBk5TtPl2K/tWYYsofIPDgKh7jxzyiezCD4nB00RAQFiKAxzWCZhHPYb2tvaHJUjJ6x1dlXo+K1JJ1ojfSbch7VUHKgnQcqbDY88KeZiJMl6dba7TgP6+Pkf6z+sM9Xnj8m3f6fVEWwuwIDAQAB"
     }
-    smtp2go_dkim = {
-      name    = "s661465._domainkey"
-      type    = "CNAME"
-      content = "dkim.smtp2go.net"
+    resend_send_mx = {
+      name     = "send"
+      type     = "MX"
+      content  = "feedback-smtp.eu-west-1.amazonses.com"
+      priority = 10
     }
-    smtp2go_link = {
-      name    = "link"
-      type    = "CNAME"
-      content = "track.smtp2go.net"
+    resend_send_spf = {
+      name    = "send"
+      type    = "TXT"
+      content = "v=spf1 include:amazonses.com ~all"
     }
   }
 }
