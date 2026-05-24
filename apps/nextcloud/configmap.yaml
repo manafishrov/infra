@@ -151,39 +151,42 @@ data:
 
       retry occ config:app:set user_oidc allow_multiple_user_backends --value=0
 
-      # Mail App provisioning for manafishrov.com.
+      # Per-user Mail account provisioning against stalwart.
       #
-      # Stalwart is on the personal cluster at mail.asgard.michaelbrusegard.com.
-      # Per-user manafishrov accounts (e.g. michael@manafishrov.com) are
-      # created manually in the stalwart admin UI with NO password; access
-      # happens via IMAP master-user impersonation.
+      # Mail 5.8.x has no `mail:account:provisioning:add` (that command
+      # existed in Mail 3.x). The 5.x provisioning system is admin-UI only.
+      # Workaround: iterate every nextcloud user and create their Mail
+      # account directly via `mail:account:create` using stalwart's master-
+      # user IMAP impersonation. The imap/smtp username is composed as
+      # `<user_email>%mail-master@michaelbrusegard.com`; stalwart parses
+      # the `%`, validates as the mail-master account (declared in the
+      # stalwart plan in personal infra) with $MAIL_MASTER_PASSWORD, and
+      # mail-master's Admin role's Impersonate permission opens the IMAP
+      # session as the target user. Result: zero-typing UX for end users.
       #
-      # Email is driven by the pocket-id user's email claim (flows through
-      # user_oidc as the nextcloud user record's email field). Pocket-id
-      # users MUST be created with an @manafishrov.com email address.
-      #
-      # Stalwart's master-user syntax is `target%authcid`. We compose:
-      #   imap/smtp username = %EMAIL%%mail-master@michaelbrusegard.com
-      #   imap/smtp password = $MAIL_MASTER_PASSWORD
-      # Stalwart parses the `%`, validates as mail-master with the master pw,
-      # and Authenticate+Impersonate permissions grant access to the target
-      # user's mailbox.
-      #
-      # mail-master itself is declared in the stalwart plan in the personal
-      # infra repo, password sourced from $MAIL_MASTER_PASSWORD in stalwart-env.
-      PROV_ID=$(occ mail:account:provisioning:list --output=json 2>/dev/null \
-        | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next((p["id"] for p in d if p.get("provisioningDomain")=="manafishrov.com"),""))')
-      if [ -z "$PROV_ID" ]; then
-        retry occ mail:account:provisioning:add \
-          --provisioningDomain='manafishrov.com' \
-          --emailTemplate='%EMAIL%' \
-          --imapHost='mail.asgard.michaelbrusegard.com' --imapPort=993 --imapSslMode=ssl \
-          --imapUser='%EMAIL%%mail-master@michaelbrusegard.com' \
-          --smtpHost='mail.asgard.michaelbrusegard.com' --smtpPort=465 --smtpSslMode=ssl \
-          --smtpUser='%EMAIL%%mail-master@michaelbrusegard.com' \
-          --masterPasswordEnabled=true \
-          --masterPassword="${MAIL_MASTER_PASSWORD}"
-      fi
+      # Email is derived from the user's `email` field in nextcloud (set
+      # by user_oidc from pocket-id's `email` claim). Pocket-id users
+      # MUST be created with an @manafishrov.com email and the matching
+      # User account must already exist in stalwart (manual step in the
+      # stalwart admin UI).
+      MAIL_DOMAIN=manafishrov.com
+      for uid in $(occ user:list --output=json 2>/dev/null | python3 -c 'import json,sys; print(" ".join(json.load(sys.stdin).keys()))'); do
+        email=$(occ user:info "$uid" --output=json 2>/dev/null | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("email") or "")')
+        case "$email" in
+          *@${MAIL_DOMAIN}) ;;
+          *) continue ;;
+        esac
+        if occ mail:account:export "$uid" 2>/dev/null | grep -q '"name"'; then
+          continue
+        fi
+        log "provisioning Mail account for $uid ($email)"
+        retry occ mail:account:create "$uid" "$uid" "$email" \
+          mail.asgard.michaelbrusegard.com 993 ssl \
+          "${email}%mail-master@michaelbrusegard.com" "${MAIL_MASTER_PASSWORD}" \
+          mail.asgard.michaelbrusegard.com 465 ssl \
+          "${email}%mail-master@michaelbrusegard.com" "${MAIL_MASTER_PASSWORD}" \
+          password
+      done
 
       # notify_push:setup stores the PUBLIC websocket endpoint that clients
       # connect to; internal pod-to-pod traffic is unrelated and routed via
