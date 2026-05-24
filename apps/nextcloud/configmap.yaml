@@ -257,6 +257,11 @@ data:
         retry occ groupfolders:scan "$manafish_id" >/dev/null 2>&1 || true
       fi
       for u in $(occ user:list --output=json 2>/dev/null | python3 -c 'import json,sys; print(" ".join(json.load(sys.stdin).keys()))'); do
+        [ "$u" = "admin" ] && continue
+        current=$(occ user:setting "$u" files quota --default-value='' 2>/dev/null || true)
+        if [ "$current" != '0 B' ]; then
+          occ user:setting "$u" files quota '0 B' >/dev/null 2>&1 || true
+        fi
         current=$(occ user:setting "$u" photos photosSourceFolders --default-value='' 2>/dev/null || true)
         if [ -z "$current" ] || [ "$current" = "[]" ]; then
           occ user:setting "$u" photos photosSourceFolders '["/Manafish/Media"]' >/dev/null 2>&1 || true
