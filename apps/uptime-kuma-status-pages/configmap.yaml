@@ -35,7 +35,8 @@ data:
             {"name": "Nextcloud Talk HPB"},
             {"name": "Nextcloud Whiteboard"},
             {"name": "Manafish Pocket ID"},
-            {"name": "Vaultwarden"}
+            {"name": "Vaultwarden"},
+            {"name": "n8n"}
           ]
         }
       ]

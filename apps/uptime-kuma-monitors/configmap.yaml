@@ -88,5 +88,15 @@ data:
         "max_retries": 3,
         "retry_interval": 30,
         "active": true
+      },
+      {
+        "name": "n8n",
+        "type": "http",
+        "parent_name": "manafish[0]",
+        "url": "https://n8n.manafishrov.com/ping",
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
       }
     ]
