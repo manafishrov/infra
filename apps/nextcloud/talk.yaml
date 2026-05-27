@@ -19,16 +19,70 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       nodeSelector:
         kubernetes.io/hostname: espresso-1
+      securityContext:
+        fsGroup: 1000
+      volumes:
+        - name: shared
+          emptyDir: {}
+      initContainers:
+        # Resolve the router's public IPv4 from authoritative DNS so eturnal
+        # can advertise a relay endpoint that external WebRTC clients can
+        # actually reach. The router runs cloudflare-dyndns, so its A record
+        # is the single source of truth for the current ISP-assigned address.
+        # Cluster DNS (blocky) split-horizons `manafishrov.com` to an internal
+        # gateway VIP, so we query 1.1.1.1 directly to bypass that and land on
+        # the public A record. Re-resolves every pod restart; if the ISP IP
+        # drifts, a `kubectl rollout restart` is the only manual step.
+        - name: resolve-public-ip
+          image: nextcloud/aio-talk:20260515_145717@sha256:27db23e79ee7462a442f116c5adb5b2d7f81e781e400636990ac184cac2b32b0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              ip=$(dig +short +tries=3 +timeout=5 \
+                  router.asgard.michaelbrusegard.com A @1.1.1.1 | head -n1)
+              case "$ip" in
+                ''|127.*|10.*|172.1[6-9].*|172.2[0-9].*|172.3[0-1].*|192.168.*)
+                  echo "refusing to use non-public address: '$ip'" >&2
+                  exit 1
+                  ;;
+              esac
+              printf '%s' "$ip" > /shared/public_ip
+          volumeMounts:
+            - name: shared
+              mountPath: /shared
       containers:
         - name: talk
           image: nextcloud/aio-talk:20260515_145717@sha256:27db23e79ee7462a442f116c5adb5b2d7f81e781e400636990ac184cac2b32b0
+          # aio-talk's /start.sh derives eturnal's relay_ipv4_addr from
+          # `hostname -i`, which on a NixOS host resolves to 127.0.0.2 via
+          # the default /etc/hosts loopback alias. That makes eturnal hand
+          # every TURN client an unreachable relay endpoint and breaks all
+          # WebRTC peer media for clients outside the pod. Rewrite the field
+          # after /start.sh templates the config and before supervisord forks
+          # eturnal, so the very first read already points at the public IP
+          # the router DNATs to.
+          args:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              ip=$(cat /shared/public_ip)
+              sed -i 's|^  relay_ipv4_addr:.*|  relay_ipv4_addr: "'"$ip"'"|' /conf/eturnal.yml
+              exec supervisord -c /supervisord.conf
           env:
             - name: NC_DOMAIN
               value: cloud.manafishrov.com
-            - name: TALK_HOST
-              value: talk.manafishrov.com
             - name: TALK_PORT
               value: "5349"
+            # Without TURN_DOMAIN, /start.sh falls back to NC_DOMAIN as Janus's
+            # TURN server hostname; the resulting `getaddrinfo` race against
+            # cluster DNS at pod start can leave Janus in a FATAL "Invalid TURN
+            # address" loop. Point Janus at the in-pod TURN directly to make
+            # the local TURN client deterministic and DNS-independent.
+            - name: TURN_DOMAIN
+              value: 127.0.0.1
             - name: TZ
               value: Europe/Oslo
             - name: TURN_SECRET
@@ -76,6 +130,10 @@ spec:
               memory: 512Mi
             limits:
               memory: 2Gi
+          volumeMounts:
+            - name: shared
+              mountPath: /shared
+              readOnly: true
 ---
 apiVersion: apps/v1
 kind: Deployment
