@@ -97,6 +97,11 @@ locals {
       type    = "CNAME"
       content = "router.asgard.michaelbrusegard.com"
     }
+    n8n = {
+      name    = "n8n"
+      type    = "CNAME"
+      content = "router.asgard.michaelbrusegard.com"
+    }
 
     dmarc = {
       name    = "_dmarc"

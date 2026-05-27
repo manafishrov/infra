@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n-internal
+  namespace: manafishrov-n8n
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app: n8n
+  ports:
+    - name: http
+      port: 5678
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n
+  namespace: manafishrov-n8n
+spec:
+  selector:
+    app: n8n
+  ports:
+    - name: http
+      port: 5678
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy
+  namespace: manafishrov-n8n
+spec:
+  selector:
+    app: oauth2-proxy
+  ports:
+    - name: http
+      port: 4180
+      targetPort: http

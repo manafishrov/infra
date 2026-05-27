@@ -1,0 +1,42 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: n8n-public
+  namespace: manafishrov-n8n
+spec:
+  parentRefs:
+    - name: public
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - n8n.manafishrov.com
+  rules:
+    # Webhook paths bypass oauth2-proxy: n8n authenticates webhooks via
+    # their unguessable path tokens, and external callers cannot present
+    # an OIDC session cookie.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /webhook
+        - path:
+            type: PathPrefix
+            value: /webhook-test
+        - path:
+            type: PathPrefix
+            value: /webhook-waiting
+      backendRefs:
+        - name: n8n
+          port: 5678
+    # Editor + API traffic goes through oauth2-proxy. Timeouts disabled
+    # because the editor holds a long-lived /rest/push websocket for live
+    # execution updates; default gateway timeouts kill that connection.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      timeouts:
+        request: 0s
+        backendRequest: 0s
+      backendRefs:
+        - name: oauth2-proxy
+          port: 4180

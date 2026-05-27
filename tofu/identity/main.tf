@@ -37,3 +37,19 @@ resource "pocketid_client" "nextcloud" {
     pocketid_group.management.id,
   ]
 }
+
+resource "pocketid_group" "n8n" {
+  name          = "n8n"
+  friendly_name = "n8n Users"
+}
+
+resource "pocketid_client" "n8n" {
+  name          = "n8n"
+  callback_urls = ["https://n8n.manafishrov.com/oauth2/callback"]
+  launch_url    = "https://n8n.manafishrov.com"
+  pkce_enabled  = true
+  allowed_user_groups = [
+    pocketid_group.n8n.id,
+    pocketid_group.admin.id,
+  ]
+}
