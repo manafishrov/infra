@@ -33,6 +33,7 @@ spec:
             - --pass-authorization-header=false
             - --set-xauthrequest=true
             - --scope=openid profile email
+            - --code-challenge-method=S256
             - --skip-jwt-bearer-tokens=false
             - --whitelist-domain=n8n.manafishrov.com
           env:
