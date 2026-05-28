@@ -53,3 +53,20 @@ resource "pocketid_client" "n8n" {
     pocketid_group.admin.id,
   ]
 }
+
+resource "pocketid_group" "twenty" {
+  name          = "twenty"
+  friendly_name = "Twenty CRM Users"
+}
+
+resource "pocketid_client" "twenty" {
+  name          = "Twenty"
+  callback_urls = ["https://crm.manafishrov.com/oauth2/callback"]
+  launch_url    = "https://crm.manafishrov.com"
+  pkce_enabled  = true
+  allowed_user_groups = [
+    pocketid_group.twenty.id,
+    pocketid_group.admin.id,
+    pocketid_group.management.id,
+  ]
+}

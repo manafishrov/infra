@@ -1,0 +1,192 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: twenty-worker
+  namespace: manafishrov-twenty
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: twenty-worker
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: twenty-worker
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: worker
+          image: twentycrm/twenty:v2.8.3@sha256:fd6faa713fd2042d5d87e5705d47d24e492fc5202e7394e188f438085b483fad
+          command: ["yarn", "worker:prod"]
+          envFrom:
+            - secretRef:
+                name: twenty-env
+          env:
+            # Server runs migrations + cron registration; worker must skip
+            # both or the two pods race on startup.
+            - name: DISABLE_DB_MIGRATIONS
+              value: "true"
+            - name: DISABLE_CRON_JOBS_REGISTRATION
+              value: "true"
+            - name: SERVER_URL
+              value: https://crm.manafishrov.com
+            - name: REDIS_URL
+              value: redis://valkey:6379
+            - name: STORAGE_TYPE
+              value: s3
+            - name: STORAGE_S3_REGION
+              value: us-east-1
+            - name: STORAGE_S3_NAME
+              value: manafishrov-twenty
+            - name: STORAGE_S3_ENDPOINT
+              value: http://rustfs-svc.rustfs.svc.cluster.local:9000
+            - name: STORAGE_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: manafishrov-storage-outputs
+                  key: twenty_storage_access_key_id
+            - name: STORAGE_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: manafishrov-storage-outputs
+                  key: twenty_storage_secret_access_key
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: manafishrov-database-outputs
+                  key: twenty_db_password
+            - name: PG_DATABASE_URL
+              value: postgres://manafishrov_twenty_app:$(PG_PASSWORD)@postgres.postgres.svc.cluster.local:5432/manafishrov_twenty
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 2Gi
+      terminationGracePeriodSeconds: 60
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: valkey
+  namespace: manafishrov-twenty
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: valkey
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: valkey
+    spec:
+      containers:
+        - name: valkey
+          image: valkey/valkey:9.1.0-alpine@sha256:11dfc5d3ce9c570a516760935053687aea8e938be51b17cf112f71ab573e6f7b
+          args:
+            # noeviction matches Twenty's docker-compose default; the BullMQ
+            # queue must never silently drop jobs under memory pressure.
+            - --maxmemory
+            - 256mb
+            - --maxmemory-policy
+            - noeviction
+            - --save
+            - ""
+            - --appendonly
+            - "no"
+          ports:
+            - containerPort: 6379
+              name: redis
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command: ["valkey-cli", "ping"]
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              memory: 320Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+  namespace: manafishrov-twenty
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oauth2-proxy
+  template:
+    metadata:
+      labels:
+        app: oauth2-proxy
+    spec:
+      containers:
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.2@sha256:aa0bd8dd5ab0c78e4c91c92755ad573a5f92241f88138b4141b8ec803463b4fd
+          args:
+            - --provider=oidc
+            - --oidc-issuer-url=https://id.manafishrov.com
+            - --redirect-url=https://crm.manafishrov.com/oauth2/callback
+            - --upstream=http://twenty.manafishrov-twenty.svc.cluster.local:3000
+            - --http-address=0.0.0.0:4180
+            - --reverse-proxy=true
+            - --cookie-secure=true
+            - --cookie-samesite=lax
+            - --cookie-expire=168h
+            - --cookie-refresh=1h
+            - --email-domain=*
+            - --skip-provider-button=true
+            - --pass-access-token=false
+            - --pass-authorization-header=false
+            - --set-xauthrequest=true
+            - --scope=openid profile email
+            - --code-challenge-method=S256
+          env:
+            - name: OAUTH2_PROXY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: manafishrov-identity-outputs
+                  key: twenty_pocketid_client_id
+            - name: OAUTH2_PROXY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: manafishrov-identity-outputs
+                  key: twenty_pocketid_client_secret
+            - name: OAUTH2_PROXY_COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: twenty-oauth2-proxy
+                  key: cookie_secret
+          ports:
+            - containerPort: 4180
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /ping
+              port: http
+            periodSeconds: 5
+            failureThreshold: 12

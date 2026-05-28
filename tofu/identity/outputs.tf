@@ -24,3 +24,12 @@ output "n8n_pocketid_client_secret" {
   value     = pocketid_client.n8n.client_secret
   sensitive = true
 }
+
+output "twenty_pocketid_client_id" {
+  value = pocketid_client.twenty.id
+}
+
+output "twenty_pocketid_client_secret" {
+  value     = pocketid_client.twenty.client_secret
+  sensitive = true
+}

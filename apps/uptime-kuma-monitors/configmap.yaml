@@ -98,5 +98,15 @@ data:
         "max_retries": 3,
         "retry_interval": 30,
         "active": true
+      },
+      {
+        "name": "Twenty",
+        "type": "http",
+        "parent_name": "manafish[0]",
+        "url": "https://crm.manafishrov.com/ping",
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
       }
     ]

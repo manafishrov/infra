@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: twenty-internal
+  namespace: manafishrov-twenty
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app: twenty
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: twenty
+  namespace: manafishrov-twenty
+spec:
+  selector:
+    app: twenty
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: valkey
+  namespace: manafishrov-twenty
+spec:
+  selector:
+    app: valkey
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy
+  namespace: manafishrov-twenty
+spec:
+  selector:
+    app: oauth2-proxy
+  ports:
+    - name: http
+      port: 4180
+      targetPort: http

@@ -16,27 +16,33 @@ consumer cluster repo, not here.
 - `apps/<name>/` — per-app bundle (Namespace, NetworkPolicy, HTTPRoute,
   Services, StatefulSet/Deployment). App secrets live at
   `../infra-secrets/apps/<name>/`.
-  - Apps: `n8n`, `nextcloud`, `pocket-id`, `vaultwarden`
+  - Apps: `n8n`, `nextcloud`, `pocket-id`, `twenty`, `vaultwarden`
 - `public-redirects/` — shared public namespace + redirect HTTPRoutes
 - `tofu/<stack>/` — one OpenTofu root module per stack:
-  - `storage` (aws + minio) — firmware S3 bucket and matching CI IAM
-    user/policy. Reads `rustfs_endpoint`, `rustfs_access_key`,
-    `rustfs_secret_key`, `firmware_ci_secret_key`,
-    `firmware_ci_secret_key_version`.
+  - `storage` (aws + minio) — firmware S3 bucket (public-read) and
+    Twenty CRM S3 bucket (private), each with a matching IAM user/policy.
+    Reads `rustfs_endpoint`, `rustfs_access_key`, `rustfs_secret_key`,
+    `firmware_ci_secret_key`, `firmware_ci_secret_key_version`,
+    `twenty_app_secret_key`, `twenty_app_secret_key_version`. Writes
+    `twenty_storage_access_key_id`, `twenty_storage_secret_access_key`
+    into Secret `manafishrov-storage-outputs` (consumed by
+    `apps/twenty/`).
   - `dns` (cloudflare) — records for `manafishrov.com`. Reads
     `CLOUDFLARE_API_TOKEN` from the runner env.
   - `identity` (pocketid) — OIDC clients against the company pocket-id.
     Reads `pocketid_api_token`. Writes `vaultwarden_pocketid_client_id`,
     `vaultwarden_pocketid_client_secret`, `nextcloud_pocketid_client_id`,
     `nextcloud_pocketid_client_secret`, `n8n_pocketid_client_id`,
-    `n8n_pocketid_client_secret` into Secret
+    `n8n_pocketid_client_secret`, `twenty_pocketid_client_id`,
+    `twenty_pocketid_client_secret` into Secret
     `manafishrov-identity-outputs` (consumed by `apps/vaultwarden/`,
-    `apps/nextcloud/`, `apps/n8n/`).
-  - `database` (postgresql) — application role + database on the shared
-    cluster Postgres at `postgres.postgres.svc.cluster.local`. Reads
-    `pg_admin_user`, `pg_admin_password`, `nextcloud_db_password`. Writes
-    `nextcloud_db_password` into `manafishrov-database-outputs` (consumed
-    by `apps/nextcloud/`).
+    `apps/nextcloud/`, `apps/n8n/`, `apps/twenty/`).
+  - `database` (postgresql) — application roles + databases on the
+    shared cluster Postgres at `postgres.postgres.svc.cluster.local`.
+    Reads `pg_admin_user`, `pg_admin_password`, `nextcloud_db_password`,
+    `twenty_db_password`. Writes `nextcloud_db_password`,
+    `twenty_db_password` into `manafishrov-database-outputs` (consumed
+    by `apps/nextcloud/`, `apps/twenty/`).
 - `flake.nix` — dev shell
 
 ## Commands
@@ -75,7 +81,7 @@ Conventional Commits, focused on **why**.
 
 - Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `ci`, `revert`.
   `chore(deps)` reserved for Renovate.
-- Scopes: `n8n`, `nextcloud`, `pocket-id`, `vaultwarden`,
+- Scopes: `n8n`, `nextcloud`, `pocket-id`, `twenty`, `vaultwarden`,
   `public-redirects`, `tofu/storage`, `tofu/dns`, `tofu/identity`,
   `tofu/database`, `flake`, `ci`, or a new app name.
 - Subject: imperative, lowercase, ≤72 chars, no period.
