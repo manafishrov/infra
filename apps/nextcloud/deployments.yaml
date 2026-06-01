@@ -108,7 +108,7 @@ spec:
     spec:
       containers:
         - name: collabora
-          image: collabora/code:25.04.9.4.1@sha256:fe49c08c27e102c1877ad4ef2ac1a7bd8ccd2dfaa6641d4533389c204a92bb88
+          image: collabora/code:25.04.10.3.1@sha256:a51dd5d1741dea5d19f49d9997de2c321bf582076015ec4015941f3f00a5f4c0
           env:
             - name: aliasgroup1
               value: https://cloud.manafishrov.com
@@ -163,7 +163,7 @@ spec:
     spec:
       containers:
         - name: whiteboard
-          image: ghcr.io/nextcloud-releases/whiteboard:v1.5.8@sha256:fd34087710a3d9fac521b8b54665ce4f425377d67a1ed89c5dfa5d11e9d7064a
+          image: ghcr.io/nextcloud-releases/whiteboard:v1.5.9@sha256:b60b7633f90d106ac6922f9bc27e1a1ca2442488b740fefdae4c812f34e9cebc
           env:
             - name: NEXTCLOUD_URL
               value: http://nextcloud
