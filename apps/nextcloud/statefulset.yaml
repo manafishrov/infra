@@ -1,0 +1,176 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nextcloud
+  namespace: manafishrov-nextcloud
+  annotations:
+    configmap.reloader.stakater.com/reload: nextcloud-config
+    secret.reloader.stakater.com/reload: nextcloud-env
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextcloud
+  serviceName: nextcloud-internal
+  template:
+    metadata:
+      labels:
+        app: nextcloud
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      hostAliases:
+        - ip: 10.0.188.12
+          hostnames:
+            - mail.asgard.michaelbrusegard.com
+      containers:
+        - name: nextcloud
+          image: nextcloud:33.0.4-apache@sha256:45ef983a85daad754344978f7b1206d06dcf1ea368fbc3f9e73bac4738bd360a
+          envFrom:
+            - secretRef:
+                name: nextcloud-env
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: manafishrov-database-outputs
+                  key: nextcloud_db_password
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: manafishrov-identity-outputs
+                  key: nextcloud_pocketid_client_id
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: manafishrov-identity-outputs
+                  key: nextcloud_pocketid_client_secret
+            - name: TURN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: TURN_SECRET
+            - name: SIGNALING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: SIGNALING_SECRET
+            - name: TALK_RECORDING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: TALK_RECORDING_SECRET
+            - name: WHITEBOARD_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: WHITEBOARD_JWT_SECRET
+          ports:
+            - containerPort: 80
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /status.php
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: cloud.manafishrov.com
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /status.php
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: cloud.manafishrov.com
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /status.php
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: cloud.manafishrov.com
+            periodSeconds: 10
+            failureThreshold: 60
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - nohup /bin/sh /etc/nextcloud-extras/bootstrap.sh >/proc/1/fd/1 2>/proc/1/fd/2 &
+          volumeMounts:
+            - name: data
+              mountPath: /var/www/html
+            - name: extras
+              mountPath: /etc/nextcloud-extras
+              readOnly: true
+        - name: cron
+          image: nextcloud:33.0.4-apache@sha256:45ef983a85daad754344978f7b1206d06dcf1ea368fbc3f9e73bac4738bd360a
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # Wait until the main container has finished install/upgrade so
+              # cron does not race the entrypoint.
+              while ! su -s /bin/sh www-data -c 'php -f /var/www/html/occ status --output=json' 2>/dev/null | grep -q '"installed":true'; do
+                sleep 10
+              done
+              # Run the nextcloud cron job every 5 minutes, matching the
+              # interval the admin panel expects. www-data ownership is
+              # required for the PHP runtime to read the data dir.
+              while true; do
+                su -s /bin/sh www-data -c 'php -f /var/www/html/cron.php' || true
+                sleep 300
+              done
+          volumeMounts:
+            - name: data
+              mountPath: /var/www/html
+        - name: notify-push
+          image: nextcloud:33.0.4-apache@sha256:45ef983a85daad754344978f7b1206d06dcf1ea368fbc3f9e73bac4738bd360a
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # notify_push binary ships inside the notify_push app, which
+              # only exists after `occ app:install notify_push` has run in
+              # the main container. Wait for it to appear, then exec.
+              BIN=/var/www/html/custom_apps/notify_push/bin/x86_64/notify_push
+              while [ ! -x "$BIN" ]; do
+                sleep 10
+              done
+              exec "$BIN" /var/www/html/config/config.php
+          env:
+            - name: NEXTCLOUD_URL
+              value: http://localhost
+            - name: PORT
+              value: "7867"
+            - name: METRICS_PORT
+              value: "7868"
+          ports:
+            - containerPort: 7867
+              name: push
+          readinessProbe:
+            tcpSocket:
+              port: push
+            periodSeconds: 10
+            failureThreshold: 60
+          volumeMounts:
+            - name: data
+              mountPath: /var/www/html
+      volumes:
+        - name: extras
+          configMap:
+            name: nextcloud-config
+            defaultMode: 0555
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 600Gi
+        storageClassName: ssd-ha

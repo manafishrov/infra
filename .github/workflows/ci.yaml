@@ -11,19 +11,53 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate-tofu:
+  discover:
     runs-on: ubuntu-24.04
+    outputs:
+      tofu-stacks: ${{ steps.list-tofu.outputs.stacks }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - id: list-tofu
+        run: |
+          stacks=$(printf '%s\n' tofu/*/ | xargs -n1 basename | sort | jq -R . | jq -sc .)
+          echo "stacks=$stacks" >> "$GITHUB_OUTPUT"
+
+  validate-kubernetes:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+      - uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d # v14
+      - name: Install Tools
+        run: nix profile install nixpkgs#kustomize nixpkgs#kubeconform
+      - name: Validate Kubernetes Manifests
+        run: |
+          kustomize build . | \
+          kubeconform \
+            -strict \
+            -ignore-missing-schemas \
+            -schema-location default \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            -verbose
+
+  validate-tofu:
+    needs: discover
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: ${{ fromJSON(needs.discover.outputs.tofu-stacks) }}
     env:
       OPENTOFU_VERSION: 1.11.5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: opentofu/setup-opentofu@fc711fa910b93cba0f3fbecaafc9f42fd0c411cb # v2.0.0
+      - uses: opentofu/setup-opentofu@847eaa4afeb791b06daa46e8eafa8b1b68d7cfb4 # v2.0.1
         with:
           tofu_version: ${{ env.OPENTOFU_VERSION }}
           tofu_wrapper: false
       - name: Check OpenTofu formatting
-        run: tofu -chdir=tofu fmt -check
+        run: tofu -chdir=tofu/${{ matrix.stack }} fmt -check
       - name: Initialize OpenTofu
-        run: tofu -chdir=tofu init -backend=false
+        run: tofu -chdir=tofu/${{ matrix.stack }} init -backend=false
       - name: Validate OpenTofu
-        run: tofu -chdir=tofu validate
+        run: tofu -chdir=tofu/${{ matrix.stack }} validate

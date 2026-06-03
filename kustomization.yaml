@@ -1,3 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-resources: []
+resources:
+  - apps/n8n
+  - apps/nextcloud
+  - apps/pocket-id
+  - apps/twenty
+  - apps/uptime-kuma-monitors
+  - apps/uptime-kuma-status-pages
+  - apps/vaultwarden
+  - public-redirects

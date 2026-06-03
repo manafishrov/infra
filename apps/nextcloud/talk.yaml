@@ -1,0 +1,189 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-talk
+  namespace: manafishrov-nextcloud
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nextcloud-talk
+  template:
+    metadata:
+      labels:
+        app: nextcloud-talk
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        kubernetes.io/hostname: espresso-1
+      securityContext:
+        fsGroup: 1000
+      volumes:
+        - name: shared
+          emptyDir: {}
+      initContainers:
+        # Resolve the router's public IPv4 from authoritative DNS so eturnal
+        # can advertise a relay endpoint that external WebRTC clients can
+        # actually reach. The router runs cloudflare-dyndns, so its A record
+        # is the single source of truth for the current ISP-assigned address.
+        # Cluster DNS (blocky) split-horizons `manafishrov.com` to an internal
+        # gateway VIP, so we query 1.1.1.1 directly to bypass that and land on
+        # the public A record. Re-resolves every pod restart; if the ISP IP
+        # drifts, a `kubectl rollout restart` is the only manual step.
+        - name: resolve-public-ip
+          image: nextcloud/aio-talk:20260515_145717@sha256:27db23e79ee7462a442f116c5adb5b2d7f81e781e400636990ac184cac2b32b0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              ip=$(dig +short +tries=3 +timeout=5 \
+                  router.asgard.michaelbrusegard.com A @1.1.1.1 | head -n1)
+              case "$ip" in
+                ''|127.*|10.*|172.1[6-9].*|172.2[0-9].*|172.3[0-1].*|192.168.*)
+                  echo "refusing to use non-public address: '$ip'" >&2
+                  exit 1
+                  ;;
+              esac
+              printf '%s' "$ip" > /shared/public_ip
+          volumeMounts:
+            - name: shared
+              mountPath: /shared
+      containers:
+        - name: talk
+          image: nextcloud/aio-talk:20260515_145717@sha256:27db23e79ee7462a442f116c5adb5b2d7f81e781e400636990ac184cac2b32b0
+          # aio-talk's /start.sh derives eturnal's relay_ipv4_addr from
+          # `hostname -i`, which on a NixOS host resolves to 127.0.0.2 via
+          # the default /etc/hosts loopback alias. That makes eturnal hand
+          # every TURN client an unreachable relay endpoint and breaks all
+          # WebRTC peer media for clients outside the pod. Rewrite the field
+          # after /start.sh templates the config and before supervisord forks
+          # eturnal, so the very first read already points at the public IP
+          # the router DNATs to.
+          args:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              ip=$(cat /shared/public_ip)
+              sed -i 's|^  relay_ipv4_addr:.*|  relay_ipv4_addr: "'"$ip"'"|' /conf/eturnal.yml
+              exec supervisord -c /supervisord.conf
+          env:
+            - name: NC_DOMAIN
+              value: cloud.manafishrov.com
+            - name: TALK_PORT
+              value: "5349"
+            # Without TURN_DOMAIN, /start.sh falls back to NC_DOMAIN as Janus's
+            # TURN server hostname; the resulting `getaddrinfo` race against
+            # cluster DNS at pod start can leave Janus in a FATAL "Invalid TURN
+            # address" loop. Point Janus at the in-pod TURN directly to make
+            # the local TURN client deterministic and DNS-independent.
+            - name: TURN_DOMAIN
+              value: 127.0.0.1
+            - name: TZ
+              value: Europe/Oslo
+            - name: TURN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: TURN_SECRET
+            - name: SIGNALING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: SIGNALING_SECRET
+            - name: INTERNAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: INTERNAL_SECRET
+          ports:
+            - name: turn-udp
+              containerPort: 5349
+              protocol: UDP
+              hostPort: 5349
+            - name: turn-tcp
+              containerPort: 5349
+              protocol: TCP
+              hostPort: 5349
+            - name: signaling
+              containerPort: 8081
+              protocol: TCP
+              hostPort: 8081
+          readinessProbe:
+            httpGet:
+              path: /api/v1/welcome
+              port: signaling
+            periodSeconds: 10
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /api/v1/welcome
+              port: signaling
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              memory: 2Gi
+          volumeMounts:
+            - name: shared
+              mountPath: /shared
+              readOnly: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextcloud-talk-recording
+  namespace: manafishrov-nextcloud
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nextcloud-talk-recording
+  template:
+    metadata:
+      labels:
+        app: nextcloud-talk-recording
+    spec:
+      containers:
+        - name: recording
+          image: nextcloud/aio-talk-recording:20260515_145717@sha256:4969c18187154b23a2491be244185359163790e4df72c28dc1a6dce7934b2100
+          env:
+            - name: NC_DOMAIN
+              value: cloud.manafishrov.com
+            - name: TZ
+              value: Europe/Oslo
+            - name: RECORDING_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: TALK_RECORDING_SECRET
+            - name: INTERNAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nextcloud-env
+                  key: INTERNAL_SECRET
+          ports:
+            - name: http
+              containerPort: 1234
+          readinessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              memory: 4Gi

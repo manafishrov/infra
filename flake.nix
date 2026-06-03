@@ -36,7 +36,11 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in {
       default = pkgs.mkShell {
-        buildInputs = [pkgs.opentofu];
+        buildInputs = [
+          pkgs.opentofu
+          pkgs.kustomize
+          pkgs.kubeconform
+        ];
       };
     });
   };

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uptime-kuma-status-pages-manafish
+  namespace: manafishrov
+  annotations:
+    # Mirrored by emberstack/kubernetes-reflector into uptime-kuma ns where
+    # the status-page reconciler CronJob picks it up via projected volume.
+    # Cross-namespace because the manafishrov tenant SA cannot write outside
+    # manafishrov*.
+    reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+    reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "uptime-kuma"
+    reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+    reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: "uptime-kuma"
+data:
+  manafish.json: |
+    {
+      "slug": "manafish",
+      "title": "Manafish",
+      "description": "Manafishrov public services.",
+      "theme": "auto",
+      "published": true,
+      "showTags": false,
+      "showPoweredBy": false,
+      "showCertificateExpiry": false,
+      "domainNameList": ["status.manafishrov.com"],
+      "publicGroupList": [
+        {
+          "name": "Manafish",
+          "weight": 1,
+          "monitorList": [
+            {"name": "Manafish Public S3 API"},
+            {"name": "Nextcloud"},
+            {"name": "Collabora"},
+            {"name": "Nextcloud Talk HPB"},
+            {"name": "Nextcloud Whiteboard"},
+            {"name": "Manafish Pocket ID"},
+            {"name": "Vaultwarden"},
+            {"name": "n8n"},
+            {"name": "Twenty"}
+          ]
+        }
+      ]
+    }

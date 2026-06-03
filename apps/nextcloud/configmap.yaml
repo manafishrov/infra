@@ -1,0 +1,345 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nextcloud-config
+  namespace: manafishrov-nextcloud
+data:
+  additional.config.php: |
+    <?php
+    $CONFIG = [
+      'default_phone_region' => 'NO',
+      'maintenance_window_start' => 2,
+      'memcache.local' => '\\OC\\Memcache\\APCu',
+      'memcache.distributed' => '\\OC\\Memcache\\Redis',
+      'memcache.locking' => '\\OC\\Memcache\\Redis',
+      'redis' => [
+        'host' => 'valkey',
+        'port' => 6379,
+      ],
+      'trusted_proxies' => ['10.0.0.0/8'],
+      'overwriteprotocol' => 'https',
+      'log_type' => 'errorlog',
+      'loglevel' => 2,
+      'upgrade.disable-web' => true,
+      'auth.bruteforce.protection.enabled' => true,
+      'twofactor_enforced' => 'false',
+      'serverid' => 0,
+      'integrity.check.disabled' => true,
+      'simpleSignUpLink.shown' => false,
+      'lost_password_link' => 'disabled',
+      'skeletondirectory' => '',
+      'enabledPreviewProviders' => [
+        'OC\\Preview\\Imaginary',
+      ],
+      'preview_imaginary_url' => 'http://imaginary:9000',
+      'allow_local_remote_servers' => true,
+      'default_quota' => '0 B',
+      'quota_preset' => ['0 B', '1 GB', '5 GB'],
+      'shareapi_enabled' => true,
+      'shareapi_allow_links' => true,
+      'shareapi_allow_public_upload' => false,
+      'shareapi_enforce_links_password' => true,
+      'shareapi_default_expire_date' => true,
+      'shareapi_enforce_expire_date' => true,
+      'shareapi_expire_after_n_days' => 30,
+      'shareapi_allow_mail_notification' => false,
+      'shareapi_allow_resharing' => false,
+      'shareapi_allow_share_dialog_user_enumeration' => false,
+      'shareapi_only_share_with_group_members' => true,
+      'shareapi_restrict_user_enumeration_to_group' => true,
+      'gs.enabled' => false,
+      'files_external_allow_create_new_local' => false,
+      'updatechecker' => false,
+      'has_internet_connection' => true,
+      'trashbin_retention_obligation' => 'auto, 30',
+      'versions_retention_obligation' => 'auto, 90',
+    ];
+  bootstrap.sh: |
+    #!/bin/sh
+    # Idempotent post-install bootstrap. Runs via lifecycle.postStart in the
+    # main nextcloud container. Waits for the upstream entrypoint to finish
+    # install/upgrade, then converges installed apps, OIDC, Talk, Whiteboard.
+    #
+    # Deliberately no `set -e`: every occ call is best-effort; a transient
+    # app-store failure must not abandon the rest of the convergence run.
+    set -u
+
+    log() { printf '[bootstrap] %s\n' "$*"; }
+
+    # runuser preserves argv exactly across the user switch; unlike `su -c`
+    # it does not feed the command line through a second shell parse, so
+    # quoted args containing spaces or shell metacharacters survive.
+    occ() {
+      runuser -u www-data -- php -f /var/www/html/occ "$@"
+    }
+
+    retry() {
+      n=0
+      desc="$1${2:+ $2}"
+      until [ "$n" -ge 5 ]; do
+        if "$@"; then
+          return 0
+        fi
+        n=$((n + 1))
+        log "retry $n/5 for: $desc"
+        sleep $((n * 5))
+      done
+      log "giving up on: $desc"
+      return 1
+    }
+
+    # Wait for a quiescent state before mutating config: installed AND no
+    # pending DB upgrade AND not in maintenance mode. The image entrypoint
+    # can be running occ upgrade even after installed:true, so the extra
+    # gates prevent racing app/config changes against schema migrations.
+    wait_for_quiescent() {
+      i=0
+      while [ "$i" -lt 360 ]; do
+        status=$(runuser -u www-data -- php -f /var/www/html/occ status --output=json 2>/dev/null || echo '{}')
+        if echo "$status" | grep -q '"installed":true' \
+          && echo "$status" | grep -q '"needsDbUpgrade":false' \
+          && echo "$status" | grep -q '"maintenance":false'; then
+          return 0
+        fi
+        sleep 5
+        i=$((i + 1))
+      done
+      log "quiescent wait exceeded 30m; last status: $status"
+      return 1
+    }
+
+    converge() {
+      install -o www-data -g www-data -m 0640 \
+        /etc/nextcloud-extras/additional.config.php \
+        /var/www/html/config/additional.config.php
+
+      APPS_ENABLE="activity admin_audit calendar collectives contacts \
+                   deck extract files files_3dmodelviewer forms \
+                   groupfolders mail notify_push photos richdocuments \
+                   spreed user_oidc whiteboard"
+      APPS_DISABLE="announcementcenter app_api bookmarks contactsinteraction dashboard \
+                    federatedfilesharing federation files_reminders firstrunwizard \
+                    logreader lookup_server_connector nextcloud_announcements notes \
+                    oauth2 recommendations sharebymail support survey_client tasks \
+                    twofactor_backupcodes updatenotification user_status weather_status"
+
+      for app in $APPS_ENABLE; do
+        if ! occ app:list --output=json 2>/dev/null | python3 -c 'import json,sys; d=json.load(sys.stdin); sys.exit(0 if sys.argv[1] in d.get("enabled",{}) or sys.argv[1] in d.get("disabled",{}) else 1)' "$app"; then
+          retry occ app:install "$app"
+        fi
+        retry occ app:enable "$app"
+      done
+      for app in $APPS_DISABLE; do
+        if [ -d "/var/www/html/custom_apps/$app" ] || [ -d "/var/www/html/apps/$app" ]; then
+          occ app:enable "$app" >/dev/null 2>&1 || true
+          occ app:remove "$app" >/dev/null 2>&1 || occ app:disable "$app" >/dev/null 2>&1 || true
+        else
+          occ app:disable "$app" >/dev/null 2>&1 || true
+        fi
+      done
+
+      retry occ user_oidc:provider 'pocket-id' \
+        --clientid="${OIDC_CLIENT_ID}" \
+        --clientsecret="${OIDC_CLIENT_SECRET}" \
+        --discoveryuri='https://id.manafishrov.com/.well-known/openid-configuration' \
+        --scope='openid profile email groups' \
+        --mapping-uid='preferred_username' \
+        --mapping-email='email' \
+        --mapping-display-name='name' \
+        --mapping-groups='groups' \
+        --group-provisioning=1 \
+        --unique-uid=0
+
+      retry occ config:app:set user_oidc allow_multiple_user_backends --value=0
+
+      # Per-user Mail provisioning. Mail 5.x dropped the provisioning CLI
+      # so we iterate nextcloud users and call mail:account:create with
+      # stalwart's `target%authcid` master-user IMAP syntax against the
+      # mail-master account declared in personal infra's stalwart plan.
+      # New employee onboarding: (1) add to pocket-id with an
+      # @manafishrov.com email, (2) create matching User in stalwart UI.
+      MAIL_DOMAIN=manafishrov.com
+      for uid in $(occ user:list --output=json 2>/dev/null | python3 -c 'import json,sys; print(" ".join(json.load(sys.stdin).keys()))'); do
+        email=$(occ user:info "$uid" --output=json 2>/dev/null | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("email") or "")')
+        case "$email" in
+          *@${MAIL_DOMAIN}) ;;
+          *) continue ;;
+        esac
+        if occ mail:account:export "$uid" 2>/dev/null | grep -q "E-Mail: $email"; then
+          continue
+        fi
+        log "provisioning Mail account for $uid ($email)"
+        retry occ mail:account:create "$uid" "$uid" "$email" \
+          mail.asgard.michaelbrusegard.com 993 ssl \
+          "${email}%mail-master@michaelbrusegard.com" "${MAIL_MASTER_PASSWORD}" \
+          mail.asgard.michaelbrusegard.com 465 ssl \
+          "${email}%mail-master@michaelbrusegard.com" "${MAIL_MASTER_PASSWORD}" \
+          password
+      done
+
+      # notify_push:setup stores the PUBLIC websocket endpoint that clients
+      # connect to; internal pod-to-pod traffic is unrelated and routed via
+      # the in-cluster Service named "notify-push".
+      retry occ notify_push:setup 'https://cloud.manafishrov.com/push'
+
+      # Collabora insists on matching its configured server_name; using the
+      # in-cluster service URL would fail WOPI signature checks.
+      retry occ config:app:set richdocuments wopi_url --value='https://office.manafishrov.com'
+      retry occ config:app:set richdocuments public_wopi_url --value='https://office.manafishrov.com'
+      retry occ config:app:set richdocuments wopi_allowlist --value='10.42.0.0/16,fd42::/48'
+      retry occ richdocuments:activate-config
+
+      # Talk's :add commands have no dedupe and most have no matching :delete,
+      # so we must check existence before adding. The list outputs have three
+      # different JSON shapes that need uniform handling:
+      #   turn:list      -> [ {server, protocols, secret} ]
+      #   stun:list      -> [ "host:port" ]
+      #   signaling:list -> { "servers": [ {server, verify} ], "secret": "..." }
+      talk_count() {
+        occ "$1" --output=json 2>/dev/null \
+          | python3 -c 'import json,sys; d=json.load(sys.stdin); items=d.get("servers",[]) if isinstance(d,dict) else d; t=sys.argv[1]; print(sum(1 for s in items if t in (s.get("server","") if isinstance(s,dict) else str(s))))' "$2"
+      }
+      if [ "$(talk_count talk:turn:list 'talk.manafishrov.com:5349')" = "0" ]; then
+        retry occ talk:turn:add turn talk.manafishrov.com:5349 udp,tcp --secret="${TURN_SECRET}"
+      fi
+      if [ "$(talk_count talk:stun:list 'talk.manafishrov.com:5349')" = "0" ]; then
+        retry occ talk:stun:add talk.manafishrov.com:5349
+      fi
+      # signaling:list has no :delete, but :signaling:delete exists. Wipe
+      # duplicates (a previous version of this script with a broken JSON
+      # parser added one entry per reconcile) and ensure exactly one.
+      if [ "$(talk_count talk:signaling:list 'https://talk.manafishrov.com')" != "1" ]; then
+        while [ "$(talk_count talk:signaling:list 'https://talk.manafishrov.com')" != "0" ]; do
+          occ talk:signaling:delete 'https://talk.manafishrov.com' >/dev/null 2>&1 || break
+        done
+        retry occ talk:signaling:add 'https://talk.manafishrov.com' "${SIGNALING_SECRET}" --verify
+      fi
+      # Talk recording has no `:add` subcommand in NC 33; the recording_servers
+      # config is set directly as a JSON blob (same shape as signaling_servers).
+      # config:app:set is idempotent so this is safe to run every reconcile.
+      retry occ config:app:set spreed recording_servers --value="{\"servers\":[{\"server\":\"http://nextcloud-talk-recording:1234\",\"verify\":true}],\"secret\":\"${TALK_RECORDING_SECRET}\"}"
+
+      retry occ config:app:set whiteboard collabBackendUrl --value='https://whiteboard.manafishrov.com'
+      retry occ config:app:set whiteboard jwt_secret_key --value="${WHITEBOARD_JWT_SECRET}"
+
+      # System mail (password resets, share notifications, etc) sent
+      # via stalwart using mail-master's authenticate+impersonate.
+      # From header is noreply@manafishrov.com; SMTP auth is mail-master.
+      retry occ config:system:set mail_smtpmode --value='smtp'
+      retry occ config:system:set mail_smtphost --value='mail.asgard.michaelbrusegard.com'
+      retry occ config:system:set mail_smtpport --value='465' --type=integer
+      retry occ config:system:set mail_smtpsecure --value='ssl'
+      retry occ config:system:set mail_smtpauth --value=1 --type=integer
+      retry occ config:system:set mail_smtpauthtype --value='LOGIN'
+      retry occ config:system:set mail_smtpname --value='mail-master@michaelbrusegard.com'
+      retry occ config:system:set mail_smtppassword --value="${MAIL_MASTER_PASSWORD}"
+      retry occ config:system:set mail_from_address --value='noreply'
+      retry occ config:system:set mail_domain --value='manafishrov.com'
+
+      # Manafish branding.
+      retry occ theming:config name 'Manafish'
+      retry occ theming:config url 'https://github.com/manafishrov'
+      retry occ theming:config slogan ''
+      retry occ theming:config primary_color '#2b7fff'
+      retry occ theming:config background_color '#09090b'
+      retry occ theming:config background backgroundColor
+      retry occ theming:config disable-user-theming yes
+
+      # Org-only storage: zero personal namespace, all content via
+      # Groupfolders bound to pocket-id groups. "manafishrov-team" must
+      # exist in pocket-id and include every employee; "admin" is the
+      # default Nextcloud admin group, fed by pocket-id's admin group.
+      # jq is not in the base image, so parse JSON via the bundled python3.
+      # Group binding is set declaratively: exactly one group keeps access,
+      # any other previously-bound groups are unbound. Lets us change the
+      # owning group via this script alone, without manual occ surgery.
+      ensure_groupfolder() {
+        mount=$1; group=$2; quota=$3
+        occ group:list --output=json 2>/dev/null | python3 -c 'import json,sys; sys.exit(0 if sys.argv[1] in json.load(sys.stdin) else 1)' "$group" \
+          || occ group:add "$group" >/dev/null 2>&1 || true
+        id=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); print(next((f["id"] for f in folders if (f.get("mountPoint") or f.get("mount_point"))==sys.argv[1]),""))' "$mount")
+        if [ -z "$id" ]; then
+          id=$(occ groupfolders:create "$mount" --output=json | python3 -c 'import json,sys; v=json.load(sys.stdin); print(v["id"] if isinstance(v, dict) else v)')
+        fi
+        bound=$(occ groupfolders:list --output=json 2>/dev/null | python3 -c 'import json,sys; data=json.load(sys.stdin); folders=data if isinstance(data,list) else list(data.values()); f=next((f for f in folders if str(f.get("id"))==sys.argv[1]),None); print(" ".join((f or {}).get("groups",{}).keys()))' "$id")
+        for g in $bound; do
+          [ "$g" = "$group" ] || occ groupfolders:delete-group "$id" "$g" >/dev/null 2>&1 || true
+        done
+        occ groupfolders:group "$id" "$group" read write share delete >/dev/null 2>&1 || true
+        occ groupfolders:quota "$id" "$quota" >/dev/null 2>&1 || true
+        echo "$id"
+      }
+      manafish_id=$(ensure_groupfolder "Manafish" "nextcloud" "400 GB")
+      ensure_groupfolder "Management" "management" "20 GB" >/dev/null
+
+      media_dir="/var/www/html/data/__groupfolders/${manafish_id}/Media"
+      talk_dir="/var/www/html/data/__groupfolders/${manafish_id}/Talk"
+      if [ -n "$manafish_id" ]; then
+        [ ! -d "$media_dir" ] && install -d -o www-data -g www-data -m 0750 "$media_dir"
+        [ ! -d "$talk_dir" ] && install -d -o www-data -g www-data -m 0750 "$talk_dir"
+        [ ! -d "$talk_dir/Recordings" ] && install -d -o www-data -g www-data -m 0750 "$talk_dir/Recordings"
+        retry occ groupfolders:scan "$manafish_id" >/dev/null 2>&1 || true
+      fi
+      # NC seeds three onboarding samples per user that we don't want:
+      # Leon Green contact (uri 'default' in their address book), the
+      # "Welcome to Nextcloud Deck!" board (gated by deck.firstRun), and
+      # the changelog Talk room (gated by spreed.changelog version).
+      # The first two are deleted directly from the DB; the gating user-
+      # settings are set so subsequent reconciles don't recreate them.
+      runuser -u www-data -- php -r '
+        require "/var/www/html/lib/base.php";
+        $db = \OC::$server->getDatabaseConnection();
+        $db->executeStatement("DELETE FROM oc_cards WHERE uri = ? AND addressbookid IN (SELECT id FROM oc_addressbooks)", ["default"]);
+        $db->executeStatement("DELETE FROM oc_deck_boards WHERE title = ?", ["Welcome to Nextcloud Deck!"]);
+        $db->executeStatement("DELETE FROM oc_talk_rooms WHERE type = 4 OR name = ?", ["Let'\''s get started!"]);
+      ' 2>/dev/null || true
+
+      for u in $(occ user:list --output=json 2>/dev/null | python3 -c 'import json,sys; print(" ".join(json.load(sys.stdin).keys()))'); do
+        current=$(occ user:setting "$u" files quota --default-value='' 2>/dev/null || true)
+        if [ "$current" != '0 B' ]; then
+          occ user:setting "$u" files quota '0 B' >/dev/null 2>&1 || true
+        fi
+        occ user:setting "$u" deck firstRun no >/dev/null 2>&1 || true
+        occ user:setting "$u" spreed changelog 999 >/dev/null 2>&1 || true
+        current=$(occ user:setting "$u" photos photosSourceFolders --default-value='' 2>/dev/null || true)
+        if [ -z "$current" ] || [ "$current" = "[]" ]; then
+          occ user:setting "$u" photos photosSourceFolders '["/Manafish/Media"]' >/dev/null 2>&1 || true
+        fi
+        # Talk's attachment_folder gates BOTH chat attachments and call
+        # recordings; routing it inside the groupfolder bypasses the
+        # default_quota=0 personal-storage limit for both.
+        current=$(occ user:setting "$u" spreed attachment_folder --default-value='' 2>/dev/null || true)
+        if [ -z "$current" ] || [ "$current" = "/Talk" ]; then
+          occ user:setting "$u" spreed attachment_folder '/Manafish/Talk' >/dev/null 2>&1 || true
+        fi
+        for pair in 'timezone Europe/Oslo' 'lang en'; do
+          key=${pair% *}; val=${pair#* }
+          current=$(occ user:setting "$u" core "$key" --default-value='' 2>/dev/null || true)
+          [ -z "$current" ] && occ user:setting "$u" core "$key" "$val" >/dev/null 2>&1 || true
+        done
+      done
+
+      version=$(occ status --output=json 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("versionstring",""))')
+      mimetype_marker="/var/www/html/data/.mimetype-repair-${version}"
+      if [ ! -f "$mimetype_marker" ]; then
+        log "running one-time mimetype migration for $(basename "$mimetype_marker")"
+        retry occ maintenance:repair --include-expensive && touch "$mimetype_marker"
+      fi
+      indices_marker="/var/www/html/data/.db-indices-${version}"
+      if [ ! -f "$indices_marker" ]; then
+        log "running one-time db:add-missing-indices for $(basename "$indices_marker")"
+        retry occ db:add-missing-indices && touch "$indices_marker"
+      fi
+    }
+
+    # Continuous reconciliation loop. Idempotent commands re-run every 5
+    # minutes so a transient app-store or network failure on first boot
+    # self-heals without waiting for the next pod restart.
+    while true; do
+      log "waiting for nextcloud to be quiescent..."
+      if wait_for_quiescent; then
+        log "running convergence"
+        converge
+      fi
+      sleep 300
+    done

@@ -1,0 +1,48 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: twenty-public
+  namespace: manafishrov-twenty
+spec:
+  parentRefs:
+    - name: public
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - crm.manafishrov.com
+  rules:
+    # /rest/* and /file/* bypass oauth2-proxy so headless automations
+    # (n8n, MCP, scripts) can use Twenty API tokens directly. Safe
+    # because Twenty enforces its own bearer-token auth on every request
+    # via RestCoreMiddleware and FileByIdGuard — no public sub-paths,
+    # 401 without a valid token. /rest/* is also rate-limited (100/s,
+    # 100/min) per API key. Anything else, especially /graphql, would
+    # expose Twenty's public sign-in mutation to the open internet.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /rest/
+        - path:
+            type: PathPrefix
+            value: /file/
+      timeouts:
+        request: 0s
+        backendRequest: 0s
+      backendRefs:
+        - name: twenty
+          port: 3000
+    # Everything else — UI, /graphql, /auth/*, /webhooks/*, /client-config —
+    # goes through oauth2-proxy. Pocket-ID is the only OIDC enforcement
+    # because Twenty's self-host edition has no env-driven OIDC.
+    # Timeouts disabled for long-lived GraphQL subscriptions and large
+    # file uploads.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      timeouts:
+        request: 0s
+        backendRequest: 0s
+      backendRefs:
+        - name: oauth2-proxy
+          port: 4180

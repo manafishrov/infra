@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uptime-kuma-monitors-manafish
+  namespace: manafishrov
+  annotations:
+    # Mirrored by emberstack/kubernetes-reflector into uptime-kuma ns and
+    # mounted by AutoKuma via a projected volume. Cross-namespace because
+    # the manafishrov tenant SA is denied writes outside manafishrov*.
+    reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+    reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "uptime-kuma"
+    reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+    reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: "uptime-kuma"
+data:
+  manafish.json: |
+    [
+      {
+        "name": "Manafish",
+        "type": "group"
+      },
+      {
+        "name": "Manafish Public S3 API",
+        "type": "port",
+        "parent_name": "manafish[0]",
+        "hostname": "10.0.188.2",
+        "port": 443,
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
+      },
+      {
+        "name": "Nextcloud",
+        "type": "http",
+        "parent_name": "manafish[0]",
+        "url": "https://cloud.manafishrov.com/status.php",
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
+      },
+      {
+        "name": "Collabora",
+        "type": "http",
+        "parent_name": "manafish[0]",
+        "url": "https://office.manafishrov.com",
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
+      },
+      {
+        "name": "Nextcloud Talk HPB",
+        "type": "http",
+        "parent_name": "manafish[0]",
+        "url": "https://talk.manafishrov.com/api/v1/welcome",
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
+      },
+      {
+        "name": "Nextcloud Whiteboard",
+        "type": "http",
+        "parent_name": "manafish[0]",
+        "url": "https://whiteboard.manafishrov.com",
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
+      },
+      {
+        "name": "Manafish Pocket ID",
+        "type": "http",
+        "parent_name": "manafish[0]",
+        "url": "https://id.manafishrov.com",
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
+      },
+      {
+        "name": "Vaultwarden",
+        "type": "http",
+        "parent_name": "manafish[0]",
+        "url": "https://vault.manafishrov.com",
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
+      },
+      {
+        "name": "n8n",
+        "type": "http",
+        "parent_name": "manafish[0]",
+        "url": "https://n8n.manafishrov.com/ping",
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
+      },
+      {
+        "name": "Twenty",
+        "type": "http",
+        "parent_name": "manafish[0]",
+        "url": "https://crm.manafishrov.com/ping",
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
+      }
+    ]

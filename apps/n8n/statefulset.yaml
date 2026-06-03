@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: n8n
+  namespace: manafishrov-n8n
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: n8n
+  serviceName: n8n-internal
+  template:
+    metadata:
+      labels:
+        app: n8n
+    spec:
+      # n8n container runs as uid 1000 (node user); chown the data dir on
+      # first mount so PVC-backed /home/node/.n8n is writable.
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: n8n
+          image: docker.n8n.io/n8nio/n8n:2.21.7@sha256:9f1f8e4c093c9924338bd168e3f813f746041d13b337753af0dbdd329e7b50f7
+          envFrom:
+            - secretRef:
+                name: n8n-env
+          env:
+            - name: N8N_HOST
+              value: n8n.manafishrov.com
+            - name: N8N_PROTOCOL
+              value: https
+            - name: N8N_PORT
+              value: "5678"
+            - name: N8N_EDITOR_BASE_URL
+              value: https://n8n.manafishrov.com
+            - name: WEBHOOK_URL
+              value: https://n8n.manafishrov.com/
+            - name: N8N_PROXY_HOPS
+              value: "2"
+            - name: N8N_TRUST_PROXY
+              value: "true"
+            - name: N8N_RUNNERS_ENABLED
+              value: "true"
+            - name: N8N_DIAGNOSTICS_ENABLED
+              value: "false"
+            - name: N8N_VERSION_NOTIFICATIONS_ENABLED
+              value: "false"
+            - name: N8N_HIRING_BANNER_ENABLED
+              value: "false"
+            - name: DB_TYPE
+              value: sqlite
+            - name: DB_SQLITE_POOL_SIZE
+              value: "5"
+            - name: N8N_BLOCK_ENV_ACCESS_IN_NODE
+              value: "true"
+            - name: GENERIC_TIMEZONE
+              value: Europe/Oslo
+            - name: TZ
+              value: Europe/Oslo
+          ports:
+            - containerPort: 5678
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+            failureThreshold: 30
+          volumeMounts:
+            - mountPath: /home/node/.n8n
+              name: data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: nvme-ha
