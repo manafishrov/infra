@@ -250,6 +250,12 @@ locals {
       content = "v=spf1 include:amazonses.com -all"
     }
 
+    resend_links = {
+      name    = "links"
+      type    = "CNAME"
+      content = "links1.resend-dns.com"
+    }
+
     resend_domainkey_updates = {
       name    = "resend._domainkey.updates"
       type    = "TXT"
