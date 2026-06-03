@@ -211,6 +211,12 @@ locals {
       content = "v=spf1 mx -all"
     }
 
+    resend_links = {
+      name    = "links"
+      type    = "CNAME"
+      content = "links1.resend-dns.com"
+    }
+
     resend_dkim = {
       name    = "resend._domainkey"
       type    = "TXT"
