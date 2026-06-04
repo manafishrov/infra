@@ -37,7 +37,8 @@ data:
             {"name": "Manafish Pocket ID"},
             {"name": "Vaultwarden"},
             {"name": "n8n"},
-            {"name": "Twenty"}
+            {"name": "Twenty"},
+            {"name": "Mail"}
           ]
         }
       ]
