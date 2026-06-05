@@ -18,6 +18,7 @@ data:
       "slug": "manafish",
       "title": "Manafish",
       "description": "Manafishrov public services.",
+      "icon": "https://github.com/manafishrov.png",
       "theme": "auto",
       "published": true,
       "showTags": false,
