@@ -87,7 +87,7 @@ resource "terraform_data" "firmware_ci_policy_version" {
 }
 
 resource "minio_iam_policy" "firmware_ci" {
-  name   = "ManafishrovFirmwareCi"
+  name   = "manafishrovFirmwareCi"
   policy = local.firmware_ci_policy
 
   lifecycle {
@@ -112,7 +112,7 @@ resource "terraform_data" "twenty_app_policy_version" {
 }
 
 resource "minio_iam_policy" "twenty_app" {
-  name   = "ManafishrovTwentyApp"
+  name   = "manafishrovTwentyApp"
   policy = local.twenty_app_policy
 
   lifecycle {
