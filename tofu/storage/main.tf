@@ -1,16 +1,40 @@
-resource "aws_s3_bucket" "firmware" {
+removed {
+  from = aws_s3_bucket.firmware
+
+  lifecycle {
+    destroy = false
+  }
+}
+
+removed {
+  from = aws_s3_bucket_policy.firmware_public_read
+
+  lifecycle {
+    destroy = false
+  }
+}
+
+removed {
+  from = aws_s3_bucket.twenty
+
+  lifecycle {
+    destroy = false
+  }
+}
+
+resource "minio_s3_bucket" "firmware" {
   bucket = "manafishrov-firmware"
 }
 
-resource "aws_s3_bucket_policy" "firmware_public_read" {
-  bucket = aws_s3_bucket.firmware.id
+resource "minio_s3_bucket_policy" "firmware_public_read" {
+  bucket = minio_s3_bucket.firmware.bucket
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
       Effect    = "Allow"
       Principal = "*"
       Action    = "s3:GetObject"
-      Resource  = "${aws_s3_bucket.firmware.arn}/*"
+      Resource  = "${minio_s3_bucket.firmware.arn}/*"
     }]
   })
 }
@@ -18,7 +42,7 @@ resource "aws_s3_bucket_policy" "firmware_public_read" {
 # Twenty CRM uploaded files (attachments, avatars). Private bucket — only
 # the application IAM user reads/writes; downloads are proxied through the
 # Twenty server, so no public access policy.
-resource "aws_s3_bucket" "twenty" {
+resource "minio_s3_bucket" "twenty" {
   bucket = "manafishrov-twenty"
 }
 
@@ -33,7 +57,7 @@ locals {
           "s3:ListBucket",
           "s3:ListBucketMultipartUploads",
         ]
-        Resource = aws_s3_bucket.firmware.arn
+        Resource = minio_s3_bucket.firmware.arn
       },
       {
         Effect = "Allow"
@@ -44,7 +68,7 @@ locals {
           "s3:ListMultipartUploadParts",
           "s3:PutObject",
         ]
-        Resource = "${aws_s3_bucket.firmware.arn}/*"
+        Resource = "${minio_s3_bucket.firmware.arn}/*"
       },
     ]
   })
@@ -59,7 +83,7 @@ locals {
           "s3:ListBucket",
           "s3:ListBucketMultipartUploads",
         ]
-        Resource = aws_s3_bucket.twenty.arn
+        Resource = minio_s3_bucket.twenty.arn
       },
       {
         Effect = "Allow"
@@ -70,7 +94,7 @@ locals {
           "s3:ListMultipartUploadParts",
           "s3:PutObject",
         ]
-        Resource = "${aws_s3_bucket.twenty.arn}/*"
+        Resource = "${minio_s3_bucket.twenty.arn}/*"
       },
     ]
   })

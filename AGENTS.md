@@ -19,7 +19,7 @@ consumer cluster repo, not here.
   - Apps: `n8n`, `nextcloud`, `pocket-id`, `twenty`, `vaultwarden`
 - `public-redirects/` — shared public namespace + redirect HTTPRoutes
 - `tofu/<stack>/` — one OpenTofu root module per stack:
-  - `storage` (aws + minio) — firmware S3 bucket (public-read) and
+  - `storage` (minio) — firmware S3 bucket (public-read) and
     Twenty CRM S3 bucket (private), each with a matching IAM user/policy.
     Reads `rustfs_endpoint`, `rustfs_access_key`, `rustfs_secret_key`,
     `firmware_ci_secret_key`, `firmware_ci_secret_key_version`,
