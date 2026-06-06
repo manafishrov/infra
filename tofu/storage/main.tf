@@ -1,27 +1,3 @@
-removed {
-  from = aws_s3_bucket.firmware
-
-  lifecycle {
-    destroy = false
-  }
-}
-
-removed {
-  from = aws_s3_bucket_policy.firmware_public_read
-
-  lifecycle {
-    destroy = false
-  }
-}
-
-removed {
-  from = aws_s3_bucket.twenty
-
-  lifecycle {
-    destroy = false
-  }
-}
-
 resource "minio_s3_bucket" "firmware" {
   bucket = "manafishrov-firmware"
 }
