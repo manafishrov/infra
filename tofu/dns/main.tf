@@ -239,7 +239,7 @@ locals {
 resource "cloudflare_dns_record" "manafishrov" {
   for_each = local.dns_records
 
-  zone_id  = data.cloudflare_zone.manafishrov.id
+  zone_id  = data.cloudflare_zone.manafishrov.zone_id
   name     = each.value.name
   type     = each.value.type
   content  = each.value.content
