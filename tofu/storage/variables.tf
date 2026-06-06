@@ -18,19 +18,8 @@ variable "firmware_ci_secret_key" {
   sensitive = true
 }
 
-variable "firmware_ci_secret_key_version" {
-  type    = number
-  default = 1
-}
-
 variable "twenty_app_secret_key" {
   description = "Secret key for the Twenty CRM application IAM user (RustFS access to manafishrov-twenty bucket)"
   type        = string
   sensitive   = true
-}
-
-variable "twenty_app_secret_key_version" {
-  description = "Bumped to rotate twenty_app_secret_key"
-  type        = number
-  default     = 1
 }
