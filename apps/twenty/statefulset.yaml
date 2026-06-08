@@ -23,7 +23,7 @@ spec:
         runAsGroup: 1000
       containers:
         - name: twenty
-          image: twentycrm/twenty:v2.9.0@sha256:0afdba1494ea50bad6eb278a20ae35933317483f23501157c2ed866b74d4bc4a
+          image: twentycrm/twenty:v2.9.4@sha256:480a3cf3041681cd028b4b747ae9f2ff1090a2621154d4943049998fed2f931e
           envFrom:
             - secretRef:
                 name: twenty-env
