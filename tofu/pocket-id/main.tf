@@ -54,6 +54,22 @@ resource "pocketid_client" "n8n" {
   ]
 }
 
+resource "pocketid_group" "roundcube" {
+  name          = "roundcube"
+  friendly_name = "Roundcube Users"
+}
+
+resource "pocketid_client" "roundcube" {
+  name          = "Roundcube"
+  callback_urls = ["https://mail.manafishrov.com/oauth2/callback"]
+  launch_url    = "https://mail.manafishrov.com"
+  pkce_enabled  = true
+  allowed_user_groups = [
+    pocketid_group.roundcube.id,
+    pocketid_group.admin.id,
+  ]
+}
+
 resource "pocketid_group" "twenty" {
   name          = "twenty"
   friendly_name = "Twenty CRM Users"

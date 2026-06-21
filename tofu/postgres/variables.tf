@@ -10,13 +10,13 @@ variable "pg_admin_password" {
   sensitive   = true
 }
 
-variable "nextcloud_db_password" {
+variable "manafishrov_nextcloud_db_password" {
   description = "Nextcloud application role password"
   type        = string
   sensitive   = true
 }
 
-variable "twenty_db_password" {
+variable "manafishrov_twenty_db_password" {
   description = "Twenty CRM application role password"
   type        = string
   sensitive   = true

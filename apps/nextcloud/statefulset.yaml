@@ -33,18 +33,18 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: manafishrov-database-outputs
-                  key: nextcloud_db_password
+                  name: manafishrov-postgres-outputs
+                  key: manafishrov_nextcloud_db_password
             - name: OIDC_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: manafishrov-identity-outputs
-                  key: nextcloud_pocketid_client_id
+                  name: manafishrov-pocket-id-outputs
+                  key: manafishrov_nextcloud_pocketid_client_id
             - name: OIDC_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: manafishrov-identity-outputs
-                  key: nextcloud_pocketid_client_secret
+                  name: manafishrov-pocket-id-outputs
+                  key: manafishrov_nextcloud_pocketid_client_secret
             - name: TURN_SECRET
               valueFrom:
                 secretKeyRef:

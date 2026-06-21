@@ -38,13 +38,13 @@ spec:
             - name: OAUTH2_PROXY_CLIENT_ID
               valueFrom:
                 secretKeyRef:
-                  name: manafishrov-identity-outputs
-                  key: n8n_pocketid_client_id
+                  name: manafishrov-pocket-id-outputs
+                  key: manafishrov_n8n_pocketid_client_id
             - name: OAUTH2_PROXY_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: manafishrov-identity-outputs
-                  key: n8n_pocketid_client_secret
+                  name: manafishrov-pocket-id-outputs
+                  key: manafishrov_n8n_pocketid_client_secret
             - name: OAUTH2_PROXY_COOKIE_SECRET
               valueFrom:
                 secretKeyRef:

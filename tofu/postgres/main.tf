@@ -1,7 +1,7 @@
 resource "postgresql_role" "nextcloud" {
   name                = "manafishrov_nextcloud_app"
   login               = true
-  password_wo         = var.nextcloud_db_password
+  password_wo         = var.manafishrov_nextcloud_db_password
   password_wo_version = 1
 }
 
@@ -27,7 +27,7 @@ resource "postgresql_grant" "nextcloud_connect" {
 resource "postgresql_role" "twenty" {
   name                = "manafishrov_twenty_app"
   login               = true
-  password_wo         = var.twenty_db_password
+  password_wo         = var.manafishrov_twenty_db_password
   password_wo_version = 1
 }
 

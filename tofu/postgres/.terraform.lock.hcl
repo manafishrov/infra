@@ -5,7 +5,20 @@ provider "registry.opentofu.org/cyrilgdn/postgresql" {
   version     = "1.26.0"
   constraints = "1.26.0"
   hashes = [
+    "h1:7RvWsnQOenYEBG8qA0nQtrsz32FEhS9RXAS40ncOx80=",
     "h1:8bXFg6KkLzUAd44WUnqSxVY0pqXALT14h59OlYq3UTY=",
+    "h1:D4Q68dTDZHAeGeJDR4p1ilmxS9bVm4B9eDsY3Omjn/E=",
+    "h1:DsAiYnizf3W62ERIfshpIDhzMIqgLQvwwCun3Uuu1Cs=",
+    "h1:EQH2pCkaR0vf3OyzyEr/SdYTg6JCrgSV1WYxkRYCUtc=",
+    "h1:FaTc/yPD5/Fp4Mchju/bIvRJAuCikrrH4pRMoUZKs2k=",
+    "h1:MKR/hM2mwly5/lv+8j06B7BqPz8RUcFvvTZn2BZqWGM=",
+    "h1:OmjWcf08BwORkQ+VpOw1qlh2LE4ZR/huj9KZt2IRHsQ=",
+    "h1:RBYmB7ASNzcKarvfqSGw260ZKd+m5Dxbp5SKcSWyc0Q=",
+    "h1:VAxyMQCSN17laQb0YW98bbo3p6MvgdJOkN20gkDEWF0=",
+    "h1:WEFcXvxxzMtbumRdCSYLd+iVQmgWkNZHos7KcXXL7k8=",
+    "h1:YmlWzleORO+YHWjcQuNgFG9rJbL70QErM6QHXz2YDeQ=",
+    "h1:aY3oidJAUFs53Rmpa2L2uC+8f1ZdEbS9k7LZ7d4s3Gk=",
+    "h1:kId855uQr126ruzaPg2KA5EZ+j2fwASTZOK4QplxyBY=",
     "zh:0f2ec2bb24f8bb9eb232f1650d6459a2bac732bf91bbc08b27ae5519bee89486",
     "zh:11dafcec9c7e6e2c8b6303d90c6061973db26f6f84adc2be02fe66e9b1b11561",
     "zh:13a67dc639ee053cbecc6ab28fd5bfca4780e680bd12491f1bdf0f8243fd364a",

@@ -83,7 +83,7 @@ resource "minio_iam_policy" "firmware_ci" {
 
 resource "minio_iam_user" "firmware_ci" {
   name              = "manafishrov-firmware-ci"
-  secret_wo         = var.firmware_ci_secret_key
+  secret_wo         = var.manafishrov_firmware_ci_secret_key
   secret_wo_version = 1
 }
 
@@ -99,7 +99,7 @@ resource "minio_iam_policy" "twenty_app" {
 
 resource "minio_iam_user" "twenty_app" {
   name              = "manafishrov-twenty-app"
-  secret_wo         = var.twenty_app_secret_key
+  secret_wo         = var.manafishrov_twenty_app_secret_key
   secret_wo_version = 1
 }
 
