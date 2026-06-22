@@ -1,0 +1,20 @@
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: pocket-id-data-backup
+  namespace: manafishrov-pocket-id
+spec:
+  sourcePVC: data-pocket-id-0
+  trigger:
+    schedule: "20 3 * * *"
+  restic:
+    repository: manata-restic-pocket-id-pvc
+    retain:
+      within: 100y
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+    copyMethod: Snapshot
+    volumeSnapshotClassName: mayastor-snapshot
+    cacheStorageClassName: openebs-hostpath
+    cacheCapacity: 1Gi

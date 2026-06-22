@@ -1,0 +1,20 @@
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: n8n-data-backup
+  namespace: manafishrov-n8n
+spec:
+  sourcePVC: data-n8n-0
+  trigger:
+    schedule: "10 3 * * *"
+  restic:
+    repository: manata-restic-n8n-pvc
+    retain:
+      within: 100y
+    moverSecurityContext:
+      runAsUser: 1000
+      runAsGroup: 1000
+    copyMethod: Snapshot
+    volumeSnapshotClassName: mayastor-snapshot
+    cacheStorageClassName: openebs-hostpath
+    cacheCapacity: 1Gi

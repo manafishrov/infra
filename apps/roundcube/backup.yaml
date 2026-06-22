@@ -1,0 +1,20 @@
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: roundcube-data-backup
+  namespace: manafishrov-roundcube
+spec:
+  sourcePVC: data-roundcube-0
+  trigger:
+    schedule: "30 3 * * *"
+  restic:
+    repository: manata-restic-roundcube-pvc
+    retain:
+      within: 100y
+    moverSecurityContext:
+      runAsUser: 33
+      runAsGroup: 33
+    copyMethod: Snapshot
+    volumeSnapshotClassName: mayastor-snapshot
+    cacheStorageClassName: openebs-hostpath
+    cacheCapacity: 1Gi

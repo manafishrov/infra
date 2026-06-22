@@ -1,0 +1,20 @@
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: vaultwarden-data-backup
+  namespace: manafishrov-vaultwarden
+spec:
+  sourcePVC: data-vaultwarden-0
+  trigger:
+    schedule: "40 3 * * *"
+  restic:
+    repository: manata-restic-vaultwarden-pvc
+    retain:
+      within: 100y
+    moverSecurityContext:
+      runAsUser: 0
+      runAsGroup: 0
+    copyMethod: Snapshot
+    volumeSnapshotClassName: mayastor-snapshot
+    cacheStorageClassName: openebs-hostpath
+    cacheCapacity: 1Gi
