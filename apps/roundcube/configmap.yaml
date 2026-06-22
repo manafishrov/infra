@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: roundcube-config
+  namespace: manafishrov-roundcube
+data:
+  namespace.php: |
+    <?php
+    // Stalwart group mailboxes are exposed as IMAP shared namespaces.
+    // Force Roundcube to list all namespaces so they show in the folder tree.
+    $config['imap_force_ns'] = true;
