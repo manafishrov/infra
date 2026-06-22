@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+  namespace: manafishrov-roundcube
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oauth2-proxy
+  template:
+    metadata:
+      labels:
+        app: oauth2-proxy
+    spec:
+      containers:
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.3@sha256:10a1165743a192e1940b4708fb9647027185ce11a681a1c5519b442ff7f1f561
+          args:
+            - --provider=oidc
+            - --oidc-issuer-url=https://id.manafishrov.com
+            - --redirect-url=https://mail.manafishrov.com/oauth2/callback
+            - --upstream=http://roundcube.manafishrov-roundcube.svc.cluster.local:80
+            - --http-address=0.0.0.0:4180
+            - --reverse-proxy=true
+            - --cookie-secure=true
+            - --cookie-samesite=lax
+            - --cookie-expire=168h
+            - --cookie-refresh=1h
+            - --email-domain=*
+            - --skip-provider-button=true
+            - --pass-access-token=false
+            - --pass-authorization-header=false
+            - --set-xauthrequest=true
+            - --scope=openid profile email
+            - --code-challenge-method=S256
+          env:
+            - name: OAUTH2_PROXY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: manafishrov-pocket-id-outputs
+                  key: manafishrov_roundcube_pocketid_client_id
+            - name: OAUTH2_PROXY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: manafishrov-pocket-id-outputs
+                  key: manafishrov_roundcube_pocketid_client_secret
+            - name: OAUTH2_PROXY_COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: roundcube-env
+                  key: OAUTH2_PROXY_COOKIE_SECRET
+          ports:
+            - containerPort: 4180
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /ping
+              port: http
+            periodSeconds: 5
+            failureThreshold: 12

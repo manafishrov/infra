@@ -31,15 +31,15 @@ data:
           "weight": 1,
           "monitorList": [
             {"name": "Manafish Public S3 API"},
-            {"name": "Nextcloud"},
-            {"name": "Collabora"},
-            {"name": "Nextcloud Talk HPB"},
-            {"name": "Nextcloud Whiteboard"},
+            {"name": "Manafish Nextcloud"},
+            {"name": "Manafish Collabora"},
+            {"name": "Manafish Nextcloud Talk HPB"},
+            {"name": "Manafish Nextcloud Whiteboard"},
             {"name": "Manafish Pocket ID"},
-            {"name": "Vaultwarden"},
-            {"name": "n8n"},
-            {"name": "Twenty"},
-            {"name": "Mail"}
+            {"name": "Manafish Vaultwarden"},
+            {"name": "Manafish n8n"},
+            {"name": "Manafish Twenty"},
+            {"name": "Manafish Mail"}
           ]
         }
       ]

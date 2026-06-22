@@ -4,6 +4,7 @@ resources:
   - apps/n8n
   - apps/nextcloud
   - apps/pocket-id
+  - apps/roundcube
   - apps/twenty
   - apps/uptime-kuma-monitors
   - apps/uptime-kuma-status-pages

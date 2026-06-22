@@ -30,7 +30,7 @@ data:
         "active": true
       },
       {
-        "name": "Nextcloud",
+        "name": "Manafish Nextcloud",
         "type": "http",
         "parent_name": "manafish[0]",
         "url": "https://cloud.manafishrov.com/status.php",
@@ -40,7 +40,7 @@ data:
         "active": true
       },
       {
-        "name": "Collabora",
+        "name": "Manafish Collabora",
         "type": "http",
         "parent_name": "manafish[0]",
         "url": "https://office.manafishrov.com",
@@ -50,7 +50,7 @@ data:
         "active": true
       },
       {
-        "name": "Nextcloud Talk HPB",
+        "name": "Manafish Nextcloud Talk HPB",
         "type": "http",
         "parent_name": "manafish[0]",
         "url": "https://talk.manafishrov.com/api/v1/welcome",
@@ -60,7 +60,7 @@ data:
         "active": true
       },
       {
-        "name": "Nextcloud Whiteboard",
+        "name": "Manafish Nextcloud Whiteboard",
         "type": "http",
         "parent_name": "manafish[0]",
         "url": "https://whiteboard.manafishrov.com",
@@ -80,7 +80,7 @@ data:
         "active": true
       },
       {
-        "name": "Vaultwarden",
+        "name": "Manafish Vaultwarden",
         "type": "http",
         "parent_name": "manafish[0]",
         "url": "https://vault.manafishrov.com",
@@ -90,7 +90,7 @@ data:
         "active": true
       },
       {
-        "name": "n8n",
+        "name": "Manafish n8n",
         "type": "http",
         "parent_name": "manafish[0]",
         "url": "https://n8n.manafishrov.com/ping",
@@ -100,10 +100,20 @@ data:
         "active": true
       },
       {
-        "name": "Twenty",
+        "name": "Manafish Twenty",
         "type": "http",
         "parent_name": "manafish[0]",
         "url": "https://crm.manafishrov.com/ping",
+        "interval": 60,
+        "max_retries": 3,
+        "retry_interval": 30,
+        "active": true
+      },
+      {
+        "name": "Manafish Mail",
+        "type": "http",
+        "parent_name": "manafish[0]",
+        "url": "https://mail.manafishrov.com",
         "interval": 60,
         "max_retries": 3,
         "retry_interval": 30,

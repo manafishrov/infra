@@ -107,6 +107,11 @@ locals {
       type    = "CNAME"
       content = "router.asgard.michaelbrusegard.com"
     }
+    mail = {
+      name    = "mail"
+      type    = "CNAME"
+      content = "router.asgard.michaelbrusegard.com"
+    }
 
     dmarc = {
       name    = "_dmarc"

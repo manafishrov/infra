@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: roundcube
+  namespace: manafishrov-roundcube
+  annotations:
+    secret.reloader.stakater.com/reload: roundcube-env
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: roundcube
+  serviceName: roundcube-internal
+  template:
+    metadata:
+      labels:
+        app: roundcube
+    spec:
+      containers:
+        - name: roundcube
+          image: roundcube/roundcubemail:1.7.1-apache@sha256:f18ca03ef82b44e9a1c3f9bf0ccca039dfeb96ac6f0cdcf4ab5a45b7320469d2
+          envFrom:
+            - secretRef:
+                name: roundcube-env
+          ports:
+            - containerPort: 80
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 10
+            failureThreshold: 18
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - mountPath: /var/roundcube/db
+              name: data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
+        storageClassName: nvme-ha
