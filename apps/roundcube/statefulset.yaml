@@ -4,6 +4,7 @@ metadata:
   name: roundcube
   namespace: manafishrov-roundcube
   annotations:
+    configmap.reloader.stakater.com/reload: roundcube-config
     secret.reloader.stakater.com/reload: roundcube-env
 spec:
   replicas: 1
@@ -48,8 +49,15 @@ spec:
             limits:
               memory: 512Mi
           volumeMounts:
+            - mountPath: /var/roundcube/config
+              name: config
+              readOnly: true
             - mountPath: /var/roundcube/db
               name: data
+      volumes:
+        - name: config
+          configMap:
+            name: roundcube-config
   volumeClaimTemplates:
     - metadata:
         name: data
