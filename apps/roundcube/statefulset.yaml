@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: roundcube
-          image: roundcube/roundcubemail:1.7.1-apache@sha256:f18ca03ef82b44e9a1c3f9bf0ccca039dfeb96ac6f0cdcf4ab5a45b7320469d2
+          image: roundcube/roundcubemail:1.7.1-apache@sha256:87aec514a46d915aad8e5c47a58024cdc4189de58b72d042c6cc6572d8b19417
           envFrom:
             - secretRef:
                 name: roundcube-env
