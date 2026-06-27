@@ -114,7 +114,7 @@ data:
         /var/www/html/config/additional.config.php
 
       APPS_ENABLE="activity admin_audit calendar collectives contacts \
-                   deck extract files files_3dmodelviewer forms \
+                   deck files files_3dmodelviewer forms \
                    groupfolders mail notify_push photos richdocuments \
                    spreed user_oidc whiteboard"
       APPS_DISABLE="announcementcenter app_api bookmarks contactsinteraction dashboard \
