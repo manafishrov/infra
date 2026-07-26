@@ -1,3 +1,15 @@
+resource "pocketid_application_config" "recovery" {
+  smtp_host     = "mail.asgard.michaelbrusegard.com"
+  smtp_port     = "465"
+  smtp_from     = "noreply@manafishrov.com"
+  smtp_user     = "mail-master@michaelbrusegard.com"
+  smtp_password = var.manafishrov_pocketid_smtp_password
+  smtp_tls      = "tls"
+
+  email_one_time_access_as_admin_enabled           = "true"
+  email_one_time_access_as_unauthenticated_enabled = "true"
+}
+
 resource "pocketid_group" "vaultwarden" {
   name          = "vaultwarden"
   friendly_name = "Vaultwarden Users"

@@ -52,3 +52,9 @@ spec:
           rules:
             dns:
               - matchPattern: "*"
+    - toFQDNs:
+        - matchName: mail.asgard.michaelbrusegard.com
+      toPorts:
+        - ports:
+            - port: "465"
+              protocol: TCP
