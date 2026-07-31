@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -61,3 +64,22 @@ jobs:
         run: tofu -chdir=tofu/${{ matrix.stack }} init -backend=false
       - name: Validate OpenTofu
         run: tofu -chdir=tofu/${{ matrix.stack }} validate
+
+  ci:
+    name: ci
+    if: always()
+    needs:
+      - discover
+      - validate-kubernetes
+      - validate-tofu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all checks
+        env:
+          DISCOVER_RESULT: ${{ needs.discover.result }}
+          KUBERNETES_RESULT: ${{ needs.validate-kubernetes.result }}
+          TOFU_RESULT: ${{ needs.validate-tofu.result }}
+        run: |
+          test "$DISCOVER_RESULT" = success
+          test "$KUBERNETES_RESULT" = success
+          test "$TOFU_RESULT" = success
