@@ -18,8 +18,8 @@ tofu -chdir=tofu/<stack> init -backend=false
 tofu -chdir=tofu/<stack> validate
 ```
 
-See [`AGENTS.md`](AGENTS.md) for the full Flux contract, state migration
-runbook, and operational rules.
+See [`AGENTS.md`](AGENTS.md) for the repository structure, deployment model,
+and operational rules.
 
 ## License
 
