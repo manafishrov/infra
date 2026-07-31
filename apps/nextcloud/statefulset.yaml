@@ -25,7 +25,7 @@ spec:
             - mail.asgard.michaelbrusegard.com
       containers:
         - name: nextcloud
-          image: nextcloud:34.0.1-apache@sha256:3ab7a9fd94d7e7192b6d207cfba93f51f2b9b8469adc291fb920d1d46ac90283
+          image: nextcloud:34.0.2-apache@sha256:b3fe6a71998202c4b1a130615e8f7aa8d9de075a1cd3c60693dcd291e10d83a1
           envFrom:
             - secretRef:
                 name: nextcloud-env
@@ -107,7 +107,7 @@ spec:
               mountPath: /etc/nextcloud-extras
               readOnly: true
         - name: cron
-          image: nextcloud:34.0.1-apache@sha256:3ab7a9fd94d7e7192b6d207cfba93f51f2b9b8469adc291fb920d1d46ac90283
+          image: nextcloud:34.0.2-apache@sha256:b3fe6a71998202c4b1a130615e8f7aa8d9de075a1cd3c60693dcd291e10d83a1
           command:
             - /bin/sh
             - -c
@@ -128,7 +128,7 @@ spec:
             - name: data
               mountPath: /var/www/html
         - name: notify-push
-          image: nextcloud:34.0.1-apache@sha256:3ab7a9fd94d7e7192b6d207cfba93f51f2b9b8469adc291fb920d1d46ac90283
+          image: nextcloud:34.0.2-apache@sha256:b3fe6a71998202c4b1a130615e8f7aa8d9de075a1cd3c60693dcd291e10d83a1
           command:
             - /bin/sh
             - -c
