@@ -43,11 +43,11 @@ resource "pocketid_client" "nextcloud" {
   callback_urls = ["https://cloud.manafishrov.com/apps/user_oidc/code"]
   launch_url    = "https://cloud.manafishrov.com"
   pkce_enabled  = true
-  allowed_user_groups = [
+  allowed_user_groups = sort([
     pocketid_group.nextcloud.id,
     pocketid_group.admin.id,
     pocketid_group.management.id,
-  ]
+  ])
 }
 
 resource "pocketid_group" "n8n" {
@@ -60,10 +60,10 @@ resource "pocketid_client" "n8n" {
   callback_urls = ["https://n8n.manafishrov.com/oauth2/callback"]
   launch_url    = "https://n8n.manafishrov.com"
   pkce_enabled  = true
-  allowed_user_groups = [
+  allowed_user_groups = sort([
     pocketid_group.n8n.id,
     pocketid_group.admin.id,
-  ]
+  ])
 }
 
 resource "pocketid_group" "roundcube" {
@@ -76,10 +76,10 @@ resource "pocketid_client" "roundcube" {
   callback_urls = ["https://mail.manafishrov.com/oauth2/callback"]
   launch_url    = "https://mail.manafishrov.com"
   pkce_enabled  = true
-  allowed_user_groups = [
+  allowed_user_groups = sort([
     pocketid_group.roundcube.id,
     pocketid_group.admin.id,
-  ]
+  ])
 }
 
 resource "pocketid_group" "twenty" {
@@ -92,9 +92,9 @@ resource "pocketid_client" "twenty" {
   callback_urls = ["https://crm.manafishrov.com/oauth2/callback"]
   launch_url    = "https://crm.manafishrov.com"
   pkce_enabled  = true
-  allowed_user_groups = [
+  allowed_user_groups = sort([
     pocketid_group.twenty.id,
     pocketid_group.admin.id,
     pocketid_group.management.id,
-  ]
+  ])
 }
