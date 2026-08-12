@@ -11,6 +11,7 @@ spec:
   sourcePVC: data-nextcloud-0
   restic:
     repository: manata-restic-nextcloud-pvc
+    pruneIntervalDays: 36500
     retain:
       within: 100y
     moverSecurityContext:

@@ -9,6 +9,7 @@ spec:
     schedule: "20 3 * * *"
   restic:
     repository: manata-restic-pocket-id-pvc
+    pruneIntervalDays: 36500
     retain:
       within: 100y
     moverSecurityContext:

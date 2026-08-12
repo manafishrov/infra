@@ -9,6 +9,7 @@ spec:
     schedule: "10 3 * * *"
   restic:
     repository: manata-restic-n8n-pvc
+    pruneIntervalDays: 36500
     retain:
       within: 100y
     moverSecurityContext:

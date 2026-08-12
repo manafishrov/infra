@@ -9,6 +9,7 @@ spec:
     schedule: "40 3 * * *"
   restic:
     repository: manata-restic-vaultwarden-pvc
+    pruneIntervalDays: 36500
     retain:
       within: 100y
     moverSecurityContext:
