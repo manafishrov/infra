@@ -269,7 +269,7 @@ data:
         occ groupfolders:quota "$id" "$quota" >/dev/null 2>&1 || true
         echo "$id"
       }
-      manafish_id=$(ensure_groupfolder "Manafish" "nextcloud" "400 GB")
+      manafish_id=$(ensure_groupfolder "Manafish" "nextcloud" "1 TB")
       ensure_groupfolder "Management" "management" "20 GB" >/dev/null
 
       media_dir="/var/www/html/data/__groupfolders/${manafish_id}/Media"

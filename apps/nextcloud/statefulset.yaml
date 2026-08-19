@@ -172,5 +172,5 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 600Gi
+            storage: 1200Gi
         storageClassName: ssd-ha
