@@ -4,6 +4,7 @@ metadata:
   name: roundcube-data-backup
   namespace: manafishrov-roundcube
 spec:
+  paused: true
   sourcePVC: data-roundcube-0
   trigger:
     schedule: "30 3 * * *"

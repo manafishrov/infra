@@ -4,6 +4,7 @@ metadata:
   name: vaultwarden-data-backup
   namespace: manafishrov-vaultwarden
 spec:
+  paused: true
   sourcePVC: data-vaultwarden-0
   trigger:
     schedule: "40 3 * * *"

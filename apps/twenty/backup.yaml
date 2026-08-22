@@ -4,6 +4,7 @@ metadata:
   name: twenty-data-backup
   namespace: manafishrov-twenty
 spec:
+  paused: true
   sourcePVC: data-twenty-0
   trigger: {}
   restic:
@@ -166,6 +167,7 @@ metadata:
   name: twenty-backup
   namespace: manafishrov-twenty
 spec:
+  suspend: true
   schedule: "30 4 * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3

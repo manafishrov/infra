@@ -4,6 +4,7 @@ metadata:
   name: n8n-data-backup
   namespace: manafishrov-n8n
 spec:
+  paused: true
   sourcePVC: data-n8n-0
   trigger:
     schedule: "10 3 * * *"

@@ -8,6 +8,7 @@ metadata:
     # Flux reconciles the otherwise declarative ReplicationSource.
     kustomize.toolkit.fluxcd.io/ssa: Merge
 spec:
+  paused: true
   sourcePVC: data-nextcloud-0
   restic:
     repository: manata-restic-nextcloud-pvc
@@ -181,6 +182,7 @@ metadata:
   name: nextcloud-backup
   namespace: manafishrov-nextcloud
 spec:
+  suspend: true
   schedule: "15 4 * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3

@@ -4,6 +4,7 @@ metadata:
   name: pocket-id-data-backup
   namespace: manafishrov-pocket-id
 spec:
+  paused: true
   sourcePVC: data-pocket-id-0
   trigger:
     schedule: "20 3 * * *"
