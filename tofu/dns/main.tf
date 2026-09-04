@@ -46,6 +46,12 @@ locals {
       content = "cname.super.so"
     }
 
+    join = {
+      name    = "join"
+      type    = "CNAME"
+      content = "cname.tally.so"
+    }
+
     landing = {
       name    = "landing"
       type    = "CNAME"
