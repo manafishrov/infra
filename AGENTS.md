@@ -17,7 +17,7 @@ consumer cluster repo, not here.
 - `apps/<name>/` — per-app bundle (Namespace, NetworkPolicy, HTTPRoute,
   Services, StatefulSet/Deployment). App secrets live at
   `../infra-secrets/apps/<name>/`.
-  - Apps: `n8n`, `nextcloud`, `pocket-id`, `roundcube`, `twenty`,
+  - Apps: `n8n`, `nextcloud`, `pocket-id`, `roundcube`, `stalwart`, `twenty`,
     `vaultwarden`
 - `public-redirects/` — shared public namespace + redirect HTTPRoutes
 - `tofu/<stack>/` — one OpenTofu root module per stack:
@@ -92,7 +92,7 @@ Conventional Commits, focused on **why**.
 
 - Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `ci`, `revert`.
   `chore(deps)` reserved for Renovate.
-- Scopes: `n8n`, `nextcloud`, `pocket-id`, `roundcube`, `twenty`,
+- Scopes: `n8n`, `nextcloud`, `pocket-id`, `roundcube`, `stalwart`, `twenty`,
   `vaultwarden`, `public-redirects`, `tofu/rustfs`, `tofu/dns`,
   `tofu/pocket-id`, `tofu/postgres`, `flake`, `ci`, or a new app name.
 - Subject: imperative, lowercase, ≤72 chars, no period.

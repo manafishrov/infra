@@ -1,0 +1,23 @@
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: stalwart-data-backup
+  namespace: manafishrov-stalwart
+spec:
+  sourcePVC: data-stalwart-0
+  trigger:
+    schedule: "10 */6 * * *"
+  restic:
+    repository: freddo-restic-manafishrov-stalwart-pvc
+    pruneIntervalDays: 30
+    retain:
+      daily: 14
+      weekly: 8
+      monthly: 12
+    moverSecurityContext:
+      runAsUser: 2000
+      runAsGroup: 2000
+    copyMethod: Snapshot
+    volumeSnapshotClassName: mayastor-snapshot
+    cacheStorageClassName: openebs-single-replica
+    cacheCapacity: 2Gi
