@@ -50,7 +50,7 @@ data:
     resolve_creds() {
       if [ -f "$MARKER" ]; then
         MODE=reconcile
-        export STALWART_USER=infra@manafishrov.com
+        export STALWART_USER=infra@system.manafishrov.com
         export STALWART_PASSWORD="$STALWART_ADMIN_PASSWORD"
       else
         MODE=bootstrap
@@ -87,7 +87,7 @@ data:
         'Tracer': 'id,@type',
     }
     LIVE_TYPES = (
-        'Domain', 'NetworkListener', 'MtaRoute', 'Account', 'DkimSignature',
+        'Domain', 'NetworkListener', 'MtaRoute', 'Account', 'MailingList', 'DkimSignature',
         'Certificate', 'Directory', 'Tracer',
     )
 
@@ -133,7 +133,7 @@ data:
     def natural_key(obj_type, spec, *, is_plan_spec):
         if obj_type in ('Domain', 'NetworkListener', 'MtaRoute'):
             return spec.get('name')
-        if obj_type == 'Account':
+        if obj_type in ('Account', 'MailingList'):
             if is_plan_spec:
                 alias = (spec.get('domainId') or '').lstrip('#')
                 return f"{spec.get('name')}@{alias_to_live_domain_id.get(alias, alias)}"
@@ -161,10 +161,19 @@ data:
             if key is not None:
                 live_id_by_key[(obj_type, key)] = obj['id']
 
+    alias_to_live_id = dict(alias_to_live_domain_id)
+    for op in plan_ops:
+        if op.get('@type') == 'create':
+            for alias, spec in op.get('value', {}).items():
+                key = natural_key(op['object'], spec, is_plan_spec=True)
+                live_id = live_id_by_key.get((op['object'], key)) if key else None
+                if live_id:
+                    alias_to_live_id[alias.lstrip('#')] = live_id
+
     def resolve_refs(node):
         if isinstance(node, str):
             if node.startswith('#'):
-                return alias_to_live_domain_id.get(node[1:], node)
+                return alias_to_live_id.get(node[1:], node)
             return node
         if isinstance(node, dict):
             return {key: resolve_refs(value) for key, value in node.items()}
@@ -175,7 +184,7 @@ data:
     output = []
     for op in plan_ops:
         if op.get('@type') != 'create':
-            output.append(json.dumps(op))
+            output.append(json.dumps(resolve_refs(op)))
             continue
         obj_type = op['object']
         remaining = {}
