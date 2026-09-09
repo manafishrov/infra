@@ -30,8 +30,5 @@ resource "pocketid_client" "stalwart" {
   ])
 }
 
-resource "pocketid_scim_service_provider" "stalwart" {
-  client_id = pocketid_client.stalwart.id
-  endpoint  = "https://backend.manafishrov.com/scim/v2"
-  token     = var.manafishrov_stalwart_scim_token
-}
+# Connect the SCIM provider after the native endpoint accepts Pocket ID's
+# short userName plus primary full-email representation.
