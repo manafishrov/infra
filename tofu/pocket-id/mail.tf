@@ -30,5 +30,8 @@ resource "pocketid_client" "stalwart" {
   ])
 }
 
-# Do not create a SCIM service-provider resource until all existing mailboxes
-# have been imported and linked to the actual Pocket ID user/group identifiers.
+resource "pocketid_scim_service_provider" "stalwart" {
+  client_id = pocketid_client.stalwart.id
+  endpoint  = "https://stalwart.manafishrov.com/scim/v2"
+  token     = var.manafishrov_stalwart_scim_token
+}
