@@ -25,7 +25,7 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: stalwart
-          image: stalwartlabs/stalwart:v0.16.17@sha256:a8108e19bd927e172d4d8c128907b8dfc93fd180ae8ee07dccdd42cb97eb9dfa
+          image: ghcr.io/michaelbrusegard/stalwart-native-scim:sha-82499f471d613cfdba93e7c5d488df4f2534bcc0-becc6a51256c@sha256:2d254b0b71c15c28181964ec60b1eee06de6b1599f97bf96778a65639a7a2011
           command:
             - /entrypoint/entrypoint.sh
           env:
@@ -59,8 +59,11 @@ spec:
               port: http
             periodSeconds: 30
           readinessProbe:
-            tcpSocket:
-              port: http
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - test -f /var/lib/stalwart/.bootstrapped && curl -fsS --max-time 3 http://127.0.0.1:8080/healthz/ready >/dev/null
             periodSeconds: 10
           resources:
             requests:
