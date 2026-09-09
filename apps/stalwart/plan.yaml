@@ -13,7 +13,9 @@ data:
     {"@type":"create","object":"Certificate","value":{"cert-wildcard":{"certificate":{"@type":"File","filePath":"/var/lib/stalwart/private/tls/tls.crt"},"privateKey":{"@type":"File","filePath":"/var/lib/stalwart/private/tls/tls.key"}}}}
 
   15-directory-pocket-id.ndjson.tmpl: |
-    {"@type":"create","object":"Directory","value":{"dir-pocket-manafishrov":{"@type":"Oidc","description":"Pocket ID for manafishrov.com (dormant until mailbox adoption and explicit authentication activation)","issuerUrl":"https://id.manafishrov.com","requireScopes":{"openid":true,"email":true},"requireAudience":"stalwart","claimUsername":"email","claimName":"name","usernameDomain":"manafishrov.com"}}}
+    {"@type":"create","object":"Directory","value":{"dir-pocket-manafishrov":{"@type":"Oidc","description":"Pocket ID for manafishrov.com","issuerUrl":"https://id.manafishrov.com","requireScopes":{"openid":true,"email":true},"requireAudience":"stalwart","claimUsername":"email","claimName":"name","usernameDomain":"manafishrov.com"}}}
+    {"@type":"create","object":"Application","value":{"app-stalwart-web":{"description":"Stalwart Web Interface","urlPrefix":{"/admin":true,"/account":true},"autoUpdateFrequency":2592000000,"oauthClientId":"stalwart"}}}
+    {"@type":"update","object":"Authentication","value":{"directoryId":"#dir-pocket-manafishrov"}}
 
   # Keep bootstrap identities outside the domain managed by Pocket ID SCIM.
   18-system-domain.ndjson.tmpl: |

@@ -84,11 +84,12 @@ data:
     QUERY_FIELDS = {
         'Certificate': 'id,certificate',
         'Directory': 'id,issuerUrl',
+        'Application': 'id,description',
         'Tracer': 'id,@type',
     }
     LIVE_TYPES = (
         'Domain', 'NetworkListener', 'MtaRoute', 'Account', 'MailingList', 'DkimSignature',
-        'Certificate', 'Directory', 'Tracer',
+        'Certificate', 'Directory', 'Application', 'Tracer',
     )
 
     def query_live(obj_type):
@@ -150,6 +151,8 @@ data:
             return (spec.get('certificate') or {}).get('filePath')
         if obj_type == 'Directory':
             return spec.get('issuerUrl')
+        if obj_type == 'Application':
+            return spec.get('description')
         if obj_type == 'Tracer':
             return spec.get('@type')
         return None
