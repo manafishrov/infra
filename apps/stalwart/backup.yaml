@@ -4,6 +4,9 @@ metadata:
   name: stalwart-data-backup
   namespace: manafishrov-stalwart
 spec:
+  # Keep the object declarative without contacting the disconnected target.
+  # Unpause only for a supervised backup-and-restore proof.
+  paused: true
   sourcePVC: data-stalwart-0
   trigger:
     schedule: "10 */6 * * *"
