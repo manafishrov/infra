@@ -106,8 +106,9 @@ spec:
           rules:
             dns:
               - matchPattern: "*"
-    - toEntities:
-        - ingress
+    - toCIDR:
+        - 10.0.188.2/32
+        - fd7a:115c:a1e0:188::2/128
       toPorts:
         - ports:
             - port: "443"
