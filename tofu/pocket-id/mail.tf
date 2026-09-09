@@ -22,9 +22,9 @@ resource "pocketid_client" "stalwart" {
   client_id     = "stalwart"
   name          = "Stalwart"
   callback_urls = ["https://stalwart.manafishrov.com/oauth/callback"]
-  launch_url    = "https://stalwart.manafishrov.com"
-  is_public     = true
-  pkce_enabled  = true
+  # Add a launcher URL only after mailbox adoption and Stalwart OIDC activation.
+  is_public    = true
+  pkce_enabled = true
   allowed_user_groups = sort([
     for group in pocketid_group.mail : group.id
   ])
