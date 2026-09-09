@@ -52,6 +52,14 @@ spec:
           rules:
             dns:
               - matchPattern: "*"
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-stalwart
+            k8s:app: stalwart
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
     - toFQDNs:
         - matchName: mail.asgard.michaelbrusegard.com
       toPorts:

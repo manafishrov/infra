@@ -41,6 +41,14 @@ spec:
               protocol: TCP
             - port: "443"
               protocol: TCP
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: manafishrov-pocket-id
+            k8s:app: pocket-id
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
     - fromEntities:
         - world
       toPorts:

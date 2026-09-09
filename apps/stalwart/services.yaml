@@ -38,6 +38,8 @@ metadata:
   namespace: manafishrov-stalwart
   annotations:
     lbipam.cilium.io/ips: 10.0.188.14,fd7a:115c:a1e0:188::14
+    # k8s-gateway publishes this LAN-only name; it matches the wildcard TLS certificate.
+    coredns.io/hostname: backend.manafishrov.com
 spec:
   type: LoadBalancer
   ipFamilyPolicy: PreferDualStack
@@ -48,6 +50,10 @@ spec:
   selector:
     app: stalwart
   ports:
+    # Private delivery through the TLS-named VIP; NetworkPolicy permits only the edge.
+    - name: edge-lmtp
+      port: 24
+      targetPort: edge-lmtp
     - name: https
       port: 443
       targetPort: https
