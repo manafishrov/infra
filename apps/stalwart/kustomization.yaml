@@ -1,9 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  # This remains paused until manata is reachable. Unpause only for a supervised
-  # backup-and-restore proof, and do not import production mail first.
-  - backup.yaml
+  # Do not include backup.yaml while manata is disconnected. VolSync starts the
+  # initial synchronization setup even when a new ReplicationSource is paused.
   - statefulset.yaml
   - services.yaml
   - httproute.yaml
