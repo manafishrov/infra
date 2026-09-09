@@ -50,13 +50,14 @@ data:
     resolve_creds() {
       if [ -f "$MARKER" ]; then
         MODE=reconcile
-        export STALWART_USER=infra@system.manafishrov.com
-        export STALWART_PASSWORD="$STALWART_ADMIN_PASSWORD"
       else
         MODE=bootstrap
-        export STALWART_USER="${STALWART_RECOVERY_ADMIN%%:*}"
-        export STALWART_PASSWORD="${STALWART_RECOVERY_ADMIN#*:}"
       fi
+      # Global OIDC owns ordinary username/password authentication. The local
+      # recovery principal remains available specifically for bootstrap and
+      # declarative control-plane reconciliation.
+      export STALWART_USER="${STALWART_RECOVERY_ADMIN%%:*}"
+      export STALWART_PASSWORD="${STALWART_RECOVERY_ADMIN#*:}"
     }
 
     render_plan() {
