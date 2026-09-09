@@ -21,7 +21,7 @@ resource "pocketid_client" "stalwart" {
   # Public identifier, shared with the Stalwart configuration without a secret.
   client_id     = "stalwart"
   name          = "Stalwart"
-  callback_urls = ["https://stalwart.manafishrov.com/oauth/callback"]
+  callback_urls = ["https://stalwart.manafishrov.com/account/oauth/callback"]
   # Add a launcher URL only after mailbox adoption and Stalwart OIDC activation.
   is_public    = true
   pkce_enabled = true
