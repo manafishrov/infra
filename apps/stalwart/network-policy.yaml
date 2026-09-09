@@ -106,18 +106,10 @@ spec:
           rules:
             dns:
               - matchPattern: "*"
+    # Gateway service translation evaluates the proxied backend leg as the
+    # ingress identity and its backend port, not the original HTTPS port.
     - toEntities:
         - ingress
-      toPorts:
-        - ports:
-            - port: "443"
-              protocol: TCP
-    - toFQDNs:
-        - matchName: id.manafishrov.com
-      toPorts:
-        - ports:
-            - port: "443"
-              protocol: TCP
     - toEntities:
         - world
       toPorts:
