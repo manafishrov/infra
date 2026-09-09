@@ -107,6 +107,12 @@ spec:
             dns:
               - matchPattern: "*"
     - toEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+    - toEntities:
         - world
       toPorts:
         - ports:

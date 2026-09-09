@@ -8,9 +8,6 @@ spec:
     - name: public
       namespace: gateway
       sectionName: https
-    - name: internal
-      namespace: gateway
-      sectionName: https
   hostnames:
     - id.manafishrov.com
   rules:
