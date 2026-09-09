@@ -8,7 +8,7 @@ spec:
   trigger:
     schedule: "10 */6 * * *"
   restic:
-    repository: freddo-restic-manafishrov-stalwart-pvc
+    repository: manata-restic-manafishrov-stalwart-pvc
     pruneIntervalDays: 30
     retain:
       daily: 14
