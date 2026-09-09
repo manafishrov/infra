@@ -106,8 +106,8 @@ spec:
           rules:
             dns:
               - matchPattern: "*"
-    - toEntities:
-        - cluster
+    - toFQDNs:
+        - matchName: id.manafishrov.com
       toPorts:
         - ports:
             - port: "443"
