@@ -4,8 +4,8 @@ metadata:
   name: stalwart-data-backup
   namespace: manafishrov-stalwart
 spec:
-  # Keep the object declarative without contacting the disconnected target.
-  # Unpause only for a supervised backup-and-restore proof.
+  # Defense in depth only: VolSync still initializes a new paused source, so
+  # this file must remain excluded while manata is disconnected.
   paused: true
   sourcePVC: data-stalwart-0
   trigger:
