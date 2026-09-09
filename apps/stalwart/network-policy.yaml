@@ -106,6 +106,12 @@ spec:
           rules:
             dns:
               - matchPattern: "*"
+    - toEntities:
+        - ingress
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
     - toFQDNs:
         - matchName: id.manafishrov.com
       toPorts:
