@@ -20,7 +20,7 @@ data:
     {"@type":"create","object":"Domain","value":{"d-system":{"name":"system.manafishrov.com","allowScimProvisioning":false,"certificateManagement":{"@type":"Manual"},"dkimManagement":{"@type":"Manual"},"dnsManagement":{"@type":"Manual"},"allowRelaying":false,"isEnabled":true,"directoryId":null,"catchAllAddress":null}}}
 
   20-domain.ndjson.tmpl: |
-    {"@type":"create","object":"Domain","value":{"d-manafishrov":{"name":"manafishrov.com","allowScimProvisioning":false,"aliases":{},"certificateManagement":{"@type":"Manual"},"dkimManagement":{"@type":"Manual"},"dnsManagement":{"@type":"Manual"},"subAddressing":{"@type":"Enabled"},"reportAddressUri":"mailto:postmaster@manafishrov.com","allowRelaying":false,"isEnabled":true,"directoryId":null,"memberTenantId":null,"catchAllAddress":null,"description":null,"logo":null}}}
+    {"@type":"create","object":"Domain","value":{"d-manafishrov":{"name":"manafishrov.com","allowScimProvisioning":true,"aliases":{},"certificateManagement":{"@type":"Manual"},"dkimManagement":{"@type":"Manual"},"dnsManagement":{"@type":"Manual"},"subAddressing":{"@type":"Enabled"},"reportAddressUri":"mailto:postmaster@manafishrov.com","allowRelaying":false,"isEnabled":true,"directoryId":null,"memberTenantId":null,"catchAllAddress":null,"description":null,"logo":null}}}
 
   25-system-identity.ndjson.tmpl: |
     {"@type":"update","object":"SystemSettings","value":{"defaultHostname":"mail.manafishrov.com","defaultDomainId":"#d-manafishrov","defaultCertificateId":"#cert-wildcard"}}
