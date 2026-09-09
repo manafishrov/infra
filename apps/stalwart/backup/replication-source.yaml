@@ -4,8 +4,8 @@ metadata:
   name: stalwart-data-backup
   namespace: manafishrov-stalwart
 spec:
-  # Defense in depth. The suspended Flux kustomization prevents this resource
-  # from existing while manata is disconnected; unpause both layers together.
+  # Keep the complete Manata backup setup reconciled but disabled until the
+  # host is online and its repository has been initialized.
   paused: true
   sourcePVC: data-stalwart-0
   trigger:
