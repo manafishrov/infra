@@ -32,6 +32,8 @@ spec:
           env:
             - name: STALWART_PUBLIC_URL
               value: https://stalwart.manafishrov.com
+            - name: STALWART_OIDC_ADMIN_GROUP
+              value: admin
           envFrom:
             - secretRef:
                 name: stalwart-env

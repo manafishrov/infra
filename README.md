@@ -29,8 +29,12 @@ mailbox groups, and their memberships; they are deliberately absent from the
 OpenTofu state.
 
 The controller authenticates with an API-key-only system principal whose
-permissions are restricted to Stalwart's `sys*` management surface. No recovery
-or password-bearing administrator is retained. A completely fresh database
+permissions are restricted to Stalwart's `sys*` management surface. Human
+administration is granted only for OIDC sessions carrying the exact Pocket ID
+`admin` group; no native Admin role is persisted. Pocket ID uses a separate,
+mailbox-only client as its SCIM synchronization boundary so the authorization
+group is never provisioned as a shared mailbox. No recovery or
+password-bearing administrator is retained. A completely fresh database
 therefore requires a one-time recovery bootstrap to create that principal and
 API key; remove the temporary recovery credential immediately after OpenTofu
 has adopted the server.
