@@ -7,8 +7,9 @@ locals {
   }
 }
 
-data "pocketid_group" "admin" {
-  name = "admin"
+resource "pocketid_group" "email_admin" {
+  name          = "email-admin"
+  friendly_name = "Email Administrators"
 }
 
 # Keep shared-mailbox membership independent of application authorization groups.
@@ -25,13 +26,13 @@ resource "pocketid_client" "stalwart" {
   # Public identifier, shared with the Stalwart configuration without a secret.
   client_id     = "stalwart"
   name          = "Stalwart"
-  callback_urls = ["https://stalwart.manafishrov.com/account/oauth/callback"]
-  # Add a launcher URL only after mailbox adoption and Stalwart OIDC activation.
-  is_public    = true
-  pkce_enabled = true
+  callback_urls = ["https://email.manafishrov.com/account/oauth/callback"]
+  launch_url    = "https://email.manafishrov.com"
+  is_public     = true
+  pkce_enabled  = true
   allowed_user_groups = sort(concat(
     [for group in pocketid_group.mail : group.id],
-    [data.pocketid_group.admin.id],
+    [pocketid_group.email_admin.id],
   ))
 }
 
