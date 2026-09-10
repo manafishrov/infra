@@ -118,6 +118,11 @@ locals {
       type    = "CNAME"
       content = "router.asgard.michaelbrusegard.com"
     }
+    stalwart = {
+      name    = "stalwart"
+      type    = "CNAME"
+      content = "router.asgard.michaelbrusegard.com"
+    }
 
     dmarc = {
       name    = "_dmarc"

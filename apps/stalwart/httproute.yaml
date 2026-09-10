@@ -8,6 +8,9 @@ spec:
     - name: internal
       namespace: gateway
       sectionName: https
+    - name: public
+      namespace: gateway
+      sectionName: https
   hostnames:
     - stalwart.manafishrov.com
   rules:
