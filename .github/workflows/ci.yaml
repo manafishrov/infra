@@ -58,6 +58,28 @@ jobs:
         with:
           tofu_version: ${{ env.OPENTOFU_VERSION }}
           tofu_wrapper: false
+      - name: Install Stalwart provider mirror
+        if: matrix.stack == 'stalwart'
+        run: |
+          version=0.2.3
+          archive="terraform-provider-stalwart_${version}_linux_amd64.zip"
+          mirror="$RUNNER_TEMP/provider-mirror/registry.opentofu.org/tahacodes/stalwart/${version}/linux_amd64"
+          curl -fsSL "https://github.com/tahacodes/terraform-provider-stalwart/releases/download/v${version}/${archive}" -o "$RUNNER_TEMP/$archive"
+          echo "9b4b3dc07a73055d7116fc426c6009de86479df7776ab23b6795132eeca8c119  $RUNNER_TEMP/$archive" | sha256sum -c -
+          mkdir -p "$mirror"
+          unzip -q "$RUNNER_TEMP/$archive" -d "$mirror"
+          cat > "$RUNNER_TEMP/tofurc" <<EOF
+          provider_installation {
+            filesystem_mirror {
+              path    = "$RUNNER_TEMP/provider-mirror"
+              include = ["registry.opentofu.org/tahacodes/stalwart"]
+            }
+            direct {
+              exclude = ["registry.opentofu.org/tahacodes/stalwart"]
+            }
+          }
+          EOF
+          echo "TF_CLI_CONFIG_FILE=$RUNNER_TEMP/tofurc" >> "$GITHUB_ENV"
       - name: Check OpenTofu formatting
         run: tofu -chdir=tofu/${{ matrix.stack }} fmt -check
       - name: Initialize OpenTofu
