@@ -122,6 +122,7 @@ locals {
       name    = "stalwart"
       type    = "CNAME"
       content = "router.asgard.michaelbrusegard.com"
+      proxied = true
     }
 
     dmarc = {
