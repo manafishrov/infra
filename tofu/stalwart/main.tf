@@ -60,11 +60,13 @@ resource "stalwart_tracer_stdout" "stdout" {
 resource "stalwart_mta_route_relay" "mx" {
   address             = "smtp.resend.com"
   allow_invalid_certs = false
+  # The API returns write-only values masked. Keeping the imported Value
+  # source with a null secret makes the provider preserve the existing value.
   auth_secret = {
     file_path     = null
     secret        = null
-    type          = "EnvironmentVariable"
-    variable_name = "STALWART_RESEND_API_KEY"
+    type          = "Value"
+    variable_name = null
   }
   auth_username = "resend"
   description   = "Resend smarthost for external Manafish mail"
