@@ -1,0 +1,11 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: stalwart-public
+  namespace: manafishrov-stalwart
+spec:
+  endpoints:
+    - dnsName: email.manafishrov.com
+      recordType: CNAME
+      targets:
+        - router.asgard.michaelbrusegard.com
