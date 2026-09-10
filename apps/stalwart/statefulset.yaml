@@ -4,7 +4,7 @@ metadata:
   name: stalwart
   namespace: manafishrov-stalwart
   annotations:
-    configmap.reloader.stakater.com/reload: stalwart-plan,stalwart-reconciler,stalwart-entrypoint
+    configmap.reloader.stakater.com/reload: stalwart-config
     secret.reloader.stakater.com/reload: stalwart-env,stalwart-dkim,wildcard-tls
 spec:
   replicas: 1
@@ -17,7 +17,6 @@ spec:
       labels:
         app: stalwart
     spec:
-      shareProcessNamespace: true
       securityContext:
         runAsUser: 2000
         runAsGroup: 2000
@@ -27,7 +26,9 @@ spec:
         - name: stalwart
           image: ghcr.io/michaelbrusegard/stalwart-native-scim:sha-0943bf6c6339515992c186f4ad9ea468832aad60-1dcd268b7d11@sha256:92a75e6cb6cfb7c51f5d351c9d99248adedb28573ab4270d08e151bcdb1ab288
           command:
-            - /entrypoint/entrypoint.sh
+            - /usr/local/bin/stalwart
+            - --config
+            - /var/lib/stalwart/config.json
           env:
             - name: STALWART_PUBLIC_URL
               value: https://stalwart.manafishrov.com
@@ -63,7 +64,7 @@ spec:
               command:
                 - /bin/sh
                 - -ec
-                - test -f /var/lib/stalwart/.bootstrapped && curl -fsS --max-time 3 http://127.0.0.1:8080/healthz/ready >/dev/null
+                - curl -fsS --max-time 3 http://127.0.0.1:8080/healthz/ready >/dev/null
             periodSeconds: 10
           resources:
             requests:
@@ -85,39 +86,8 @@ spec:
             - mountPath: /var/lib/stalwart/private/dkim
               name: dkim
               readOnly: true
-            - mountPath: /entrypoint
-              name: entrypoint
-              readOnly: true
             - mountPath: /tmp
               name: temp
-        - name: reconciler
-          image: alpine:3.24@sha256:28bd5fe8b56d1bd048e5babf5b10710ebe0bae67db86916198a6eec434943f8b
-          command:
-            - /reconciler/reconciler.sh
-          securityContext:
-            runAsUser: 0
-            runAsGroup: 0
-          env:
-            - name: STALWART_CLI_VERSION
-              value: v1.0.7
-          envFrom:
-            - secretRef:
-                name: stalwart-env
-          resources:
-            requests:
-              cpu: 20m
-              memory: 64Mi
-            limits:
-              memory: 256Mi
-          volumeMounts:
-            - mountPath: /var/lib/stalwart
-              name: data
-            - mountPath: /plan
-              name: plan
-              readOnly: true
-            - mountPath: /reconciler
-              name: reconciler
-              readOnly: true
       volumes:
         - name: temp
           emptyDir: {}
@@ -130,17 +100,6 @@ spec:
         - name: dkim
           secret:
             secretName: stalwart-dkim
-        - name: entrypoint
-          configMap:
-            name: stalwart-entrypoint
-            defaultMode: 0555
-        - name: plan
-          configMap:
-            name: stalwart-plan
-        - name: reconciler
-          configMap:
-            name: stalwart-reconciler
-            defaultMode: 0555
   volumeClaimTemplates:
     - metadata:
         name: data
