@@ -364,7 +364,7 @@ resource "stalwart_domain" "system" {
 
 # __generated__ by OpenTofu from "jdzlxlo7aaab"
 resource "stalwart_application" "webui" {
-  auto_update_frequency = 2592000000
+  auto_update_frequency = 60000
   description           = "Stalwart Web Interface"
   enabled               = true
   resource_url          = "file:///nix/store/vp7f65is8mhqfnlb26z463jgrdbxbcr4-stalwart-webui-no-upsell-1.0.10"
