@@ -367,7 +367,7 @@ resource "stalwart_application" "webui" {
   auto_update_frequency = 2592000000
   description           = "Stalwart Web Interface"
   enabled               = true
-  resource_url          = "file:///nix/store/7x2xs13brrsjiys55kzf1gj8vw4w15ag-stalwart-webui-no-upsell-1.0.10"
+  resource_url          = "file:///nix/store/vp7f65is8mhqfnlb26z463jgrdbxbcr4-stalwart-webui-no-upsell-1.0.10"
   unpack_directory      = null
   url_prefix            = ["/account", "/admin"]
 }
