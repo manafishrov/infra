@@ -10,6 +10,10 @@ import {
   id = "jdzlxtboapaa"
 }
 import {
+  to = stalwart_application.webui
+  id = "jecrqbfkabqa"
+}
+import {
   to = stalwart_directory_oidc.pocket_id
   id = "jdzlxs2sajaa"
 }
