@@ -5,7 +5,7 @@ metadata:
   namespace: manafishrov-stalwart
 spec:
   endpoints:
-    - dnsName: email.manafishrov.com
+    - dnsName: mail-admin.manafishrov.com
       recordType: CNAME
       targets:
         - router.asgard.michaelbrusegard.com

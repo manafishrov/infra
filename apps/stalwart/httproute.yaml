@@ -12,7 +12,7 @@ spec:
       namespace: gateway
       sectionName: https
   hostnames:
-    - email.manafishrov.com
+    - mail-admin.manafishrov.com
   rules:
     - backendRefs:
         - name: stalwart-internal

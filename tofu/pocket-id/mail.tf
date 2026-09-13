@@ -7,9 +7,14 @@ locals {
   }
 }
 
-resource "pocketid_group" "email_admin" {
-  name          = "email-admin"
-  friendly_name = "Email Administrators"
+moved {
+  from = pocketid_group.email_admin
+  to   = pocketid_group.mail_admin
+}
+
+resource "pocketid_group" "mail_admin" {
+  name          = "mail-admin"
+  friendly_name = "Mail Administrators"
 }
 
 # Keep shared-mailbox membership independent of application authorization groups.
@@ -26,13 +31,13 @@ resource "pocketid_client" "stalwart" {
   # Public identifier, shared with the Stalwart configuration without a secret.
   client_id     = "stalwart"
   name          = "Stalwart"
-  callback_urls = ["https://email.manafishrov.com/account/oauth/callback"]
-  launch_url    = "https://email.manafishrov.com"
+  callback_urls = ["https://mail-admin.manafishrov.com/account/oauth/callback"]
+  launch_url    = "https://mail-admin.manafishrov.com"
   is_public     = true
   pkce_enabled  = true
   allowed_user_groups = sort(concat(
     [for group in pocketid_group.mail : group.id],
-    [pocketid_group.email_admin.id],
+    [pocketid_group.mail_admin.id],
   ))
 }
 
