@@ -29,12 +29,15 @@ resource "pocketid_group" "mail" {
 
 resource "pocketid_client" "stalwart" {
   # Public identifier, shared with the Stalwart configuration without a secret.
-  client_id     = "stalwart"
-  name          = "Stalwart"
-  callback_urls = ["https://mail-admin.manafishrov.com/account/oauth/callback"]
-  launch_url    = "https://mail-admin.manafishrov.com"
-  is_public     = true
-  pkce_enabled  = true
+  client_id = "stalwart"
+  name      = "Stalwart"
+  callback_urls = [
+    "https://mail-admin.manafishrov.com/account/oauth/callback",
+    "https://mail-admin.manafishrov.com/admin/oauth/callback",
+  ]
+  launch_url   = "https://mail-admin.manafishrov.com"
+  is_public    = true
+  pkce_enabled = true
   allowed_user_groups = sort(concat(
     [for group in pocketid_group.mail : group.id],
     [pocketid_group.mail_admin.id],
