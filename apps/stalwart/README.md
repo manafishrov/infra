@@ -29,10 +29,13 @@ there is no active backup until Manata is online and the repository is initializ
 The deployment uses zero-surge updates to stop the old replica before replacing
 it, avoiding RWO mount conflicts.
 
-Stalwart's pre-authentication HTTP budget is 2,000 requests/minute because external
-OIDC requests bypass the native credential cache and share a gateway address.
-The authenticated account budget remains 1,000/minute; failed-login protections
-remain unchanged. Forwarded headers are not trusted indiscriminately.
+Stalwart's original pre-authentication HTTP budget is 100 requests/minute.
+Previously verified OIDC tokens use cache entries only for rate admission, never
+to reconstruct authorization. Each request revalidates issuer claims and native
+account permissions; failures evict admission. The account budget is checked
+before IdP work and charged after authentication, at 1,000 requests/minute. This
+precheck also applies to privileged OIDC sessions. Unknown tokens still use the
+IP budget. Failed-login protections and forwarding-header trust are unchanged.
 
 ## Acceptance before cutover
 
