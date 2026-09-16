@@ -23,7 +23,7 @@ resource "stalwart_authentication" "this" {
 
 # __generated__ by OpenTofu from "jdzlxs2sajaa"
 resource "stalwart_directory_oidc" "pocket_id" {
-  claim_groups     = null
+  claim_groups     = "groups"
   claim_name       = "name"
   claim_username   = "email"
   description      = "Pocket ID for manafishrov.com"
