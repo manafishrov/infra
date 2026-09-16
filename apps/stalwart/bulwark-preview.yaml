@@ -1,0 +1,193 @@
+# Preview only: Roundcube and public mail routing remain unchanged.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bulwark-preview
+  namespace: manafishrov-stalwart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bulwark-preview
+  template:
+    metadata:
+      labels:
+        app: bulwark-preview
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: webmail
+          image: ghcr.io/bulwarkmail/webmail:1.9.2@sha256:0e8d1339277033b6569a76c6f8192396e6edd66fd917d64d9ed505e8b81dac6d
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: JMAP_SERVER_URL
+              value: https://mail-admin.manafishrov.com
+            - name: APP_NAME
+              value: Manafish Mail Preview
+            - name: OAUTH_ENABLED
+              value: "true"
+            - name: OAUTH_ONLY
+              value: "true"
+            # Stalwart validates this audience. Reuse its public PKCE client,
+            # without requesting authorization groups in the webmail session.
+            - name: OAUTH_CLIENT_ID
+              value: stalwart
+            - name: OAUTH_ISSUER_URL
+              value: https://id.manafishrov.com
+            - name: OAUTH_ALLOW_PRIVATE_ENDPOINTS
+              value: "true"
+            - name: OAUTH_SCOPES
+              value: openid email profile offline_access
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: bulwark-preview
+                  key: SESSION_SECRET
+            - name: SETTINGS_SYNC_ENABLED
+              value: "false"
+            - name: ADMIN_CONFIG_READONLY
+              value: "true"
+            - name: BULWARK_TELEMETRY
+              value: "off"
+            - name: NEXT_TELEMETRY_DISABLED
+              value: "1"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          startupProbe:
+            httpGet:
+              path: /api/config
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/config
+              port: http
+          livenessProbe:
+            tcpSocket:
+              port: http
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.next/cache
+      volumes:
+        # No authoritative mail lives here. Preview preferences are browser-local;
+        # runtime audit/setup state is ephemeral until the production cutover.
+        - name: data
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bulwark-preview
+  namespace: manafishrov-stalwart
+spec:
+  selector:
+    app: bulwark-preview
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bulwark-preview
+  namespace: manafishrov-stalwart
+spec:
+  parentRefs:
+    - name: public
+      namespace: gateway
+      sectionName: https
+    - name: internal
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - mail-preview.manafishrov.com
+  rules:
+    - backendRefs:
+        - name: bulwark-preview
+          port: 3000
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: bulwark-preview
+  namespace: manafishrov-stalwart
+spec:
+  endpoints:
+    - dnsName: mail-preview.manafishrov.com
+      recordType: CNAME
+      targets:
+        - router.asgard.michaelbrusegard.com
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: bulwark-preview
+  namespace: manafishrov-stalwart
+spec:
+  endpointSelector:
+    matchLabels:
+      app: bulwark-preview
+  ingress:
+    - fromEntities: [ingress, host, remote-node]
+      toPorts:
+        - ports:
+            - port: "3000"
+              protocol: TCP
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+      toPorts:
+        - ports:
+            - port: "53"
+              protocol: UDP
+            - port: "53"
+              protocol: TCP
+          rules:
+            dns:
+              - matchPattern: "*"
+    # Split-DNS HTTPS traverses the Gateway and translated backend ports.
+    - toEntities: [cluster]
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP
+            - port: "8080"
+              protocol: TCP
+            - port: "1411"
+              protocol: TCP
+    - toFQDNs:
+        - matchName: id.manafishrov.com
+        - matchName: mail-admin.manafishrov.com
+      toPorts:
+        - ports:
+            - port: "443"
+              protocol: TCP

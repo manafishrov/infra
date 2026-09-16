@@ -31,10 +31,14 @@ resource "pocketid_client" "stalwart" {
   # Public identifier, shared with the Stalwart configuration without a secret.
   client_id = "stalwart"
   name      = "Stalwart"
-  callback_urls = [
+  callback_urls = concat([
     "https://mail-admin.manafishrov.com/account/oauth/callback",
     "https://mail-admin.manafishrov.com/admin/oauth/callback",
-  ]
+    ], [
+    # Bulwark 1.9.2 includes the selected locale in its PKCE callback.
+    for locale in ["ar", "ca", "cs", "da", "de", "en", "es", "fa", "fr", "he", "hu", "it", "ja", "ko", "lv", "mn", "nl", "pl", "pt", "ro", "ru", "sk", "tr", "uk", "zh"] :
+    "https://mail-preview.manafishrov.com/${locale}/auth/callback"
+  ])
   launch_url   = "https://mail-admin.manafishrov.com"
   is_public    = true
   pkce_enabled = true
