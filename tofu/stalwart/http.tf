@@ -13,8 +13,12 @@ resource "stalwart_http" "server" {
     count  = 1000
     period = 60000
   }
+  # External OIDC bearers bypass the native HTTP credential cache and consume
+  # this pre-authentication budget on every request. Gateway traffic shares an
+  # IP; allow normal webmail bursts without weakening per-account or fail2ban
+  # limits, or blindly trusting caller-supplied forwarding headers.
   rate_limit_anonymous = {
-    count  = 100
+    count  = 2000
     period = 60000
   }
   response_headers = {

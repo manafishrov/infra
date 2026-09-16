@@ -18,10 +18,20 @@ Stalwart validates that client audience. The preview callback is declared in
 administration belongs at `mail-admin`, not in the webmail login.
 
 The session encryption key lives in the encrypted sibling secrets repository.
-Passwords, custom JMAP endpoints and settings sync are not enabled. Configuration
+Passwords and custom JMAP endpoints are disabled. Settings sync is enabled with
+an encrypted per-user settings store on the 1 GiB `bulwark-settings` PVC. The
+session encryption key must be retained alongside settings backups. Configuration
 is environment-managed and the admin configuration is read-only. Runtime state
-is ephemeral; preferences remain browser-local. No additional persistent volume
-or backup destination is introduced by the preview.
+outside the settings directory remains ephemeral.
+
+The settings PVC has a separate Manata repository and paused VolSync source;
+there is no active backup until Manata is online and the repository is initialized.
+The deployment uses Recreate to avoid overlapping writers and RWO mount conflicts.
+
+Stalwart's pre-authentication HTTP budget is 2,000 requests/minute because external
+OIDC requests bypass the native credential cache and share a gateway address.
+The authenticated account budget remains 1,000/minute; failed-login protections
+remain unchanged. Forwarded headers are not trusted indiscriminately.
 
 ## Acceptance before cutover
 
@@ -36,6 +46,6 @@ A successful redirect alone does not prove authenticated JMAP access. Real
 passkey login and shared-mailbox checks require the corresponding user.
 
 Production cutover needs a final mailbox delta, SMTP/IMAP authentication tests,
-explicit routing authorization, and a persistence/Manata-backup decision for
-Bulwark settings if settings sync is enabled. Keep Roundcube and source mail
+explicit routing authorization, and verification of the Manata backup/restore
+path when the backup host becomes available. Keep Roundcube and source mail
 until rollback is no longer needed.

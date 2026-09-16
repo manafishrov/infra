@@ -6,6 +6,8 @@ metadata:
   namespace: manafishrov-stalwart
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: bulwark-preview
@@ -53,7 +55,9 @@ spec:
                   name: bulwark-preview
                   key: SESSION_SECRET
             - name: SETTINGS_SYNC_ENABLED
-              value: "false"
+              value: "true"
+            - name: SETTINGS_DATA_DIR
+              value: /app/data/settings
             - name: ADMIN_CONFIG_READONLY
               value: "true"
             - name: BULWARK_TELEMETRY
@@ -87,13 +91,17 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /app/data
+            - name: settings
+              mountPath: /app/data/settings
             - name: tmp
               mountPath: /tmp
             - name: cache
               mountPath: /app/.next/cache
       volumes:
-        # No authoritative mail lives here. Preview preferences are browser-local;
-        # runtime audit/setup state is ephemeral until the production cutover.
+        # Settings persist; runtime audit/setup state remains ephemeral.
+        - name: settings
+          persistentVolumeClaim:
+            claimName: bulwark-settings
         - name: data
           emptyDir: {}
         - name: tmp

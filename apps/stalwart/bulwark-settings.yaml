@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: bulwark-settings
+  namespace: manafishrov-stalwart
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ssd-ha
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: volsync.backube/v1alpha1
+kind: ReplicationSource
+metadata:
+  name: bulwark-settings-backup
+  namespace: manafishrov-stalwart
+spec:
+  # Manata is offline. Do not initialize or contact its repository yet.
+  paused: true
+  sourcePVC: bulwark-settings
+  trigger:
+    schedule: "30 */6 * * *"
+  restic:
+    repository: manata-restic-manafishrov-bulwark-settings
+    pruneIntervalDays: 30
+    retain:
+      daily: 14
+      weekly: 8
+      monthly: 12
+    moverSecurityContext:
+      runAsUser: 1001
+      runAsGroup: 1001
+    copyMethod: Snapshot
+    volumeSnapshotClassName: mayastor-snapshot
+    cacheStorageClassName: openebs-single-replica
+    cacheCapacity: 1Gi
