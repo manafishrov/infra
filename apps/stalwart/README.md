@@ -26,7 +26,8 @@ outside the settings directory remains ephemeral.
 
 The settings PVC has a separate Manata repository and paused VolSync source;
 there is no active backup until Manata is online and the repository is initialized.
-The deployment uses Recreate to avoid overlapping writers and RWO mount conflicts.
+The deployment uses zero-surge updates to stop the old replica before replacing
+it, avoiding RWO mount conflicts.
 
 Stalwart's pre-authentication HTTP budget is 2,000 requests/minute because external
 OIDC requests bypass the native credential cache and share a gateway address.
