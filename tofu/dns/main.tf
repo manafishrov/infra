@@ -221,7 +221,7 @@ locals {
     stalwart_mx = {
       name     = "@"
       type     = "MX"
-      content  = "mail.asgard.michaelbrusegard.com"
+      content  = "mx.manafishrov.com"
       priority = 10
     }
     stalwart_spf = {
