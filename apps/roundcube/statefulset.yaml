@@ -7,7 +7,8 @@ metadata:
     configmap.reloader.stakater.com/reload: roundcube-config
     secret.reloader.stakater.com/reload: roundcube-env
 spec:
-  replicas: 1
+  # Retired after the Bulwark cutover; retain the database until user acceptance.
+  replicas: 0
   selector:
     matchLabels:
       app: roundcube

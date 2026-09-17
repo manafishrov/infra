@@ -5,6 +5,5 @@ resources:
   - statefulset.yaml
   - deployment-oauth2-proxy.yaml
   - services.yaml
-  - httproute.yaml
   - network-policy.yaml
   - backup.yaml

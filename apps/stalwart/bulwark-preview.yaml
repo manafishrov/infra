@@ -1,4 +1,4 @@
-# Preview only: Roundcube and public mail routing remain unchanged.
+# Production webmail. Keep resource/Secret names to preserve existing settings.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -37,7 +37,7 @@ spec:
             - name: JMAP_SERVER_URL
               value: https://mail-admin.manafishrov.com
             - name: APP_NAME
-              value: Manafish Mail Preview
+              value: Manafish Mail
             - name: OAUTH_ENABLED
               value: "true"
             - name: OAUTH_ONLY
@@ -139,11 +139,34 @@ spec:
       namespace: gateway
       sectionName: https
   hostnames:
-    - mail-preview.manafishrov.com
+    - mail.manafishrov.com
   rules:
     - backendRefs:
         - name: bulwark-preview
           port: 3000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bulwark-preview-redirect
+  namespace: manafishrov-stalwart
+spec:
+  parentRefs:
+    - name: public
+      namespace: gateway
+      sectionName: https
+    - name: internal
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - mail-preview.manafishrov.com
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            hostname: mail.manafishrov.com
+            scheme: https
+            statusCode: 302
 ---
 apiVersion: externaldns.k8s.io/v1alpha1
 kind: DNSEndpoint
