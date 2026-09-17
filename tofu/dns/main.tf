@@ -197,9 +197,10 @@ locals {
       content = "v=TLSRPTv1; rua=mailto:postmaster@manafishrov.com"
     }
     stalwart_mta_sts_policy = {
-      name    = "_mta-sts"
-      type    = "TXT"
-      content = "v=STSv1; id=${var.mta_sts_id_manafishrov}"
+      name = "_mta-sts"
+      type = "TXT"
+      # Refresh cached policy for the company-owned dual-MX transition policy.
+      content = "v=STSv1; id=${var.mta_sts_id_manafishrov}-edge-20260917"
     }
     stalwart_mta_sts = {
       name    = "mta-sts"

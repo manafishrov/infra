@@ -1,8 +1,9 @@
 # __generated__ by OpenTofu from "singleton"
 resource "stalwart_mta_sts" "this" {
-  max_age  = 604800000
-  mode     = "testing"
-  mx_hosts = null
+  max_age = 604800000
+  mode    = "testing"
+  # Publish both names while cached policies and the branded MX converge.
+  mx_hosts = ["mail.asgard.michaelbrusegard.com", "mx.manafishrov.com"]
 }
 
 # __generated__ by OpenTofu from "singleton"
