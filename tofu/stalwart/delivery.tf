@@ -7,7 +7,7 @@ resource "stalwart_mta_stage_auth" "server" {
       if   = "listener == 'edge-lmtp'"
       then = "false"
     }]
-    else = "local_port != 25"
+    else = "true"
   }
   sasl_mechanisms = {
     match = [

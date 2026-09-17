@@ -18,9 +18,6 @@ spec:
     - name: edge-lmtp
       port: 24
       targetPort: edge-lmtp
-    - name: smtp
-      port: 25
-      targetPort: smtp
     - name: submissions
       port: 465
       targetPort: submissions
@@ -53,10 +50,7 @@ spec:
   selector:
     app: stalwart
   ports:
-    - name: smtp
-      port: 25
-      targetPort: smtp
-    # Retained only while the old ingress drains during cutover.
+    # Private final delivery from the shared edge (and legacy ingress until drained).
     - name: edge-lmtp
       port: 24
       targetPort: edge-lmtp
