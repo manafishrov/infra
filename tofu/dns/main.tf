@@ -203,9 +203,10 @@ locals {
       content = "v=STSv1; id=${var.mta_sts_id_manafishrov}-edge-20260917"
     }
     stalwart_mta_sts = {
-      name    = "mta-sts"
-      type    = "CNAME"
-      content = "mail.asgard.michaelbrusegard.com"
+      name = "mta-sts"
+      type = "CNAME"
+      # Use the HTTPS Gateway, not the SMTP VIP's split-DNS address.
+      content = "router.asgard.michaelbrusegard.com"
     }
     stalwart_autoconfig = {
       name    = "autoconfig"
