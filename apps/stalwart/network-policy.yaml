@@ -8,11 +8,20 @@ spec:
     matchLabels:
       app: stalwart
   ingress:
+    # Only server-to-server SMTP is public; JMAP stays behind the HTTPS Gateway.
+    - fromEntities:
+        - world
+      toPorts:
+        - ports:
+            - port: "25"
+              protocol: TCP
     - fromEntities:
         - host
         - remote-node
       toPorts:
         - ports:
+            - port: "25"
+              protocol: TCP
             - port: "443"
               protocol: TCP
             - port: "465"

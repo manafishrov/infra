@@ -18,6 +18,9 @@ spec:
     - name: edge-lmtp
       port: 24
       targetPort: edge-lmtp
+    - name: smtp
+      port: 25
+      targetPort: smtp
     - name: submissions
       port: 465
       targetPort: submissions
@@ -50,7 +53,10 @@ spec:
   selector:
     app: stalwart
   ports:
-    # Private delivery through the TLS-named VIP; NetworkPolicy permits only the edge.
+    - name: smtp
+      port: 25
+      targetPort: smtp
+    # Retained only while the old ingress drains during cutover.
     - name: edge-lmtp
       port: 24
       targetPort: edge-lmtp
