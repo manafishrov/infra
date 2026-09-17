@@ -50,7 +50,7 @@ spec:
   selector:
     app: stalwart
   ports:
-    # Private final delivery from the shared edge (and legacy ingress until drained).
+    # Private final delivery from the shared edge only.
     - name: edge-lmtp
       port: 24
       targetPort: edge-lmtp
