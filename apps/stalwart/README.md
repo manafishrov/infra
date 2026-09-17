@@ -12,8 +12,9 @@ ports are unchanged; personal mail still uses the original server.
 
 The final mailbox sync was explicitly skipped for the 2026-09-17 cutover.
 Messages present only on the old server since the snapshot remain there for
-recovery. Do not delete those mailboxes. Roundcube is stopped and its public
-route removed; its database and configuration are retained pending user testing.
+recovery. The source recipient records remain necessary for the ingress bridge.
+After successful user acceptance, Roundcube's app, database and Pocket ID client
+were retired. There is no automatic Roundcube rollback.
 
 ## Interim ingress dependency
 
@@ -71,6 +72,6 @@ prove mobile compatibility. JMAP-first cutover does not add IMAP client access.
 
 Before rolling back delivery, account for mail received or sent on this backend
 after cutover. Reversing the route alone does not copy that mail back. Restore
-the old local-domain rule and Roundcube route only with an explicit data plan.
-Complete Roundcube cleanup after user acceptance; keep the original mailstore.
+the old local-domain rule only with an explicit data plan. The shared server
+also hosts personal mail and must not be deleted as part of Manafish cleanup.
 Verify the Manata backup/restore path when that host becomes available.

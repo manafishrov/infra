@@ -17,7 +17,7 @@ consumer cluster repo, not here.
 - `apps/<name>/` — per-app bundle (Namespace, NetworkPolicy, HTTPRoute,
   Services, StatefulSet/Deployment). App secrets live at
   `../infra-secrets/apps/<name>/`.
-  - Apps: `n8n`, `nextcloud`, `pocket-id`, `roundcube`, `stalwart`, `twenty`,
+  - Apps: `n8n`, `nextcloud`, `pocket-id`, `stalwart`, `twenty`,
     `vaultwarden`
 - `public-redirects/` — shared public namespace + redirect HTTPRoutes
 - `tofu/<stack>/` — one OpenTofu root module per stack:
@@ -41,12 +41,10 @@ consumer cluster repo, not here.
     `manafishrov_nextcloud_pocketid_client_secret`,
     `manafishrov_n8n_pocketid_client_id`,
     `manafishrov_n8n_pocketid_client_secret`,
-    `manafishrov_roundcube_pocketid_client_id`,
-    `manafishrov_roundcube_pocketid_client_secret`,
     `manafishrov_twenty_pocketid_client_id`,
     `manafishrov_twenty_pocketid_client_secret` into Secret
     `manafishrov-pocket-id-outputs` (consumed by `apps/vaultwarden/`,
-    `apps/nextcloud/`, `apps/n8n/`, `apps/roundcube/`, `apps/twenty/`).
+    `apps/nextcloud/`, `apps/n8n/`, `apps/twenty/`).
   - `postgres` — application roles + databases on the
     shared cluster Postgres at `postgres.postgres.svc.cluster.local`.
     Reads `pg_admin_user`, `pg_admin_password`,
@@ -92,7 +90,7 @@ Conventional Commits, focused on **why**.
 
 - Types: `feat`, `fix`, `refactor`, `chore`, `docs`, `ci`, `revert`.
   `chore(deps)` reserved for Renovate.
-- Scopes: `n8n`, `nextcloud`, `pocket-id`, `roundcube`, `stalwart`, `twenty`,
+- Scopes: `n8n`, `nextcloud`, `pocket-id`, `stalwart`, `twenty`,
   `vaultwarden`, `public-redirects`, `tofu/rustfs`, `tofu/dns`,
   `tofu/pocket-id`, `tofu/postgres`, `flake`, `ci`, or a new app name.
 - Subject: imperative, lowercase, ≤72 chars, no period.

@@ -82,9 +82,6 @@ spec:
             k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
             k8s:app: nextcloud
         - matchLabels:
-            k8s:io.kubernetes.pod.namespace: manafishrov-roundcube
-            k8s:app: roundcube
-        - matchLabels:
             k8s:io.kubernetes.pod.namespace: manafishrov-pocket-id
             k8s:app: pocket-id
       toPorts:
