@@ -31,6 +31,15 @@ spec:
         - ports:
             - port: "8080"
               protocol: TCP
+    # Interim shared SMTP ingress. No management or client-login access.
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: stalwart
+            k8s:app: stalwart
+      toPorts:
+        - ports:
+            - port: "24"
+              protocol: TCP
     - fromEndpoints:
         - matchLabels:
             k8s:io.kubernetes.pod.namespace: stalwart-edge
