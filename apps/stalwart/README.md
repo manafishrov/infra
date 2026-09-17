@@ -11,10 +11,16 @@ personal submissions and application mail. MX records and public SMTP/IMAP
 ports are unchanged; personal mail still uses the original server.
 
 The final mailbox sync was explicitly skipped for the 2026-09-17 cutover.
-Messages present only on the old server since the snapshot remain there for
-recovery. The source recipient records remain necessary for the ingress bridge.
-After successful user acceptance, Roundcube's app, database and Pocket ID client
-were retired. There is no automatic Roundcube rollback.
+After user acceptance and deletion authorization, all 85 old Manafish Email
+objects were deleted through account-scoped JMAP. The three old human accounts
+have no credentials and deny authentication; restarting the source closed old
+sessions. Empty mailboxes and recipient records remain for the ingress bridge.
+The source is no longer a mailbox recovery copy. This was logical deletion,
+not secure erasure of shared storage or historical backups.
+
+Roundcube's app, database storage, Pocket ID client/group, secrets, backup
+configuration and namespace were removed. The source's unused OIDC directory
+was also removed. Personal-domain accounts and mail were left unchanged.
 
 ## Interim ingress dependency
 
@@ -25,6 +31,11 @@ alias changes and mailing-list changes until recipient validation is decoupled
 or both sides are updated together. SCIM owns the destination identities and
 shared memberships, but this bridge is not independent ingress provisioning.
 Do not enable catch-all or open relaying to work around a mismatch.
+
+An outstanding source-server issue: `mail-master@michaelbrusegard.com` lacks
+`emailSend`, so SMTP submission is rejected after successful authentication.
+Its existing permissions were not changed during retirement. Recipient routing
+checks do not qualify Nextcloud/Pocket ID SMTP notifications.
 
 ## Authentication and configuration
 
