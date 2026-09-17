@@ -27,6 +27,8 @@ data:
       'integrity.check.disabled' => true,
       'simpleSignUpLink.shown' => false,
       'lost_password_link' => 'disabled',
+      // NullTransport: discard system mail without contacting an SMTP server.
+      'mail_smtpmode' => 'null',
       'skeletondirectory' => '',
       'enabledPreviewProviders' => [
         'OC\\Preview\\Imaginary',
@@ -54,6 +56,65 @@ data:
       'trashbin_retention_obligation' => 'auto, 30',
       'versions_retention_obligation' => 'auto, 90',
     ];
+  retire-mail.py: |
+    """Retire only Nextcloud Mail via its supported CLI. Dry-run by default."""
+    import json
+    import subprocess
+    import sys
+
+    def occ(*args):
+        result = subprocess.run(
+            ["runuser", "-u", "www-data", "--", "php", "-f", "/var/www/html/occ", *args],
+            capture_output=True, text=True,
+        )
+        if result.returncode:
+            # Do not expose CLI output that may contain account configuration.
+            raise RuntimeError(f"occ {args[0]} failed ({result.returncode})")
+        return result.stdout
+
+    def retire(apply):
+        apps = json.loads(occ("app:list", "--output=json"))
+        if "mail" not in apps.get("enabled", {}):
+            if "mail" not in apps.get("disabled", {}):
+                print("Mail is not installed; nothing to retire")
+                return
+            if not apply:
+                raise RuntimeError("Mail is disabled; account inventory requires its CLI")
+            occ("app:enable", "mail")
+
+        # Inventory everything before deleting anything. Provisioned accounts
+        # require the provisioning UI and must not be silently skipped.
+        users = json.loads(occ("user:list", "--output=json", "--limit=0"))
+        ids = set()
+        for uid in users:
+            accounts = json.loads(occ("mail:account:export", uid, "--output=json"))
+            for account in accounts:
+                if account["provision"]["status"] != "none":
+                    raise RuntimeError("Remove Mail provisioning in its UI before retirement")
+                account_id = account["id"]
+                if type(account_id) is not int or account_id <= 0 or account_id in ids:
+                    raise RuntimeError("Invalid or duplicate Mail account ID")
+                ids.add(account_id)
+        print(f"Mail account IDs to retire: {sorted(ids)}")
+        if not apply:
+            return
+        for account_id in sorted(ids):
+            occ("mail:account:delete", str(account_id))
+        occ("mail:clean-up")
+        for uid in users:
+            if json.loads(occ("mail:account:export", uid, "--output=json")):
+                raise RuntimeError("Mail accounts remain; refusing to remove its CLI")
+        occ("app:remove", "mail")
+        print("Mail accounts, CLI-supported orphaned cache and app retired")
+
+    if __name__ == "__main__":
+        if sys.argv[1:] not in ([], ["--apply"]):
+            raise SystemExit("Usage: retire-mail.py [--apply]")
+        try:
+            retire(sys.argv[1:] == ["--apply"])
+        except (RuntimeError, ValueError, KeyError, TypeError) as error:
+            print(f"Mail retirement stopped: {error}", file=sys.stderr)
+            raise SystemExit(1)
   bootstrap.sh: |
     #!/bin/sh
     # Idempotent post-install bootstrap. Runs via lifecycle.postStart in the
@@ -115,7 +176,7 @@ data:
 
       APPS_ENABLE="activity admin_audit calendar collectives contacts \
                    deck files files_3dmodelviewer forms \
-                   groupfolders mail notify_push photos richdocuments \
+                   groupfolders notify_push photos richdocuments \
                    spreed user_oidc whiteboard"
       APPS_DISABLE="announcementcenter app_api bookmarks contactsinteraction dashboard \
                     federatedfilesharing federation files_reminders firstrunwizard \
@@ -152,30 +213,12 @@ data:
 
       retry occ config:app:set user_oidc allow_multiple_user_backends --value=0
 
-      # Per-user Mail provisioning. Mail 5.x dropped the provisioning CLI
-      # so we iterate nextcloud users and call mail:account:create with
-      # stalwart's `target%authcid` master-user IMAP syntax against the
-      # mail-master account declared in personal infra's stalwart plan.
-      # New employee onboarding: (1) add to pocket-id with an
-      # @manafishrov.com email, (2) create matching User in stalwart UI.
-      MAIL_DOMAIN=manafishrov.com
-      for uid in $(occ user:list --output=json 2>/dev/null | python3 -c 'import json,sys; print(" ".join(json.load(sys.stdin).keys()))'); do
-        email=$(occ user:info "$uid" --output=json 2>/dev/null | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("email") or "")')
-        case "$email" in
-          *@${MAIL_DOMAIN}) ;;
-          *) continue ;;
-        esac
-        if occ mail:account:export "$uid" 2>/dev/null | grep -q "E-Mail: $email"; then
-          continue
-        fi
-        log "provisioning Mail account for $uid ($email)"
-        retry occ mail:account:create "$uid" "$uid" "$email" \
-          mail.asgard.michaelbrusegard.com 993 ssl \
-          "${email}%mail-master@michaelbrusegard.com" "${MAIL_MASTER_PASSWORD}" \
-          mail.asgard.michaelbrusegard.com 465 ssl \
-          "${email}%mail-master@michaelbrusegard.com" "${MAIL_MASTER_PASSWORD}" \
-          password
-      done
+      # Delete Mail accounts and orphaned cache before removing the app's CLI.
+      # Fail closed on cleanup errors; never recreate accounts or credentials.
+      if ! python3 /etc/nextcloud-extras/retire-mail.py --apply; then
+        log 'Mail retirement incomplete; disabling Mail until the next retry'
+        occ app:disable mail
+      fi
 
       # notify_push:setup stores the PUBLIC websocket endpoint that clients
       # connect to; internal pod-to-pod traffic is unrelated and routed via
@@ -222,19 +265,14 @@ data:
       retry occ config:app:set whiteboard collabBackendUrl --value='https://whiteboard.manafishrov.com'
       retry occ config:app:set whiteboard jwt_secret_key --value="${WHITEBOARD_JWT_SECRET}"
 
-      # System mail (password resets, share notifications, etc) sent
-      # via stalwart using mail-master's authenticate+impersonate.
-      # From header is noreply@manafishrov.com; SMTP auth is mail-master.
-      retry occ config:system:set mail_smtpmode --value='smtp'
-      retry occ config:system:set mail_smtphost --value='mail.asgard.michaelbrusegard.com'
-      retry occ config:system:set mail_smtpport --value='465' --type=integer
-      retry occ config:system:set mail_smtpsecure --value='ssl'
-      retry occ config:system:set mail_smtpauth --value=1 --type=integer
-      retry occ config:system:set mail_smtpauthtype --value='LOGIN'
-      retry occ config:system:set mail_smtpname --value='mail-master@michaelbrusegard.com'
-      retry occ config:system:set mail_smtppassword --value="${MAIL_MASTER_PASSWORD}"
-      retry occ config:system:set mail_from_address --value='noreply'
-      retry occ config:system:set mail_domain --value='manafishrov.com'
+      # No system sending. Also remove persisted SMTP credentials and settings;
+      # additional.config.php keeps NullTransport enforced during convergence.
+      retry occ config:system:set mail_smtpmode --value='null'
+      for key in mail_smtphost mail_smtpport mail_smtpsecure mail_smtpauth \
+                 mail_smtpauthtype mail_smtpname mail_smtppassword \
+                 mail_from_address mail_domain; do
+        retry occ config:system:delete "$key"
+      done
 
       # Manafish branding.
       retry occ theming:config name 'Manafish'

@@ -9,6 +9,7 @@ variable "manafishrov_stalwart_scim_token" {
 }
 
 variable "manafishrov_pocketid_smtp_password" {
-  type      = string
-  sensitive = true
+  description = "Resend API key for Pocket ID recovery email over implicit TLS"
+  type        = string
+  sensitive   = true
 }

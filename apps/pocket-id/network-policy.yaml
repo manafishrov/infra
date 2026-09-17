@@ -61,7 +61,7 @@ spec:
             - port: "443"
               protocol: TCP
     - toFQDNs:
-        - matchName: mail.asgard.michaelbrusegard.com
+        - matchName: smtp.resend.com
       toPorts:
         - ports:
             - port: "465"

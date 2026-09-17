@@ -19,10 +19,6 @@ spec:
     spec:
       nodeSelector:
         kubernetes.io/arch: amd64
-      hostAliases:
-        - ip: 10.0.188.12
-          hostnames:
-            - mail.asgard.michaelbrusegard.com
       containers:
         - name: nextcloud
           image: nextcloud:34.0.2-apache@sha256:b3fe6a71998202c4b1a130615e8f7aa8d9de075a1cd3c60693dcd291e10d83a1

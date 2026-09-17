@@ -7,6 +7,22 @@ spec:
   endpointSelector:
     matchLabels:
       app: nextcloud
+  # Defense in depth: Nextcloud is neither a mail client nor a mail sender.
+  egressDeny:
+    - toEntities:
+        - all
+      toPorts:
+        - ports:
+            - port: "25"
+              protocol: TCP
+            - port: "465"
+              protocol: TCP
+            - port: "587"
+              protocol: TCP
+            - port: "143"
+              protocol: TCP
+            - port: "993"
+              protocol: TCP
   ingress:
     - fromEntities:
         - host
