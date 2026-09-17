@@ -1,0 +1,19 @@
+{
+  "using": ["urn:ietf:params:jmap:core", "urn:stalwart:jmap"],
+  "methodCalls": [
+    [
+      "x:Task/set",
+      {
+        "create": {
+          "dkim-publication": {
+            "@type": "DnsManagement",
+            "domainId": "c",
+            "updateRecords": {"0": "dkim"},
+            "onSuccessRenewCertificate": false
+          }
+        }
+      },
+      "dkim-publication"
+    ]
+  ]
+}

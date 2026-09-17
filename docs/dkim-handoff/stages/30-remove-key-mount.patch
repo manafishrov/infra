@@ -1,0 +1,31 @@
+--- a/apps/stalwart/statefulset.yaml
++++ b/apps/stalwart/statefulset.yaml
+@@ -5,7 +5,7 @@
+   namespace: manafishrov-stalwart
+   annotations:
+     configmap.reloader.stakater.com/reload: stalwart-config
+-    secret.reloader.stakater.com/reload: stalwart-env,stalwart-dkim,wildcard-tls
++    secret.reloader.stakater.com/reload: stalwart-env,wildcard-tls
+ spec:
+   replicas: 1
+   selector:
+@@ -85,9 +85,6 @@
+             - mountPath: /var/lib/stalwart/private/tls
+               name: tls
+               readOnly: true
+-            - mountPath: /var/lib/stalwart/private/dkim
+-              name: dkim
+-              readOnly: true
+             - mountPath: /tmp
+               name: temp
+       volumes:
+@@ -99,9 +96,6 @@
+         - name: tls
+           secret:
+             secretName: wildcard-tls
+-        - name: dkim
+-          secret:
+-            secretName: stalwart-dkim
+   volumeClaimTemplates:
+     - metadata:
+         name: data
