@@ -1,0 +1,25 @@
+--- a/tofu/stalwart/main.tf
++++ b/tofu/stalwart/main.tf
+@@ -483,6 +483,8 @@
+ 
+ # __generated__ by OpenTofu from "singleton"
+ resource "stalwart_mta_stage_data" "this" {
++  depends_on = [stalwart_spam_rule_any.auth_na]
++
+   add_auth_results_header = {
+     else = "false"
+     match = [
+@@ -539,11 +541,11 @@
+     ]
+   }
+   enable_spam_filter = {
+-    else = "is_empty(authenticated_as)"
++    else = "false"
+     match = [
+       {
+         if   = "listener == 'edge-lmtp'"
+-        then = "false"
++        then = "true"
+       },
+     ]
+   }

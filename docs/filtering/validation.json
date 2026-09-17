@@ -1,0 +1,32 @@
+{
+  "tofuSha256": "b6cb308bd699c8b53882319986f339eeaa44f925a68f12d5b0a14e6caceedf23",
+  "providerVersion": "0.2.3",
+  "stages": {
+    "10-backend-safety.patch": "PASS",
+    "20-auth-bridge.patch": "PASS",
+    "30-enable-private-lmtp.patch": "PASS"
+  },
+  "providerSha256": "58bbac53de7ab857503c833ae5049915c2f015f72bf7b6aec99e889dd68684e1",
+  "sourceFiles": {
+    ".terraform.lock.hcl": "4badc868a145f8741ff881b349f779e8224fe3e3f54885ed493bac038d2f0646",
+    "throttles.tf": "0aec2878352d428e167b7af670e442ce3b917d0e1ddc537dd0abeebccde86f7b",
+    "recipients.tf": "574aa217cc6feba16225e3b07574eb656a6bd7e9e98d48bfcee17bd84deb365f",
+    "security.tf": "bb1d1d86a9208ca6dde10ed011162928d4918c313a1210a5d5e66ae3771a24ed",
+    "versions.tf": "c1c6338eb7543e79059b5cb4dfb233b034f2d6d5a2e0a22be543958feeb78c0d",
+    "variables.tf": "16f2eda9e5f7f1431ada3c55ffd75cf4e7d16db1b69183bab8df159d4ff77812",
+    "providers.tf": "b7a4bb7995f18eae90dd925a9a835c0cac872b41bb7092e057dd7a318a08ea67",
+    "main.tf": "f3e572f6ae970d02125fb564de831b12bc76c3998cb277d675be0309df36cb1a",
+    "imports.tf": "566b25d27d956d6b4c0f7906d3c946cf3c63fb66cfc1b6af30d87df0dad03fc6",
+    "http.tf": "0872b5d15a610ed64d35a15a5548d8d3b0746436989f6335f7fa3c87327e8fe8",
+    "delivery.tf": "af5da942d273d2bbef66344d75af330299d074823cb42d5cd30c4a78d605b7af"
+  },
+  "patchSha256": {
+    "10-backend-safety.patch": "06a2f577562fda4a76935d321123ef6a90097c64cdb8e2b410e7b058a92f82aa",
+    "20-auth-bridge.patch": "e55b4fc6d7fa087bf89fefbb52991f90d83b69d7dc6d5c7b2ada6576f5c2788e",
+    "30-enable-private-lmtp.patch": "d58a6487897b4b2bf9dc31f93d6b5e265f29d8dfd412de5b183bacfa61415d8f"
+  },
+  "netNamespace": "net:[4026534367]",
+  "userNamespace": "user:[4026534366]",
+  "tofuVersion": "1.12.1",
+  "status": "PASS"
+}

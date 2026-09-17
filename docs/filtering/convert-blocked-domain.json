@@ -1,0 +1,21 @@
+{
+  "using": [
+    "urn:ietf:params:jmap:core",
+    "urn:stalwart:jmap"
+  ],
+  "methodCalls": [
+    [
+      "x:SpamTag/set",
+      {
+        "update": {
+          "jdzlxyqedpaa": {
+            "@type": "Score",
+            "tag": "BLOCKED_DOMAIN",
+            "score": 1000
+          }
+        }
+      },
+      "convert-blocked-domain"
+    ]
+  ]
+}

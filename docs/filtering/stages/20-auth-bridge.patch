@@ -1,0 +1,209 @@
+--- /dev/null
++++ b/tofu/stalwart/filtering-bridge.tf
+@@ -0,0 +1,60 @@
++# Inactive until promoted from docs/filtering/stages/20-auth-bridge.patch.
++# No peer-IP test: exclusive Cilium identity + edge-lmtp-only DATA filtering
++# jointly establish trust. Never enable these rules on another SMTP path.
++locals {
++  edge_auth_bridge = jsondecode(file("${path.module}/filtering-bridge.json"))
++}
++
++resource "stalwart_spam_tag_score" "edge_auth_valid" {
++  tag   = "EDGE_AUTH_VALID"
++  score = 0
++}
++
++# Preserve the original DMARC_NA score; compensate only validated non-NA results.
++resource "stalwart_spam_tag_score" "edge_dmarc_na_offset" {
++  tag   = "EDGE_DMARC_NA_OFFSET"
++  score = -1
++}
++
++resource "stalwart_spam_rule_header" "edge_auth" {
++  for_each = local.edge_auth_bridge.rules
++  name     = each.value.name
++  enable   = true
++  priority = each.value.priority
++  condition = {
++    else = "false"
++    match = [for branch in each.value.match : {
++      if   = format("(%s) && (%s)", local.edge_auth_bridge.gate, branch.if)
++      then = branch.then
++    }]
++  }
++  depends_on = [
++    stalwart_spam_settings.this,
++    stalwart_spam_pyzor.this,
++    stalwart_spam_llm.this,
++    stalwart_spam_tag_score.blocked_domain,
++    stalwart_spam_tag_score.edge_auth_valid,
++    stalwart_spam_tag_score.edge_dmarc_na_offset,
++  ]
++}
++
++# An AUTH_NA score offset alone would still trigger BOUNCE_NO_AUTH.
++# Header rules supply AUTH_NA only for actual all-NA trusted verdicts.
++resource "stalwart_spam_rule_any" "auth_na" {
++  name     = "STWT_AUTH_NA"
++  enable   = true
++  priority = 1004
++  condition = {
++    else = "false"
++    match = [{
++      if   = "!$EDGE_AUTH_VALID && $DKIM_NA && $SPF_NA && $DMARC_NA && $ARC_NA"
++      then = "'AUTH_NA'"
++    }]
++  }
++  depends_on = [stalwart_spam_rule_header.edge_auth]
++}
++
++import {
++  to = stalwart_spam_rule_any.auth_na
++  id = "jdzlxyp2ataa"
++}
+--- /dev/null
++++ b/tofu/stalwart/filtering-bridge.json
+@@ -0,0 +1,143 @@
++{
++  "gate": "name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)",
++  "rules": {
++    "edge_auth_spf": {
++      "name": "EDGE_AUTH_SPF",
++      "priority": 0,
++      "match": [
++        {
++          "if": "contains(value_lower, 'spf=pass;')",
++          "then": "'SPF_ALLOW'"
++        },
++        {
++          "if": "contains(value_lower, 'spf=fail;')",
++          "then": "'SPF_FAIL'"
++        },
++        {
++          "if": "contains(value_lower, 'spf=softfail;')",
++          "then": "'SPF_SOFTFAIL'"
++        },
++        {
++          "if": "contains(value_lower, 'spf=neutral;')",
++          "then": "'SPF_NEUTRAL'"
++        },
++        {
++          "if": "contains(value_lower, 'spf=temperror;')",
++          "then": "'SPF_DNSFAIL'"
++        },
++        {
++          "if": "contains(value_lower, 'spf=permerror;')",
++          "then": "'SPF_PERMFAIL'"
++        },
++        {
++          "if": "contains(value_lower, 'spf=none;')",
++          "then": "'SPF_NA'"
++        }
++      ]
++    },
++    "edge_auth_dkim": {
++      "name": "EDGE_AUTH_DKIM",
++      "priority": 0,
++      "match": [
++        {
++          "if": "contains(value_lower, 'dkim=pass;')",
++          "then": "'DKIM_ALLOW'"
++        },
++        {
++          "if": "contains(value_lower, 'dkim=fail;')",
++          "then": "'DKIM_REJECT'"
++        },
++        {
++          "if": "contains(value_lower, 'dkim=neutral;')",
++          "then": "'DKIM_NA'"
++        },
++        {
++          "if": "contains(value_lower, 'dkim=temperror;')",
++          "then": "'DKIM_TEMPFAIL'"
++        },
++        {
++          "if": "contains(value_lower, 'dkim=permerror;')",
++          "then": "'DKIM_PERMFAIL'"
++        },
++        {
++          "if": "contains(value_lower, 'dkim=none;')",
++          "then": "'DKIM_NA'"
++        }
++      ]
++    },
++    "edge_auth_dmarc": {
++      "name": "EDGE_AUTH_DMARC",
++      "priority": 0,
++      "match": [
++        {
++          "if": "contains(value_lower, 'dmarc=pass;')",
++          "then": "'DMARC_POLICY_ALLOW'"
++        },
++        {
++          "if": "contains(value_lower, 'dmarc=temperror;')",
++          "then": "'DMARC_DNSFAIL'"
++        },
++        {
++          "if": "contains(value_lower, 'dmarc=permerror;')",
++          "then": "'DMARC_BAD_POLICY'"
++        },
++        {
++          "if": "contains(value_lower, 'dmarc=none;')",
++          "then": "'DMARC_NA'"
++        },
++        {
++          "if": "contains(value_lower, 'dmarc=fail;') && (contains(value_lower, 'policy=reject;'))",
++          "then": "'DMARC_POLICY_REJECT'"
++        },
++        {
++          "if": "contains(value_lower, 'dmarc=fail;') && (contains(value_lower, 'policy=quarantine;'))",
++          "then": "'DMARC_POLICY_QUARANTINE'"
++        },
++        {
++          "if": "contains(value_lower, 'dmarc=fail;') && (!(contains(value_lower, 'policy=reject;') || contains(value_lower, 'policy=quarantine;')))",
++          "then": "'DMARC_POLICY_SOFTFAIL'"
++        }
++      ]
++    },
++    "edge_auth_dmarc_na_offset": {
++      "name": "EDGE_AUTH_DMARC_NA_OFFSET",
++      "priority": 0,
++      "match": [
++        {
++          "if": "!contains(value_lower, 'dmarc=none;')",
++          "then": "'EDGE_DMARC_NA_OFFSET'"
++        }
++      ]
++    },
++    "edge_auth_na": {
++      "name": "EDGE_AUTH_NA",
++      "priority": 0,
++      "match": [
++        {
++          "if": "(contains(value_lower, 'spf=none;') && (contains(value_lower, 'dkim=none;') || contains(value_lower, 'dkim=neutral;')) && contains(value_lower, 'dmarc=none;'))",
++          "then": "'AUTH_NA'"
++        }
++      ]
++    },
++    "edge_auth_valid": {
++      "name": "EDGE_AUTH_VALID",
++      "priority": 0,
++      "match": [
++        {
++          "if": "true",
++          "then": "'EDGE_AUTH_VALID'"
++        }
++      ]
++    },
++    "edge_auth_na_or_fail": {
++      "name": "EDGE_AUTH_NA_OR_FAIL",
++      "priority": 0,
++      "match": [
++        {
++          "if": "!(contains(value_lower, 'spf=none;') && (contains(value_lower, 'dkim=none;') || contains(value_lower, 'dkim=neutral;')) && contains(value_lower, 'dmarc=none;')) && (contains(value_lower, 'spf=none;') || contains(value_lower, 'spf=temperror;')) && (contains(value_lower, 'dkim=none;') || contains(value_lower, 'dkim=neutral;') || contains(value_lower, 'dkim=temperror;') || contains(value_lower, 'dkim=permerror;')) && contains(value_lower, 'dmarc=none;')",
++          "then": "'AUTH_NA_OR_FAIL'"
++        }
++      ]
++    }
++  }
++}

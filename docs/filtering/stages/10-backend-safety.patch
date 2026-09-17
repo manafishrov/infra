@@ -1,0 +1,44 @@
+--- /dev/null
++++ b/tofu/stalwart/filtering.tf
+@@ -0,0 +1,41 @@
++# Apply only after the native BLOCKED_DOMAIN variant conversion.
++# Keep private LMTP content filtering off until the trusted verdict path is ready.
++resource "stalwart_spam_settings" "this" {
++  enable                = true
++  score_spam            = 5
++  score_reject          = 0
++  score_discard         = 0
++  trust_contacts        = true
++  trust_replies         = true
++  spam_filter_rules_url = "https://github.com/stalwartlabs/spam-filter/releases/download/v3.0.1/spam-filter-rules.json.gz"
++}
++
++resource "stalwart_spam_pyzor" "this" {
++  enable = false
++}
++
++resource "stalwart_spam_llm" "this" {
++  type = "Disable"
++}
++
++resource "stalwart_spam_tag_score" "blocked_domain" {
++  tag   = "BLOCKED_DOMAIN"
++  score = 1000
++}
++
++import {
++  to = stalwart_spam_settings.this
++  id = "singleton"
++}
++import {
++  to = stalwart_spam_pyzor.this
++  id = "singleton"
++}
++import {
++  to = stalwart_spam_llm.this
++  id = "singleton"
++}
++import {
++  to = stalwart_spam_tag_score.blocked_domain
++  id = "jdzlxyqedpaa"
++}

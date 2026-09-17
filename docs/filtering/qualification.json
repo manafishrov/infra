@@ -1,0 +1,572 @@
+{
+  "binarySha256": "02030a8334e3bc62bae1fa4a9139f498df0a7e105bd97ec5beacfdfa1be8b614",
+  "inventorySha256": "a1f8970bc73a373a05c3e583cb0f28758eafb1fdb5e876a1b63fe6b9c720c7cb",
+  "fixtureSha256": "0818437d711a022e13c22c9ceb32500ab30cf99c32e7ce7b15e4c49b8d0cfbc5",
+  "dnsHelperSha256": "799bed83ea2e8e8c6fefc982e73975e271016445714bbb3d9d1b3a55dcb631d7",
+  "evidence": "/tmp/stalwart-edge-wdr7djqy",
+  "nativeStages": {
+    "realDiscoveryAndNativeVerifiedSeed": {
+      "status": "PASS",
+      "seconds": 4.605
+    },
+    "lmtpUntrustedCertificateIsInconclusive": {
+      "status": "PASS",
+      "seconds": 0.008
+    },
+    "lmtpTrustedCertificateVerifiesKnown": {
+      "status": "PASS",
+      "seconds": 0.001
+    },
+    "bothGuardsAndSnapshotReady": {
+      "status": "PASS",
+      "seconds": 0.01
+    },
+    "genuineSpfDmarcPassAndForgedDuplicatesRemoved": {
+      "status": "PASS",
+      "seconds": 0.554
+    },
+    "genuineNoAuthDistinctFromPass": {
+      "status": "PASS",
+      "seconds": 0.553
+    },
+    "genuineDmarcStrictAlignmentFail": {
+      "status": "PASS",
+      "seconds": 0.555
+    },
+    "genuineForwardingSpfFailDkimDmarcPassIsHam": {
+      "status": "PASS",
+      "seconds": 0.566
+    },
+    "productionRulesGtubeJunkNoReject": {
+      "status": "PASS",
+      "seconds": 12.348
+    },
+    "backendUntrustedLmtpPeerCannotUseAuthBridge": {
+      "status": "PASS",
+      "seconds": 0.332
+    },
+    "malformedTrustedPeerHeadersGetNoMappingsOrCredits": {
+      "status": "PASS",
+      "seconds": 1.997
+    },
+    "genuineSpfAuthenticatedBounceNoFalseAuthNa": {
+      "status": "PASS",
+      "seconds": 0.58
+    },
+    "genuineDkimAuthenticatedBounceNoFalseAuthNa": {
+      "status": "PASS",
+      "seconds": 0.582
+    },
+    "nullEnvelopeAuthenticatedBounceNoFalseAuthNa": {
+      "status": "PASS",
+      "seconds": 0.577
+    },
+    "unauthenticatedBounceRetainsAuthNa": {
+      "status": "PASS",
+      "seconds": 0.569
+    },
+    "genuineDkimDnsErrorRetainsAuthNaOrFail": {
+      "status": "PASS",
+      "seconds": 0.584
+    },
+    "blockedDomainLookupWithPassingAuthStillJunk": {
+      "status": "PASS",
+      "seconds": 12.526
+    },
+    "queuedForwardingVerdictSurvivesBothNativeRestarts": {
+      "status": "PASS",
+      "seconds": 6.542
+    },
+    "nativeVerdictProductionAndJunkPlacementAfterRestart": {
+      "status": "PASS",
+      "seconds": 12.472
+    },
+    "noRejectDiscardOrDsnAcrossBothHops": {
+      "status": "PASS",
+      "seconds": 3.012
+    },
+    "noPublicNativeAccountsBeforeAfter": {
+      "status": "PASS",
+      "seconds": 0.003
+    }
+  },
+  "inventory": {
+    "tags": 403,
+    "rules": 66,
+    "convertedToScore": [
+      "BLOCKED_DOMAIN"
+    ]
+  },
+  "nativeBridgeConfig": {
+    "edgeScript": {
+      "name": "edge-auth-verdict",
+      "isActive": true,
+      "contents": "require [\"editheader\", \"variables\"];\ndeleteheader \"X-Edge-Auth\";\ndeleteheader \"Authentication-Results\";\nset \"spf\" \"none\";\nif string :is \"${env.spf.result}\" \"pass\" { set \"spf\" \"pass\"; }\nif string :is \"${env.spf.result}\" \"fail\" { set \"spf\" \"fail\"; }\nif string :is \"${env.spf.result}\" \"softfail\" { set \"spf\" \"softfail\"; }\nif string :is \"${env.spf.result}\" \"neutral\" { set \"spf\" \"neutral\"; }\nif string :is \"${env.spf.result}\" \"temperror\" { set \"spf\" \"temperror\"; }\nif string :is \"${env.spf.result}\" \"permerror\" { set \"spf\" \"permerror\"; }\nif string :is \"${env.spf.result}\" \"none\" { set \"spf\" \"none\"; }\nset \"dkim\" \"none\";\nif string :is \"${env.dkim.result}\" \"pass\" { set \"dkim\" \"pass\"; }\nif string :is \"${env.dkim.result}\" \"fail\" { set \"dkim\" \"fail\"; }\nif string :is \"${env.dkim.result}\" \"neutral\" { set \"dkim\" \"neutral\"; }\nif string :is \"${env.dkim.result}\" \"temperror\" { set \"dkim\" \"temperror\"; }\nif string :is \"${env.dkim.result}\" \"permerror\" { set \"dkim\" \"permerror\"; }\nif string :is \"${env.dkim.result}\" \"none\" { set \"dkim\" \"none\"; }\nset \"dmarc\" \"none\";\nif string :is \"${env.dmarc.result}\" \"pass\" { set \"dmarc\" \"pass\"; }\nif string :is \"${env.dmarc.result}\" \"temperror\" { set \"dmarc\" \"temperror\"; }\nif string :is \"${env.dmarc.result}\" \"permerror\" { set \"dmarc\" \"permerror\"; }\nif string :is \"${env.dmarc.result}\" \"none\" { set \"dmarc\" \"none\"; }\nif string :is \"${env.dmarc.result}\" \"fail\" { set \"dmarc\" \"fail\"; }\nset \"policy\" \"none\";\nif string :is \"${env.dmarc.policy}\" \"reject\" { set \"policy\" \"reject\"; }\nif string :is \"${env.dmarc.policy}\" \"quarantine\" { set \"policy\" \"quarantine\"; }\nif string :is \"${env.dmarc.policy}\" \"none\" { set \"policy\" \"none\"; }\nif string :is \"${env.dmarc.policy}\" \"unspecified\" { set \"policy\" \"unspecified\"; }\naddheader \"X-Edge-Auth\" \"spf=${spf}; dkim=${dkim}; dmarc=${dmarc}; policy=${policy};\";\n"
+    },
+    "edgeMtaStageData": {
+      "enableSpamFilter": {
+        "else": "false",
+        "match": {}
+      },
+      "script": {
+        "else": "'edge-auth-verdict'",
+        "match": {}
+      }
+    },
+    "edgeSenderAuth": {
+      "spfEhloVerify": {
+        "else": "relaxed",
+        "match": {}
+      },
+      "spfFromVerify": {
+        "else": "relaxed",
+        "match": {}
+      },
+      "dkimVerify": {
+        "else": "relaxed",
+        "match": {}
+      },
+      "dmarcVerify": {
+        "else": "relaxed",
+        "match": {}
+      },
+      "arcVerify": {
+        "else": "relaxed",
+        "match": {}
+      },
+      "reverseIpVerify": {
+        "else": "relaxed",
+        "match": {}
+      }
+    },
+    "backendRules": [
+      {
+        "@type": "Header",
+        "name": "EDGE_AUTH_SPF",
+        "enable": true,
+        "priority": 0,
+        "condition": {
+          "match": {
+            "0": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'spf=pass;'))",
+              "then": "'SPF_ALLOW'"
+            },
+            "1": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'spf=fail;'))",
+              "then": "'SPF_FAIL'"
+            },
+            "2": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'spf=softfail;'))",
+              "then": "'SPF_SOFTFAIL'"
+            },
+            "3": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'spf=neutral;'))",
+              "then": "'SPF_NEUTRAL'"
+            },
+            "4": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'spf=temperror;'))",
+              "then": "'SPF_DNSFAIL'"
+            },
+            "5": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'spf=permerror;'))",
+              "then": "'SPF_PERMFAIL'"
+            },
+            "6": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'spf=none;'))",
+              "then": "'SPF_NA'"
+            }
+          },
+          "else": "false"
+        }
+      },
+      {
+        "@type": "Header",
+        "name": "EDGE_AUTH_DKIM",
+        "enable": true,
+        "priority": 0,
+        "condition": {
+          "match": {
+            "0": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dkim=pass;'))",
+              "then": "'DKIM_ALLOW'"
+            },
+            "1": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dkim=fail;'))",
+              "then": "'DKIM_REJECT'"
+            },
+            "2": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dkim=neutral;'))",
+              "then": "'DKIM_NA'"
+            },
+            "3": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dkim=temperror;'))",
+              "then": "'DKIM_TEMPFAIL'"
+            },
+            "4": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dkim=permerror;'))",
+              "then": "'DKIM_PERMFAIL'"
+            },
+            "5": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dkim=none;'))",
+              "then": "'DKIM_NA'"
+            }
+          },
+          "else": "false"
+        }
+      },
+      {
+        "@type": "Header",
+        "name": "EDGE_AUTH_DMARC",
+        "enable": true,
+        "priority": 0,
+        "condition": {
+          "match": {
+            "0": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dmarc=pass;'))",
+              "then": "'DMARC_POLICY_ALLOW'"
+            },
+            "1": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dmarc=temperror;'))",
+              "then": "'DMARC_DNSFAIL'"
+            },
+            "2": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dmarc=permerror;'))",
+              "then": "'DMARC_BAD_POLICY'"
+            },
+            "3": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dmarc=none;'))",
+              "then": "'DMARC_NA'"
+            },
+            "4": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dmarc=fail;') && (contains(value_lower, 'policy=reject;')))",
+              "then": "'DMARC_POLICY_REJECT'"
+            },
+            "5": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dmarc=fail;') && (contains(value_lower, 'policy=quarantine;')))",
+              "then": "'DMARC_POLICY_QUARANTINE'"
+            },
+            "6": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (contains(value_lower, 'dmarc=fail;') && (!(contains(value_lower, 'policy=reject;') || contains(value_lower, 'policy=quarantine;'))))",
+              "then": "'DMARC_POLICY_SOFTFAIL'"
+            }
+          },
+          "else": "false"
+        }
+      },
+      {
+        "@type": "Header",
+        "name": "EDGE_AUTH_DMARC_NA_OFFSET",
+        "enable": true,
+        "priority": 0,
+        "condition": {
+          "match": {
+            "0": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (!contains(value_lower, 'dmarc=none;'))",
+              "then": "'EDGE_DMARC_NA_OFFSET'"
+            }
+          },
+          "else": "false"
+        }
+      },
+      {
+        "@type": "Header",
+        "name": "EDGE_AUTH_NA",
+        "enable": true,
+        "priority": 0,
+        "condition": {
+          "match": {
+            "0": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && ((contains(value_lower, 'spf=none;') && (contains(value_lower, 'dkim=none;') || contains(value_lower, 'dkim=neutral;')) && contains(value_lower, 'dmarc=none;')))",
+              "then": "'AUTH_NA'"
+            }
+          },
+          "else": "false"
+        }
+      },
+      {
+        "@type": "Header",
+        "name": "EDGE_AUTH_VALID",
+        "enable": true,
+        "priority": 0,
+        "condition": {
+          "match": {
+            "0": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (true)",
+              "then": "'EDGE_AUTH_VALID'"
+            }
+          },
+          "else": "false"
+        }
+      },
+      {
+        "@type": "Header",
+        "name": "EDGE_AUTH_NA_OR_FAIL",
+        "enable": true,
+        "priority": 0,
+        "condition": {
+          "match": {
+            "0": {
+              "if": "(remote_ip == '10.200.0.2' && name_lower == 'x-edge-auth' && matches('^spf=(pass|fail|softfail|neutral|temperror|permerror|none); dkim=(pass|fail|neutral|temperror|permerror|none); dmarc=(pass|fail|temperror|permerror|none); policy=(reject|quarantine|none|unspecified);$', value)) && (!(contains(value_lower, 'spf=none;') && (contains(value_lower, 'dkim=none;') || contains(value_lower, 'dkim=neutral;')) && contains(value_lower, 'dmarc=none;')) && (contains(value_lower, 'spf=none;') || contains(value_lower, 'spf=temperror;')) && (contains(value_lower, 'dkim=none;') || contains(value_lower, 'dkim=neutral;') || contains(value_lower, 'dkim=temperror;') || contains(value_lower, 'dkim=permerror;')) && contains(value_lower, 'dmarc=none;'))",
+              "then": "'AUTH_NA_OR_FAIL'"
+            }
+          },
+          "else": "false"
+        }
+      }
+    ],
+    "backendRuleOverrides": [
+      {
+        "@type": "Any",
+        "name": "STWT_AUTH_NA",
+        "enable": true,
+        "priority": 1004,
+        "condition": {
+          "match": {
+            "0": {
+              "if": "!$EDGE_AUTH_VALID && $DKIM_NA && $SPF_NA && $DMARC_NA && $ARC_NA",
+              "then": "'AUTH_NA'"
+            }
+          },
+          "else": "false"
+        }
+      }
+    ],
+    "backendTags": [
+      {
+        "@type": "Score",
+        "tag": "EDGE_DMARC_NA_OFFSET",
+        "score": -1.0
+      },
+      {
+        "@type": "Score",
+        "tag": "EDGE_AUTH_VALID",
+        "score": 0.0
+      }
+    ],
+    "backendTagOverrides": [
+      {
+        "@type": "Score",
+        "tag": "BLOCKED_DOMAIN",
+        "score": 1000.0
+      }
+    ]
+  },
+  "limits": [
+    "Score bridge does not restore native DMARC-pass flag or DMARC-gated contact ham trust/learning",
+    "Trusted-reply trust/learning has a separate branch and is not lost solely from missing DMARC flag",
+    "Protocol NA tags remain; DMARC_NA offset preserves its score, not identical native auth context",
+    "No client-IP reputation, ARC or DKIM2 transport; trained production classifier not exported",
+    "Production requires exclusive private LMTP via Cilium namespace+app identity and spam enabled only on listener=edge-lmtp (else false); exact peer IP is fixture-only",
+    "BLOCKED_DOMAIN variant needs one-off API Score1000 conversion before Terraform import",
+    "Existing trusted-reply classification/learning exception remains enabled; it can override spam placement"
+  ],
+  "messageResults": {
+    "filter-pass": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=pass; dkim=none; dmarc=pass; policy=reject;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "EDGE_DMARC_NA_OFFSET (-1.00),\tDMARC_POLICY_ALLOW (-0.50),\tSPF_ALLOW (-0.20),\tARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tEDGE_AUTH_VALID (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tDMARC_NA (1.00)"
+    },
+    "filter-none": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=none; dkim=none; dmarc=none; policy=none;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "ARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tEDGE_AUTH_VALID (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tAUTH_NA (1.00),\tDMARC_NA (1.00)"
+    },
+    "filter-dmarcfail": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=pass; dkim=none; dmarc=fail; policy=reject;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "EDGE_DMARC_NA_OFFSET (-1.00),\tSPF_ALLOW (-0.20),\tARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tEDGE_AUTH_VALID (0.00),\tFROMTLD_EQ_ENV_FROMTLD (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tDMARC_NA (1.00),\tDMARC_POLICY_REJECT (4.00)"
+    },
+    "filter-forwarded": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=fail; dkim=pass; dmarc=pass; policy=reject;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "EDGE_DMARC_NA_OFFSET (-1.00),\tDMARC_POLICY_ALLOW (-0.50),\tDKIM_ALLOW (-0.20),\tARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tDKIM_SIGNED (0.00),\tDMARC_POLICY_ALLOW_WITH_FAILURES (0.00),\tEDGE_AUTH_VALID (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tDMARC_NA (1.00),\tSPF_FAIL (1.00),\tVIOLATED_DIRECT_SPF (3.50)"
+    },
+    "filter-gtube": {
+      "folder": "Junk Mail",
+      "verdicts": [
+        "spf=pass; dkim=none; dmarc=pass; policy=reject;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "EDGE_DMARC_NA_OFFSET (-1.00),\tDMARC_POLICY_ALLOW (-0.50),\tSPF_ALLOW (-0.20),\tARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tEDGE_AUTH_VALID (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tDMARC_NA (1.00),\tGTUBE_TEST (1000.00)"
+    },
+    "filter-untrusted": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=fail; dkim=fail; dmarc=fail; policy=reject;",
+        "spf=pass; dkim=pass; dmarc=pass; policy=none;",
+        "spf=none; dkim=none; dmarc=none; policy=none;"
+      ],
+      "path": "untrusted-bypass",
+      "authenticationResults": [
+        "forged.test; spf=pass; dkim=pass; dmarc=pass"
+      ],
+      "spamResult": "ARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tAUTH_NA (1.00),\tDMARC_NA (1.00)"
+    },
+    "filter-malformed-garbage": {
+      "folder": "INBOX",
+      "verdicts": [
+        "garbage"
+      ],
+      "path": "trusted-bypass",
+      "authenticationResults": [
+        "forged.test; spf=pass; dkim=pass; dmarc=pass"
+      ],
+      "spamResult": "ARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tAUTH_NA (1.00),\tDMARC_NA (1.00)"
+    },
+    "filter-malformed-missing": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=pass; dkim=pass; dmarc=pass;"
+      ],
+      "path": "trusted-bypass",
+      "authenticationResults": [
+        "forged.test; spf=pass; dkim=pass; dmarc=pass"
+      ],
+      "spamResult": "ARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tAUTH_NA (1.00),\tDMARC_NA (1.00)"
+    },
+    "filter-malformed-duplicate": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=pass; spf=fail; dkim=pass; dmarc=pass; policy=none;"
+      ],
+      "path": "trusted-bypass",
+      "authenticationResults": [
+        "forged.test; spf=pass; dkim=pass; dmarc=pass"
+      ],
+      "spamResult": "ARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tAUTH_NA (1.00),\tDMARC_NA (1.00)"
+    },
+    "filter-malformed-xspf": {
+      "folder": "INBOX",
+      "verdicts": [
+        "xspf=pass; dkim=pass; dmarc=pass; policy=none;"
+      ],
+      "path": "trusted-bypass",
+      "authenticationResults": [
+        "forged.test; spf=pass; dkim=pass; dmarc=pass"
+      ],
+      "spamResult": "ARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tAUTH_NA (1.00),\tDMARC_NA (1.00)"
+    },
+    "filter-malformed-suffix": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=pass; dkim=pass; dmarc=pass; policy=none; junk"
+      ],
+      "path": "trusted-bypass",
+      "authenticationResults": [
+        "forged.test; spf=pass; dkim=pass; dmarc=pass"
+      ],
+      "spamResult": "ARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tAUTH_NA (1.00),\tDMARC_NA (1.00)"
+    },
+    "filter-malformed-enum": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=excellent; dkim=pass; dmarc=pass; policy=none;"
+      ],
+      "path": "trusted-bypass",
+      "authenticationResults": [
+        "forged.test; spf=pass; dkim=pass; dmarc=pass"
+      ],
+      "spamResult": "ARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tAUTH_NA (1.00),\tDMARC_NA (1.00)"
+    },
+    "filter-bounce-spf": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=pass; dkim=none; dmarc=pass; policy=reject;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "EDGE_DMARC_NA_OFFSET (-1.00),\tDMARC_POLICY_ALLOW (-0.50),\tSPF_ALLOW (-0.20),\tARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tEDGE_AUTH_VALID (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tSUBJ_BOUNCE_WORDS (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tDMARC_NA (1.00)"
+    },
+    "filter-bounce-dkim": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=fail; dkim=pass; dmarc=pass; policy=reject;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "EDGE_DMARC_NA_OFFSET (-1.00),\tDMARC_POLICY_ALLOW (-0.50),\tDKIM_ALLOW (-0.20),\tARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tDKIM_SIGNED (0.00),\tDMARC_POLICY_ALLOW_WITH_FAILURES (0.00),\tEDGE_AUTH_VALID (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tSUBJ_BOUNCE_WORDS (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tDMARC_NA (1.00),\tSPF_FAIL (1.00),\tVIOLATED_DIRECT_SPF (3.50)"
+    },
+    "filter-bounce-null": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=pass; dkim=pass; dmarc=pass; policy=reject;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "EDGE_DMARC_NA_OFFSET (-1.00),\tDMARC_POLICY_ALLOW (-0.50),\tDKIM_ALLOW (-0.20),\tSPF_ALLOW (-0.20),\tARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tDKIM_SIGNED (0.00),\tEDGE_AUTH_VALID (0.00),\tFROMTLD_EQ_ENV_FROMTLD (0.00),\tFROM_BOUNCE (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tSUBJ_BOUNCE_WORDS (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tDMARC_NA (1.00)"
+    },
+    "filter-bounce-none": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=none; dkim=none; dmarc=none; policy=none;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "ARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tEDGE_AUTH_VALID (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tSUBJ_BOUNCE_WORDS (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tAUTH_NA (1.00),\tBOUNCE_NO_AUTH (1.00),\tDMARC_NA (1.00)"
+    },
+    "filter-bounce-autherror": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=none; dkim=permerror; dmarc=none; policy=none;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "ARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tDKIM_PERMFAIL (0.00),\tDKIM_SIGNED (0.00),\tEDGE_AUTH_VALID (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tSUBJ_BOUNCE_WORDS (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tAUTH_NA_OR_FAIL (1.00),\tBOUNCE_NO_AUTH (1.00),\tDMARC_NA (1.00)"
+    },
+    "filter-blocked": {
+      "folder": "Junk Mail",
+      "verdicts": [
+        "spf=pass; dkim=none; dmarc=pass; policy=reject;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "EDGE_DMARC_NA_OFFSET (-1.00),\tDMARC_POLICY_ALLOW (-0.50),\tSPF_ALLOW (-0.20),\tARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tEDGE_AUTH_VALID (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tDMARC_NA (1.00),\tBLOCKED_DOMAIN (1000.00)"
+    },
+    "filter-queued-restart": {
+      "folder": "INBOX",
+      "verdicts": [
+        "spf=fail; dkim=pass; dmarc=pass; policy=reject;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "EDGE_DMARC_NA_OFFSET (-1.00),\tDMARC_POLICY_ALLOW (-0.50),\tDKIM_ALLOW (-0.20),\tARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tDKIM_SIGNED (0.00),\tDMARC_POLICY_ALLOW_WITH_FAILURES (0.00),\tEDGE_AUTH_VALID (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tDMARC_NA (1.00),\tSPF_FAIL (1.00),\tVIOLATED_DIRECT_SPF (3.50)"
+    },
+    "filter-restarted-gtube": {
+      "folder": "Junk Mail",
+      "verdicts": [
+        "spf=pass; dkim=none; dmarc=pass; policy=reject;"
+      ],
+      "path": "edge",
+      "authenticationResults": [],
+      "spamResult": "EDGE_DMARC_NA_OFFSET (-1.00),\tDMARC_POLICY_ALLOW (-0.50),\tSPF_ALLOW (-0.20),\tARC_NA (0.00),\tDKIM2_NA (0.00),\tDKIM_NA (0.00),\tEDGE_AUTH_VALID (0.00),\tFROM_EQ_ENV_FROM (0.00),\tFROM_NO_DN (0.00),\tHAS_ATTACHMENT (0.00),\tRCPT_COUNT_ONE (0.00),\tRCVD_TLS_LAST (0.00),\tSPF_NA (0.00),\tTO_DN_NONE (0.00),\tTO_MATCH_ENVRCPT_ALL (0.00),\tRCVD_COUNT_ZERO (0.10),\tDMARC_NA (1.00),\tGTUBE_TEST (1000.00)"
+    }
+  },
+  "publicInventory": {
+    "version": "v3.0.1",
+    "sha256": "a1f8970bc73a373a05c3e583cb0f28758eafb1fdb5e876a1b63fe6b9c720c7cb",
+    "source": "personal packages/stalwart-oss/fixtures/spam-rules-v3.0.1.json",
+    "license": "MIT; bundled alongside the personal fixture",
+    "matchesSanitizedProductionMetadataByNameAndCompleteObjectValue": true
+  },
+  "queueEmptyReadback": {
+    "ids": [],
+    "total": 0
+  }
+}
