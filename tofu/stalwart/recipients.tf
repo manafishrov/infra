@@ -3,8 +3,9 @@
 resource "stalwart_mta_stage_rcpt" "server" {
   wait_on_fail = {
     match = [{
-      if   = "listener == 'edge-lmtp'"
-      then = "0ms"
+      if = "listener == 'edge-lmtp'"
+      # Native Duration conversion requires a strictly positive integer.
+      then = "1ms"
     }]
     else = "5s"
   }
