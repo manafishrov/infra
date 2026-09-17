@@ -165,7 +165,6 @@ spec:
         - type: RequestRedirect
           requestRedirect:
             hostname: mail.manafishrov.com
-            scheme: https
             statusCode: 302
 ---
 apiVersion: externaldns.k8s.io/v1alpha1
