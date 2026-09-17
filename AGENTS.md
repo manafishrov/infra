@@ -34,7 +34,7 @@ consumer cluster repo, not here.
     `CLOUDFLARE_API_TOKEN` from the runner env.
   - `pocket-id` — OIDC clients and application recovery settings against the
     company pocket-id. Reads `manafishrov_pocketid_api_token` and
-    `manafishrov_pocketid_smtp_password`. Writes
+    `manafishrov_pocketid_resend_smtp_password`. Writes
     `manafishrov_vaultwarden_pocketid_client_id`,
     `manafishrov_vaultwarden_pocketid_client_secret`,
     `manafishrov_nextcloud_pocketid_client_id`,

@@ -80,19 +80,6 @@ spec:
               protocol: TCP
     - fromEndpoints:
         - matchLabels:
-            k8s:io.kubernetes.pod.namespace: manafishrov-nextcloud
-            k8s:app: nextcloud
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: manafishrov-pocket-id
-            k8s:app: pocket-id
-      toPorts:
-        - ports:
-            - port: "465"
-              protocol: TCP
-            - port: "993"
-              protocol: TCP
-    - fromEndpoints:
-        - matchLabels:
             k8s:io.kubernetes.pod.namespace: uptime-kuma
             k8s:app: uptime-kuma
       toPorts:
