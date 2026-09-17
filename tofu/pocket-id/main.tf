@@ -3,7 +3,7 @@ resource "pocketid_application_config" "recovery" {
   smtp_port             = "465"
   smtp_from             = "noreply@manafishrov.com"
   smtp_user             = "resend"
-  smtp_password         = var.manafishrov_pocketid_smtp_password
+  smtp_password         = var.manafishrov_pocketid_resend_smtp_password
   smtp_tls              = "tls"
   smtp_skip_cert_verify = "false"
 
