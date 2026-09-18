@@ -212,24 +212,14 @@ locals {
     stalwart_mta_sts_policy = {
       name = "_mta-sts"
       type = "TXT"
-      # Refresh cached policy for the company-owned dual-MX transition policy.
-      content = "v=STSv1; id=${var.mta_sts_id_manafishrov}-edge-20260917"
+      # Refresh cached policy after retiring the transitional personal MX.
+      content = "v=STSv1; id=${var.mta_sts_id_manafishrov}-mx-20260918"
     }
     stalwart_mta_sts = {
       name = "mta-sts"
       type = "CNAME"
       # Use the HTTPS Gateway, not the SMTP VIP's split-DNS address.
       content = "router.asgard.michaelbrusegard.com"
-    }
-    stalwart_autoconfig = {
-      name    = "autoconfig"
-      type    = "CNAME"
-      content = "mail.asgard.michaelbrusegard.com"
-    }
-    stalwart_autodiscover = {
-      name    = "autodiscover"
-      type    = "CNAME"
-      content = "mail.asgard.michaelbrusegard.com"
     }
     stalwart_mx = {
       name     = "@"

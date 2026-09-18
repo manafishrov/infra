@@ -5,9 +5,9 @@ spam classification and learning. Public incoming mail arrives through the
 personal infrastructure's routing-only Postfix edge.
 
 Bulwark 1.9.2 serves `https://webmail.manafishrov.com`, pinned by image digest.
-The preview address redirects there. Stalwart JMAP and administration use
-`https://mail.manafishrov.com`. Existing deployment and Secret names keep
-the `bulwark-preview` suffix to preserve settings and session-key continuity.
+Stalwart JMAP and administration use `https://mail.manafishrov.com`.
+The Deployment and Secret are named `bulwark`; the existing settings PVC
+and session-key material are preserved. Retired hostnames have no aliases.
 
 ## Incoming mail
 

@@ -1,8 +1,8 @@
-# Production webmail. Keep resource/Secret names to preserve existing settings.
+# Production webmail; existing settings PVC and session-key material are preserved.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bulwark-preview
+  name: bulwark
   namespace: manafishrov-stalwart
 spec:
   replicas: 1
@@ -13,11 +13,11 @@ spec:
       maxUnavailable: 1
   selector:
     matchLabels:
-      app: bulwark-preview
+      app: bulwark
   template:
     metadata:
       labels:
-        app: bulwark-preview
+        app: bulwark
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -55,7 +55,7 @@ spec:
             - name: SESSION_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: bulwark-preview
+                  name: bulwark
                   key: SESSION_SECRET
             - name: SETTINGS_SYNC_ENABLED
               value: "true"
@@ -115,11 +115,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: bulwark-preview
+  name: bulwark
   namespace: manafishrov-stalwart
 spec:
   selector:
-    app: bulwark-preview
+    app: bulwark
   ports:
     - name: http
       port: 3000
@@ -128,7 +128,7 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: bulwark-preview
+  name: bulwark
   namespace: manafishrov-stalwart
 spec:
   parentRefs:
@@ -142,35 +142,13 @@ spec:
     - webmail.manafishrov.com
   rules:
     - backendRefs:
-        - name: bulwark-preview
+        - name: bulwark
           port: 3000
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: bulwark-preview-redirect
-  namespace: manafishrov-stalwart
-spec:
-  parentRefs:
-    - name: public
-      namespace: gateway
-      sectionName: https
-    - name: internal
-      namespace: gateway
-      sectionName: https
-  hostnames:
-    - mail-preview.manafishrov.com
-  rules:
-    - filters:
-        - type: RequestRedirect
-          requestRedirect:
-            hostname: webmail.manafishrov.com
-            statusCode: 302
 ---
 apiVersion: externaldns.k8s.io/v1alpha1
 kind: DNSEndpoint
 metadata:
-  name: bulwark-preview
+  name: bulwark
   namespace: manafishrov-stalwart
 spec:
   endpoints:
@@ -178,20 +156,16 @@ spec:
       recordType: CNAME
       targets:
         - router.asgard.michaelbrusegard.com
-    - dnsName: mail-preview.manafishrov.com
-      recordType: CNAME
-      targets:
-        - router.asgard.michaelbrusegard.com
 ---
 apiVersion: cilium.io/v2
 kind: CiliumNetworkPolicy
 metadata:
-  name: bulwark-preview
+  name: bulwark
   namespace: manafishrov-stalwart
 spec:
   endpointSelector:
     matchLabels:
-      app: bulwark-preview
+      app: bulwark
   ingress:
     - fromEntities: [ingress, host, remote-node]
       toPorts:
