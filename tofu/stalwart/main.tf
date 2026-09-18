@@ -197,11 +197,11 @@ resource "stalwart_sender_auth" "this" {
   }
   dkim_strict = true
   dkim_verify = {
-    else = "disable"
+    else = "relaxed"
     match = [
       {
-        if   = "listener == 'smtp-edge'"
-        then = "relaxed"
+        if   = "listener == 'edge-lmtp' || listener == 'smtp-edge-local'"
+        then = "disable"
       },
     ]
   }
