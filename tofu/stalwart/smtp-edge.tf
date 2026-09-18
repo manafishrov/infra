@@ -24,11 +24,11 @@ resource "stalwart_network_listener" "smtp_edge" {
 resource "stalwart_network_listener" "smtp_edge_local" {
   count = var.smtp_edge_activation_ready ? 1 : 0
 
-  name                            = "smtp-edge-local"
-  protocol                        = "smtp"
-  bind                            = ["[::]:26"]
-  use_tls                         = true
-  tls_implicit                    = false
+  name         = "smtp-edge-local"
+  protocol     = "smtp"
+  bind         = ["[::]:26"]
+  use_tls      = true
+  tls_implicit = false
   # Native readback normalizes an empty list to null. Guard it explicitly
   # instead of generating perpetual [] -> null reconciliation changes.
   override_proxy_trusted_networks = null
