@@ -6,7 +6,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
-import shutil
+import re
 import subprocess
 import tempfile
 import threading
@@ -137,30 +137,64 @@ class CustodyTests(unittest.TestCase):
         self.assertIn("--ownership-released", result.stderr)
 
 
-class StagedFilesTests(unittest.TestCase):
-    def test_only_phase0_is_active_and_patches_apply_in_order(self):
+class FinalConfigurationTests(unittest.TestCase):
+    def test_native_keys_and_dns_are_no_longer_terraform_managed(self):
+        native = "\n".join(path.read_text() for path in (ROOT / "tofu/stalwart").glob("*.tf"))
+        self.assertNotRegex(native, r'resource\s+"stalwart_dkim_signature')
+        self.assertNotRegex(native, r'\bto\s*=\s*stalwart_dkim_signature')
         dns = (ROOT / "tofu/dns/main.tf").read_text()
+        variables = (ROOT / "tofu/dns/variables.tf").read_text()
         for algorithm in custody.KEYS:
-            self.assertIn(f"v=DKIM1; k={algorithm}; h=sha256; p=${{var.dkim_{algorithm}_pub_manafishrov}}", dns)
-        self.assertFalse((ROOT / "tofu/stalwart/handoff.tf").exists())
-        self.assertFalse((ROOT / "tofu/stalwart/dns.tf").exists())
-        with tempfile.TemporaryDirectory(prefix="dkim-patches-") as name:
-            work = Path(name)
-            for path in ("tofu/stalwart/main.tf", "tofu/stalwart/imports.tf", "tofu/dns/main.tf",
-                         "tofu/dns/variables.tf", "apps/stalwart/statefulset.yaml"):
-                (work / path).parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(ROOT / path, work / path)
-            for patch in sorted((HERE / "stages").glob("*.patch")):
-                subprocess.run(["git", "apply", "--check", str(patch)], cwd=work, check=True, capture_output=True)
-                subprocess.run(["git", "apply", str(patch)], cwd=work, check=True, capture_output=True)
-            main = (work / "tofu/stalwart/main.tf").read_text()
-            self.assertNotIn('resource "stalwart_dkim_signature', main)
-            self.assertIn('publish_records = ["dkim"]', main)
-            self.assertEqual(main.count('selector_template = null\n    type              = "Manual"'), 2)
-            self.assertNotIn('private/dkim', (work / "apps/stalwart/statefulset.yaml").read_text())
-            # Everything after the DKIM entries, including Resend, is byte-identical.
-            self.assertEqual(dns.split("    stalwart_tlsrpt =", 1)[1],
-                             (work / "tofu/dns/main.tf").read_text().split("    stalwart_tlsrpt =", 1)[1])
+            self.assertNotIn("stalwart_dkim_" + algorithm, dns)
+            self.assertNotIn("dkim_" + algorithm + "_pub_manafishrov", variables)
+        self.assertIn("resend_dkim =", dns)
+        self.assertFalse(list((HERE / "stages").glob("*.patch")))
+
+    def test_non_destructive_ownership_receipts_remain(self):
+        for stack, prefix in (("stalwart", "stalwart_dkim_signature_dkim1_"),
+                              ("dns", "cloudflare_dns_record.stalwart_dkim_")):
+            receipt = (ROOT / "tofu" / stack / "handoff.tf").read_text()
+            removed = re.findall(r'removed\s*\{\s*from\s*=\s*(\S+)\s*'
+                                 r'lifecycle\s*\{\s*destroy\s*=\s*false\s*\}\s*\}', receipt)
+            expected = ([prefix + algorithm + "_sha256.manafishrov" for algorithm in custody.KEYS]
+                        if stack == "stalwart" else
+                        [prefix + algorithm + "_handoff" for algorithm in custody.KEYS])
+            self.assertCountEqual(removed, expected)
+            self.assertEqual(len(re.findall(r'\bremoved\s*\{', receipt)), 2)
+            self.assertNotRegex(receipt, r'destroy\s*=\s*true')
+            if stack == "dns":
+                for algorithm in custody.KEYS:
+                    self.assertRegex(receipt, r'moved\s*\{\s*from\s*=\s*'
+                                     r'cloudflare_dns_record\.manafishrov\["stalwart_dkim_' + algorithm +
+                                     r'"\]\s*to\s*=\s*cloudflare_dns_record\.stalwart_dkim_' +
+                                     algorithm + r'_handoff\s*\}')
+
+    def test_manual_rotation_certificates_and_dkim_only_publication(self):
+        main = (ROOT / "tofu/stalwart/main.tf").read_text()
+        domain = main.split('resource "stalwart_domain" "manafishrov" {', 1)[1].split('\n}', 1)[0]
+        for field in ("dkim_management", "certificate_management", "dns_management"):
+            block = re.search(r'\b' + field + r'\s*=\s*\{([^}]*)\}', domain).group(1)
+            if field == "dns_management":
+                self.assertRegex(block, r'type\s*=\s*"Automatic"')
+                self.assertRegex(block, r'publish_records\s*=\s*\["dkim"\]')
+                self.assertRegex(block, r'origin\s*=\s*"manafishrov\.com"')
+                self.assertRegex(block, r'dns_server_id\s*=\s*stalwart_dns_server_cloudflare\.dkim\.id')
+            else:
+                self.assertRegex(block, r'type\s*=\s*"Manual"')
+        for block in re.findall(r'(?:dkim_management|certificate_management)\s*=\s*\{([^}]*)\}', main):
+            self.assertRegex(block, r'type\s*=\s*"Manual"')
+
+    def test_environment_provider_and_no_old_key_mount(self):
+        provider = (ROOT / "tofu/stalwart/dns.tf").read_text()
+        secret = re.search(r'\bsecret\s*=\s*\{([^}]*)\}', provider).group(1)
+        self.assertRegex(secret, r'type\s*=\s*"EnvironmentVariable"')
+        self.assertRegex(secret, r'variable_name\s*=\s*"STALWART_CLOUDFLARE_DKIM_TOKEN"')
+        self.assertNotRegex(secret, r'\b(?:secret|file_path)\s*=')
+        workload = (ROOT / "apps/stalwart/statefulset.yaml").read_text()
+        self.assertNotIn("stalwart-dkim", workload)
+        self.assertNotIn("private/dkim", workload)
+        self.assertRegex(workload, r'secretRef:\s*name: stalwart-env')
+        self.assertIn("secretName: wildcard-tls", workload)
 
 
 @unittest.skipUnless(all(os.environ.get(key) for key in (
@@ -168,7 +202,7 @@ class StagedFilesTests(unittest.TestCase):
     "TOFU_1_11_5", "TOFU_RUNNER_1_12_1")),
     "set a qualified TOFU binary, CF_PROVIDER_MIRROR, DNS_UPDATE_SOURCE and RUSTC")
 class CloudflareProviderTests(unittest.TestCase):
-    def test_phase0_put_and_declarative_forget(self):
+    def test_normalization_put_and_declarative_forget(self):
         """Run real 5.22.0 against fake records; never use credentials or the public API."""
         for key, version in (("TOFU_1_11_5", "1.11.5"), ("TOFU_RUNNER_1_12_1", "1.12.1")):
             if tofu := os.environ.get(key):
@@ -255,12 +289,25 @@ fn main() {
                 ], text=True) for algorithm in ("rsa", "ed25519")}
                 self.assertIn('\" \"', expected["rsa"])  # RSA crosses the 255-byte boundary.
                 self.assertNotIn('\" \"', expected["ed25519"])
-                active = (ROOT / "tofu/dns/main.tf").read_text()
-                native_locals = "locals {\n" + active.split("locals {\n", 1)[1].split("  dns_records =", 1)[0] + "}\n"
-                variable_defs = (ROOT / "tofu/dns/variables.tf").read_text().split('variable "mta_sts_id_manafishrov"', 1)[0]
+                # Retain the historical normalization expression as a standalone
+                # fixture. Active Terraform deliberately no longer owns these keys.
+                # Only fake public data enters the temporary provider state.
+                native_locals = r'''variable "public_keys" {
+  type = map(string)
+}
+locals {
+  stalwart_dkim_txt = {
+    for algorithm, key in var.public_keys : algorithm => "v=DKIM1; k=${algorithm}; h=sha256; p=${key}"
+  }
+  stalwart_dkim_cloudflare_txt = {
+    for algorithm, text in local.stalwart_dkim_txt : algorithm => join(" ", [
+      for chunk in regexall(".{1,255}", text) : format("\"%s\"", chunk)
+    ])
+  }
+}
+'''
                 (work / "fixture.auto.tfvars.json").write_text(json.dumps({
-                    "dkim_rsa_pub_manafishrov": public_keys["rsa"],
-                    "dkim_ed25519_pub_manafishrov": public_keys["ed25519"],
+                    "public_keys": {algorithm: public_keys[algorithm] for algorithm in ("rsa", "ed25519")},
                 }))
                 mirror = str(Path(os.environ["CF_PROVIDER_MIRROR"]).resolve())
                 (work / "tofurc").write_text('provider_installation {\n filesystem_mirror {\n'
@@ -285,7 +332,7 @@ fn main() {
                     each = f"jsondecode({json.dumps(json.dumps(items))})"
                     if normalized and not forget:
                         each = 'merge(local.stalwart_dkim_cloudflare_txt, { resend = ' + json.dumps(items["resend"]) + ' })'
-                    text = native_locals + variable_defs + f'''terraform {{
+                    text = native_locals + f'''terraform {{
   required_version = "~> 1.11.5"
   required_providers {{
     cloudflare = {{ source = "cloudflare/cloudflare", version = "5.22.0" }}
