@@ -20,6 +20,14 @@ variable "smtp_edge_activation_ready" {
   nullable    = false
 }
 
+# Separate the private trial from the domain-wide recipient-policy cutover.
+variable "smtp_edge_exact_recipients_ready" {
+  description = "Attest that old ingress is quiesced and both queues are drained before disabling implicit plus addresses. Keep true after cutover."
+  type        = bool
+  default     = false
+  nullable    = false
+}
+
 variable "stalwart_endpoint" {
   description = "Internal Stalwart management endpoint."
   type        = string

@@ -2,12 +2,15 @@
 
 Only the production tf-controller may plan/apply this stack. Local checks use
 an isolated copy, `init -backend=false`, and `validate`, without credentials.
-This document describes future operator actions, not actions already taken.
+This is the rollout procedure, not a record of completed live checks.
 
 `smtp_edge_activation_ready` defaults to false. Preparation therefore leaves
 both new listeners absent, DATA filtering off, and the BLOCKED_DOMAIN Score
 resource/import absent. The existing `edge-lmtp` listener on port 24 remains
 unchanged for recipient verification, queue drain, and rollback.
+`smtp_edge_exact_recipients_ready` independently defaults to false, preserving
+implicit plus resolution during private listener trials. It must become true
+before public cutover, after old acceptance and both queues are quiesced.
 
 ## Ordering
 
@@ -33,6 +36,12 @@ unchanged for recipient verification, queue drain, and rollback.
    the consumer pod networks (currently `10.42.0.0/16` and `fd42::/56`). These
    CIDRs select PROXY parsing; they do not authorize callers. Native Stalwart
    rejects prefixes shorter than /8. Do not enable global PROXY trust.
+   Set `smtp_edge_activation_ready = true` in the production controller vars.
+   Review its plan: import Score ID `jdzlxyqedpaa`, enable filtering only on
+   `smtp-edge`, and create SMTP/25 and SMTP/26 after the safety settings.
+   Leave `smtp_edge_exact_recipients_ready = false` for the private trial.
+   Do not probe undefined plus addresses into Postfix's positive cache during
+   this trial; otherwise clear that cache before public cutover.
 5. Before changing domain sub-addressing, account for already accepted mail.
    Read complete, metadata-only old-edge and backend queue inventories (all
    pages and totals, no message bodies). Any queued implicit-plus recipient
@@ -40,16 +49,14 @@ unchanged for recipient verification, queue drain, and rollback.
    explicitly preserved and verified. If that accounting cannot exclude an
    ingress race, quiesce old SMTP acceptance, let existing sessions finish and
    drain before proceeding. An empty first page is not proof of an empty queue.
-   Do not defer this check until after activation; a later global plus-resolution
-   change can otherwise permanently reject previously accepted mail.
-   Then set `smtp_edge_activation_ready = true` in the production controller vars.
-   Review its plan: import Score ID `jdzlxyqedpaa` at
-   `stalwart_spam_tag_score.blocked_domain[0]`, enable filtering only on
-   `smtp-edge`, and create SMTP/25 and SMTP/26 after the safety settings.
-   Activation also disables native sub-addressing for `manafishrov.com`.
+   Do not defer this check until after the global plus-resolution change:
+   that can permanently reject previously accepted mail.
+   After the private trial in step 6, set
+   `smtp_edge_exact_recipients_ready = true` through a separately reviewed
+   controller plan. This disables sub-addressing for `manafishrov.com`.
    This changes backend plus-address resolution globally for that domain,
    including LMTP verification and every delivery path, not just SMTP/25.
-   It restores the public edge's existing exact-address contract: explicitly
+   It enforces the replacement's exact-address contract: explicitly
    configured plus aliases remain valid, but undefined plus addresses must
    not resolve to a base mailbox. Postfix's empty `recipient_delimiter` alone
    cannot enforce this while native sub-addressing is enabled. Preparation

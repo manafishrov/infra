@@ -276,7 +276,7 @@ resource "stalwart_domain" "manafishrov" {
   report_address_uri = "mailto:postmaster@manafishrov.com"
   sub_addressing = {
     custom_rule = null
-    type        = var.smtp_edge_activation_ready ? "Disabled" : "Enabled"
+    type        = var.smtp_edge_exact_recipients_ready ? "Disabled" : "Enabled"
   }
 }
 
