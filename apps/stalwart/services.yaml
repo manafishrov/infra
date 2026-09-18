@@ -18,6 +18,12 @@ spec:
     - name: edge-lmtp
       port: 24
       targetPort: edge-lmtp
+    - name: edge-smtp
+      port: 25
+      targetPort: edge-smtp
+    - name: edge-smtp-local
+      port: 26
+      targetPort: edge-smtp-local
     - name: submissions
       port: 465
       targetPort: submissions
@@ -50,10 +56,16 @@ spec:
   selector:
     app: stalwart
   ports:
-    # Private final delivery from the shared edge only.
+    # Private edge traffic only; Cilium identity rules exclude LAN/public clients.
     - name: edge-lmtp
       port: 24
       targetPort: edge-lmtp
+    - name: edge-smtp
+      port: 25
+      targetPort: edge-smtp
+    - name: edge-smtp-local
+      port: 26
+      targetPort: edge-smtp-local
     - name: https
       port: 443
       targetPort: https

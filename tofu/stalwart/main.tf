@@ -197,11 +197,11 @@ resource "stalwart_sender_auth" "this" {
   }
   dkim_strict = true
   dkim_verify = {
-    else = "relaxed"
+    else = "disable"
     match = [
       {
-        if   = "listener == 'edge-lmtp'"
-        then = "disable"
+        if   = "listener == 'smtp-edge'"
+        then = "relaxed"
       },
     ]
   }
@@ -209,7 +209,7 @@ resource "stalwart_sender_auth" "this" {
     else = "disable"
     match = [
       {
-        if   = "local_port == 25"
+        if   = "listener == 'smtp-edge'"
         then = "relaxed"
       },
     ]
@@ -218,7 +218,7 @@ resource "stalwart_sender_auth" "this" {
     else = "disable"
     match = [
       {
-        if   = "local_port == 25"
+        if   = "listener == 'smtp-edge'"
         then = "relaxed"
       },
     ]
@@ -227,7 +227,7 @@ resource "stalwart_sender_auth" "this" {
     else = "disable"
     match = [
       {
-        if   = "local_port == 25"
+        if   = "listener == 'smtp-edge'"
         then = "relaxed"
       },
     ]
@@ -236,7 +236,7 @@ resource "stalwart_sender_auth" "this" {
     else = "disable"
     match = [
       {
-        if   = "local_port == 25"
+        if   = "listener == 'smtp-edge'"
         then = "relaxed"
       },
     ]
@@ -276,7 +276,7 @@ resource "stalwart_domain" "manafishrov" {
   report_address_uri = "mailto:postmaster@manafishrov.com"
   sub_addressing = {
     custom_rule = null
-    type        = "Enabled"
+    type        = var.smtp_edge_activation_ready ? "Disabled" : "Enabled"
   }
 }
 
@@ -483,11 +483,17 @@ resource "stalwart_network_listener" "https" {
 
 # __generated__ by OpenTofu from "singleton"
 resource "stalwart_mta_stage_data" "this" {
+  depends_on = [
+    stalwart_spam_settings.this,
+    stalwart_spam_tag_score.blocked_domain,
+    stalwart_spam_pyzor.this,
+    stalwart_spam_llm.this,
+  ]
   add_auth_results_header = {
     else = "false"
     match = [
       {
-        if   = "local_port == 25"
+        if   = "listener == 'smtp-edge'"
         then = "true"
       },
     ]
@@ -496,7 +502,7 @@ resource "stalwart_mta_stage_data" "this" {
     else = "false"
     match = [
       {
-        if   = "local_port == 25"
+        if   = "listener == 'smtp-edge'"
         then = "true"
       },
     ]
@@ -506,7 +512,7 @@ resource "stalwart_mta_stage_data" "this" {
     else = "false"
     match = [
       {
-        if   = "local_port == 25"
+        if   = "listener == 'smtp-edge'"
         then = "true"
       },
     ]
@@ -515,7 +521,7 @@ resource "stalwart_mta_stage_data" "this" {
     else = "false"
     match = [
       {
-        if   = "local_port == 25"
+        if   = "listener == 'smtp-edge'"
         then = "true"
       },
     ]
@@ -524,7 +530,7 @@ resource "stalwart_mta_stage_data" "this" {
     else = "false"
     match = [
       {
-        if   = "local_port == 25"
+        if   = "listener == 'smtp-edge'"
         then = "true"
       },
     ]
@@ -533,17 +539,17 @@ resource "stalwart_mta_stage_data" "this" {
     else = "false"
     match = [
       {
-        if   = "local_port == 25"
+        if   = "listener == 'smtp-edge'"
         then = "true"
       },
     ]
   }
   enable_spam_filter = {
-    else = "is_empty(authenticated_as)"
+    else = "false"
     match = [
       {
-        if   = "listener == 'edge-lmtp'"
-        then = "false"
+        if   = "listener == 'smtp-edge'"
+        then = var.smtp_edge_activation_ready ? "true" : "false"
       },
     ]
   }

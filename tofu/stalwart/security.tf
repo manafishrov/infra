@@ -1,7 +1,7 @@
 # Recipient probes and final delivery share the edge's IP. Banning that IP
 # after unknown recipients would let Internet senders disable all delivery.
-# This backend has no SMTP/25 listener; LMTP/24 is restricted by network policy
-# to the shared edge and, during retirement, the legacy ingress workload.
+# LMTP/24 remains identity-restricted. The new private PROXY SMTP listener
+# restores real sender IPs but does not make shared LMTP probes safe to ban.
 # Authentication, scanner and loiter protection remain unchanged.
 resource "stalwart_security" "server" {
   abuse_ban_rate = null

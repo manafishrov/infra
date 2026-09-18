@@ -44,6 +44,10 @@ spec:
               name: https
             - containerPort: 24
               name: edge-lmtp
+            - containerPort: 25
+              name: edge-smtp
+            - containerPort: 26
+              name: edge-smtp-local
             - containerPort: 465
               name: submissions
             - containerPort: 587

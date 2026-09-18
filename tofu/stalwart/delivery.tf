@@ -1,10 +1,10 @@
-# The private LMTP listener accepts final delivery from the ingress pod.
-# Network policy limits that listener to trusted mail backends. Submission
-# listeners retain their normal authentication requirements and mechanisms.
+# Private relay listeners accept only identity-restricted edge traffic.
+# LMTP serves recipient verification and the retiring edge's queue drain.
+# Submission listeners retain their authentication requirements.
 resource "stalwart_mta_stage_auth" "server" {
   require = {
     match = [{
-      if   = "listener == 'edge-lmtp'"
+      if   = "listener == 'edge-lmtp' || listener == 'smtp-edge' || listener == 'smtp-edge-local'"
       then = "false"
     }]
     else = "true"
@@ -12,7 +12,7 @@ resource "stalwart_mta_stage_auth" "server" {
   sasl_mechanisms = {
     match = [
       {
-        if   = "listener == 'edge-lmtp'"
+        if   = "listener == 'edge-lmtp' || listener == 'smtp-edge' || listener == 'smtp-edge-local'"
         then = "false"
       },
       {
