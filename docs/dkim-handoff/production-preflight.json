@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-09-18",
+  "readOnly": true,
+  "ownershipReleased": false,
+  "custodyChanged": false,
+  "publicationEnabled": false,
+  "cloudflareApiContentMatchesNativeQuotedChunks": true,
+  "authoritativeServers": ["amir.ns.cloudflare.com", "frida.ns.cloudflare.com"],
+  "authoritativeTxtMatchesNativePublicKeys": true,
+  "historicalNormalizationMutationAudited": false,
+  "currentRecords": [
+    {"selector": "stalwart-rsa", "recordId": "ac4781451f1dcdd8889e461383646aeb", "publicKeySha256": "cb3dc58760f651e6ca156034fc65871fffd87f4a3e769da4df4d80424e20e043", "stage": "active", "nextTransitionAt": null},
+    {"selector": "stalwart-ed25519", "recordId": "b2e15357fb08d5948457abf5cbc3654a", "publicKeySha256": "e2ab54227669e9178b427666b682bac6b43d01fbccf9fbbfed5c5c7c721b33b8", "stage": "active", "nextTransitionAt": null}
+  ],
+  "blockers": [
+    "Dedicated STALWART_CLOUDFLARE_DKIM_TOKEN is absent from the live backend environment Secret. Do not reuse the shared controller token.",
+    "Existing backend management credential lacks taskDnsManagement. An explicit narrow permission grant is needed before proceeding."
+  ],
+  "sharedCloudflareTokenVerification": {"active": true, "readOwnPolicyHttpStatus": 403, "tokenCreated": false},
+  "nextGate": "Provision the dedicated credential and narrowly authorize DNS task creation; recheck record IDs, exact API contents, authoritative TXT and reviewed controller plans before releasing either owner."
+}

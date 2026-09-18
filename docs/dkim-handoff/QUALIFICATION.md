@@ -64,13 +64,26 @@ OpenTofu 1.12 ignores `required_version` in `.tf` files as a Terraform constrain
 the existing `~> 1.11.5` therefore does not pin the controller's OpenTofu version.
 Do not infer the executable version from that declaration.
 
+## Production preflight (2026-09-18)
+
+Read-only checks now confirm exact Cloudflare API quoted-chunk content and native
+public-key equality for both selectors. Both authoritative nameservers return
+the matching TXT data. Current IDs/fingerprints and the limits of this check are
+recorded in `production-preflight.json`; this is not an audit of the earlier
+normalization mutation.
+
+The dedicated backend Cloudflare credential is still absent, and the existing
+management credential still lacks `taskDnsManagement`. No token was created,
+permission expanded, owner released, key imported or publication enabled. Keep
+both owners and mounted keys intact until those prerequisites are satisfied.
+
 ## Still required before advancing stages
 
 1. Controller/source-revision coordination and reviewed real plans using the
    identified runner image. No in-cluster plan/apply was requested by these tests.
-2. Real Cloudflare API content exactly matching native quoted-chunk encoding,
-   unchanged record IDs, authoritative TXT answers and matching native public
-   keys. DNS semantic equality alone does not satisfy this gate.
+2. Recheck the observed Cloudflare IDs, exact native quoted-chunk API content,
+   authoritative TXT and native public keys immediately before transfer, then
+   verify unchanged IDs afterward. DNS semantic equality alone is insufficient.
 3. A dedicated Cloudflare token scoped to the company zone, securely provisioned
    to the backend, plus the missing `taskDnsManagement` permission. Read-only
    permission discovery used the existing management credential; no DKIM private
