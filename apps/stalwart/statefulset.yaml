@@ -5,7 +5,7 @@ metadata:
   namespace: manafishrov-stalwart
   annotations:
     configmap.reloader.stakater.com/reload: stalwart-config
-    secret.reloader.stakater.com/reload: stalwart-env,stalwart-dkim,wildcard-tls
+    secret.reloader.stakater.com/reload: stalwart-env,wildcard-tls
 spec:
   replicas: 1
   selector:
@@ -89,9 +89,6 @@ spec:
             - mountPath: /var/lib/stalwart/private/tls
               name: tls
               readOnly: true
-            - mountPath: /var/lib/stalwart/private/dkim
-              name: dkim
-              readOnly: true
             - mountPath: /tmp
               name: temp
       volumes:
@@ -103,9 +100,6 @@ spec:
         - name: tls
           secret:
             secretName: wildcard-tls
-        - name: dkim
-          secret:
-            secretName: stalwart-dkim
   volumeClaimTemplates:
     - metadata:
         name: data
