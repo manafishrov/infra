@@ -30,14 +30,6 @@ import {
   id = "b"
 }
 import {
-  to = stalwart_dkim_signature_dkim1_rsa_sha256.manafishrov
-  id = "jdzlxs2ualqa"
-}
-import {
-  to = stalwart_dkim_signature_dkim1_ed25519_sha256.manafishrov
-  id = "jdzlxs2uamqa"
-}
-import {
   to = stalwart_certificate.wildcard
   id = "jdzlxs2saiaa"
 }

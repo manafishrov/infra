@@ -5,19 +5,6 @@ data "cloudflare_zone" "manafishrov" {
 }
 
 locals {
-  # Phase 0: match both Stalwart's tags and dns-update 0.5.7's Cloudflare
-  # representation. It compares quoted 255-byte TXT chunks exactly and deletes
-  # unmatched values before creating replacements. DKIM text here is ASCII.
-  stalwart_dkim_txt = {
-    rsa     = "v=DKIM1; k=rsa; h=sha256; p=${var.dkim_rsa_pub_manafishrov}"
-    ed25519 = "v=DKIM1; k=ed25519; h=sha256; p=${var.dkim_ed25519_pub_manafishrov}"
-  }
-  stalwart_dkim_cloudflare_txt = {
-    for algorithm, text in local.stalwart_dkim_txt : algorithm => join(" ", [
-      for chunk in regexall(".{1,255}", text) : format("\"%s\"", chunk)
-    ])
-  }
-
   dns_records = {
 
     website = {
@@ -194,16 +181,6 @@ locals {
       content = "protonmail-verification=acc7d667357e78d99f1a07a06b39bf6ffe63b11f"
     }
 
-    stalwart_dkim_rsa = {
-      name    = "stalwart-rsa._domainkey"
-      type    = "TXT"
-      content = local.stalwart_dkim_cloudflare_txt.rsa
-    }
-    stalwart_dkim_ed25519 = {
-      name    = "stalwart-ed25519._domainkey"
-      type    = "TXT"
-      content = local.stalwart_dkim_cloudflare_txt.ed25519
-    }
     stalwart_tlsrpt = {
       name    = "_smtp._tls"
       type    = "TXT"

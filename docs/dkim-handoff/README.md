@@ -1,8 +1,8 @@
 # Manafish DKIM custody and publication handoff
 
-Only Phase 0 is active configuration. The files in `stages/` are unapplied,
-sequential patches, not Terraform modules or a deployment script. Do not apply
-all patches together. Each stage needs its predecessor's production evidence
+The ownership-release rollout is in progress. The files in `stages/` describe
+sequential transitions, not Terraform modules or a deployment script. Do not
+apply all patches together or reapply an already completed stage. Each stage needs its predecessor's production evidence
 and separate rollout approval. OpenTofu runs through the consumer's controller,
 not against production from a local checkout.
 
@@ -226,11 +226,18 @@ Both the principal and API-key scope must permit the requested operation.
 - Explicit publication: `sysTaskCreate` **and** `taskDnsManagement`;
   `sysTaskGet`/`sysTaskQuery` to inspect results.
 
-A read-only audit of the deployed backend token found the required registry
-permissions present, but **`taskDnsManagement` absent**. Approve and verify that
-narrow grant before using the explicit refresh request. A document change does
-not expand an existing principal or API-key scope. Do not assume `sysTaskCreate`
-alone authorizes DNS publication.
+The deployed token has the required registry permissions but lacks
+`taskDnsManagement`. An authorized narrow grant attempt was rejected by the
+server: the principal cannot grant a permission it does not hold. No permission
+was changed and no recovery-mode workaround was used.
+
+Normal-mode isolated tests verified the supported alternative: the existing
+`sysDomainUpdate` authority can enable Automatic DNS, which natively schedules
+one DKIM-only task with certificate renewal disabled. Explicit task creation
+still fails without `taskDnsManagement`. This rollout uses that initial native
+automatic task, not the explicit refresh request. Future explicit refreshes
+require a grant by an already authorized administrator; do not toggle domain
+settings merely to circumvent that restriction.
 
 Do not add DKIM Create/Destroy or `taskDkimManagement`. Native DNS tasks trust
 `updateRecords` rather than intersecting it with `publishRecords`; keep task
