@@ -4,9 +4,9 @@ Stalwart owns mailboxes, native SCIM/OIDC, authenticated submission, DKIM,
 spam classification and learning. Public incoming mail arrives through the
 personal infrastructure's routing-only Postfix edge.
 
-Bulwark 1.9.2 serves `https://mail.manafishrov.com`, pinned by image digest.
-The preview address redirects there. Stalwart administration remains at
-`https://mail-admin.manafishrov.com`. Existing deployment and Secret names keep
+Bulwark 1.9.2 serves `https://webmail.manafishrov.com`, pinned by image digest.
+The preview address redirects there. Stalwart JMAP and administration use
+`https://mail.manafishrov.com`. Existing deployment and Secret names keep
 the `bulwark-preview` suffix to preserve settings and session-key continuity.
 
 ## Incoming mail
@@ -35,9 +35,9 @@ mail back; account for new mail and queues before any rollback.
 ## Authentication and configuration
 
 Bulwark uses Pocket ID with the existing public `stalwart` PKCE client because
-Stalwart validates that client audience. Production and preview callbacks are
+Stalwart validates that client audience. Production callbacks are
 declared in `tofu/pocket-id/mail.tf`. Webmail does not request the `groups` scope;
-server administration belongs at `mail-admin`, not in the webmail login.
+server administration belongs at `mail`, not in the webmail login.
 
 The session encryption key lives in the encrypted sibling secrets repository.
 Passwords and custom JMAP endpoints are disabled. Settings sync is enabled with

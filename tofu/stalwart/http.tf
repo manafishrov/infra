@@ -22,7 +22,7 @@ resource "stalwart_http" "server" {
     period = 60000
   }
   response_headers = {
-    "Access-Control-Allow-Origin"  = "https://mail.manafishrov.com"
+    "Access-Control-Allow-Origin"  = "https://webmail.manafishrov.com"
     "Access-Control-Allow-Methods" = "GET, HEAD, POST, OPTIONS"
     "Access-Control-Allow-Headers" = "Authorization, Content-Type, Accept, Last-Event-ID"
   }

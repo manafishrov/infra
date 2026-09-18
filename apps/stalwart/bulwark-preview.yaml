@@ -35,7 +35,7 @@ spec:
               containerPort: 3000
           env:
             - name: JMAP_SERVER_URL
-              value: https://mail-admin.manafishrov.com
+              value: https://mail.manafishrov.com
             - name: APP_NAME
               value: Manafish Mail
             - name: OAUTH_ENABLED
@@ -139,7 +139,6 @@ spec:
       namespace: gateway
       sectionName: https
   hostnames:
-    - mail.manafishrov.com
     - webmail.manafishrov.com
   rules:
     - backendRefs:
@@ -165,7 +164,7 @@ spec:
     - filters:
         - type: RequestRedirect
           requestRedirect:
-            hostname: mail.manafishrov.com
+            hostname: webmail.manafishrov.com
             statusCode: 302
 ---
 apiVersion: externaldns.k8s.io/v1alpha1
@@ -224,7 +223,7 @@ spec:
               protocol: TCP
     - toFQDNs:
         - matchName: id.manafishrov.com
-        - matchName: mail-admin.manafishrov.com
+        - matchName: mail.manafishrov.com
       toPorts:
         - ports:
             - port: "443"

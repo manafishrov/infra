@@ -113,7 +113,7 @@ data:
         "name": "Manafish Mail",
         "type": "http",
         "parent_name": "manafish[0]",
-        "url": "https://mail.manafishrov.com",
+        "url": "https://webmail.manafishrov.com",
         "interval": 60,
         "max_retries": 3,
         "retry_interval": 30,

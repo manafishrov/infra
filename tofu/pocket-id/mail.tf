@@ -32,14 +32,12 @@ resource "pocketid_client" "stalwart" {
   client_id = "stalwart"
   name      = "Stalwart"
   callback_urls = concat([
-    "https://mail-admin.manafishrov.com/account/oauth/callback",
-    "https://mail-admin.manafishrov.com/admin/oauth/callback",
     "https://mail.manafishrov.com/account/oauth/callback",
     "https://mail.manafishrov.com/admin/oauth/callback",
     ], [
     # Bulwark 1.9.2 includes the selected locale in its PKCE callback.
     for pair in setproduct(
-      ["mail-preview.manafishrov.com", "mail.manafishrov.com", "webmail.manafishrov.com"],
+      ["webmail.manafishrov.com"],
       ["ar", "ca", "cs", "da", "de", "en", "es", "fa", "fr", "he", "hu", "it", "ja", "ko", "lv", "mn", "nl", "pl", "pt", "ro", "ru", "sk", "tr", "uk", "zh"],
     ) : "https://${pair[0]}/${pair[1]}/auth/callback"
   ])

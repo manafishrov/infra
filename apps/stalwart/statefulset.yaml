@@ -31,7 +31,7 @@ spec:
             - /var/lib/stalwart/config.json
           env:
             - name: STALWART_PUBLIC_URL
-              value: https://mail-admin.manafishrov.com
+              value: https://mail.manafishrov.com
             - name: STALWART_OIDC_ADMIN_GROUP
               value: mail-admin
           envFrom:
