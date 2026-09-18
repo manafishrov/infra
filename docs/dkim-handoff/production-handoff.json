@@ -1,0 +1,125 @@
+{
+  "date": "2026-09-18",
+  "completed": true,
+  "domain": "manafishrov.com",
+  "domainId": "c",
+  "ownershipRelease": {
+    "revision": "1ca2634715724809ca1b60fd437642b321741646",
+    "controllerPlans": [
+      {
+        "stack": "manafishrov-dns",
+        "plan": "plan-main-1ca2634715",
+        "add": 0,
+        "change": 0,
+        "destroy": 0,
+        "forget": 2
+      },
+      {
+        "stack": "manafishrov-stalwart",
+        "plan": "plan-main-1ca2634715",
+        "add": 0,
+        "change": 0,
+        "destroy": 0,
+        "forget": 2
+      }
+    ],
+    "bothStatesVerifiedWithoutDkimOwnership": true
+  },
+  "custody": {
+    "type": "Text",
+    "privateReadbackMasked": true,
+    "unchangedMetadata": true,
+    "signatures": [
+      {
+        "id": "jdzlxs2ualqa",
+        "selector": "stalwart-rsa",
+        "decodedPublicKeySha256": "30ac4db5b40ef7fa6cdc6c3edba02ad22ff01145ce1452caff814a764136071f",
+        "stage": "active",
+        "nextTransitionAt": null
+      },
+      {
+        "id": "jdzlxs2uamqa",
+        "selector": "stalwart-ed25519",
+        "decodedPublicKeySha256": "47282ea312174340f826f019c7dfe69bd1a301120a8e24033cb7dc2b2aeb73a3",
+        "stage": "active",
+        "nextTransitionAt": null
+      }
+    ],
+    "nativeInventoryContainsOnlyTheseTwoSignatures": true,
+    "noMountRestartRevision": "49aa97fd088ebc354cb81f0a84d1e0d95ce4485d",
+    "afterRestartTextAndOriginalKeysVerified": true,
+    "legacyKeyFilesAbsent": true,
+    "legacySecretPruned": true,
+    "companySecretRetirementRevision": "39bd25643f9450aa9773fc4095101842eac8d115"
+  },
+  "publication": {
+    "providerId": "jfi2hgdoabaa",
+    "providerPlan": "plan-main-3e1bcc0ebb",
+    "activationPlan": "plan-main-606a4c7162",
+    "credential": "dedicated account-owned token via STALWART_CLOUDFLARE_DKIM_TOKEN",
+    "credentialInTerraform": false,
+    "effectiveZonePermissions": [
+      "#zone:read",
+      "#zone_settings:read",
+      "#dns_records:read",
+      "#dns_records:edit"
+    ],
+    "dnsManagement": "Automatic",
+    "publishRecords": [
+      "dkim"
+    ],
+    "dkimManagement": "Manual",
+    "certificateManagement": "Manual",
+    "nativeSuccessEvents": [
+      {
+        "selector": "stalwart-ed25519",
+        "event": "dns.record-created",
+        "time": "2026-09-18T11:52:36Z"
+      },
+      {
+        "selector": "stalwart-rsa",
+        "event": "dns.record-created",
+        "time": "2026-09-18T11:52:37Z"
+      }
+    ],
+    "eventMeaning": "Successful native RRset operations; not evidence of Cloudflare record recreation. Existing record IDs and exact contents stayed unchanged.",
+    "unchangedCloudflareRecordIds": [
+      "ac4781451f1dcdd8889e461383646aeb",
+      "b2e15357fb08d5948457abf5cbc3654a"
+    ],
+    "exactApiContentsAndNativePublicKeysUnchanged": true,
+    "remainingTasks": 0,
+    "authoritativeServersVerifiedAfterRestart": [
+      "amir.ns.cloudflare.com",
+      "frida.ns.cloudflare.com"
+    ]
+  },
+  "permissions": {
+    "requestedNarrowGrant": "taskDnsManagement",
+    "grantResult": "forbidden: principal cannot grant a permission it does not hold",
+    "permissionsChanged": false,
+    "activationAuthority": "existing sysDomainUpdate, verified in isolated normal mode",
+    "explicitTaskCreationStillForbidden": true,
+    "recoveryModeUsedInProduction": false
+  },
+  "tokenRotation": {
+    "distinctReplacementTokens": 4,
+    "allDifferFromOld": true,
+    "kubernetesSecretsChecked": 262,
+    "oldTokenMatches": 0,
+    "routerDdnsRunsSucceeded": [
+      "macchiato",
+      "cortado"
+    ],
+    "clusterMirrorsMatch": true,
+    "dedicatedBackendTokenMatches": true,
+    "temporaryTokenInputsRemoved": true,
+    "oldTokenRevokedByAgent": false
+  },
+  "limits": [
+    "Automatic key rotation and certificates remain disabled; no periodic DNS drift-repair service was added.",
+    "Future explicit DNS refreshes require an already authorized administrator or an authorized narrow grant; do not toggle the domain to bypass that restriction.",
+    "No production message bodies were fetched. Signing before/after Text custody was qualified with disposable native fixtures; this handoff does not claim a new live outbound-message signature test.",
+    "Historical encrypted keys/tokens remain in Git and old Nix generations; they are not active credential sources. Backups and Manata were not changed."
+  ]
+}

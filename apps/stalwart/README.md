@@ -32,6 +32,14 @@ Mailbox storage, native identity, DKIM keys/selectors and unrelated services are
 unchanged by the Postfix replacement. Reversing a delivery route does not copy
 mail back; account for new mail and queues before any rollback.
 
+## DKIM ownership
+
+Stalwart holds the original keys in native Text custody and publishes only DKIM
+DNS records using its dedicated Cloudflare credential. The old key mount/Secret
+and Terraform key/record ownership are retired. Key rotation and certificate
+management remain Manual. See [DKIM operations](../../docs/dkim-handoff/README.md)
+for refresh permissions, exact-content checks and the production receipt.
+
 ## Authentication and configuration
 
 Bulwark uses Pocket ID with the existing public `stalwart` PKCE client because
