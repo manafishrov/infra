@@ -242,10 +242,10 @@ resource "stalwart_domain" "manafishrov" {
     type              = "Manual"
   }
   dns_management = {
-    dns_server_id   = null
-    origin          = null
-    publish_records = null
-    type            = "Manual"
+    dns_server_id   = stalwart_dns_server_cloudflare.dkim.id
+    origin          = "manafishrov.com"
+    publish_records = ["dkim"]
+    type            = "Automatic"
   }
   is_enabled         = true
   logo               = null
