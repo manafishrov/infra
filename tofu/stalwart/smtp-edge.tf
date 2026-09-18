@@ -29,7 +29,15 @@ resource "stalwart_network_listener" "smtp_edge_local" {
   bind                            = ["[::]:26"]
   use_tls                         = true
   tls_implicit                    = false
-  override_proxy_trusted_networks = []
+  # Native readback normalizes an empty list to null. Guard it explicitly
+  # instead of generating perpetual [] -> null reconciliation changes.
+  override_proxy_trusted_networks = null
+  lifecycle {
+    postcondition {
+      condition     = self.override_proxy_trusted_networks == null ? true : length(self.override_proxy_trusted_networks) == 0
+      error_message = "Generated-mail SMTP must not trust PROXY assertions."
+    }
+  }
   depends_on = [
     stalwart_mta_stage_auth.server,
     stalwart_mta_stage_data.this,

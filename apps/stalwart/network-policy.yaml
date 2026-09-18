@@ -32,17 +32,6 @@ spec:
         - ports:
             - port: "8080"
               protocol: TCP
-    # Retiring Stalwart edge: retain discovery and queue drain until accounted for.
-    - fromEndpoints:
-        - matchLabels:
-            k8s:io.kubernetes.pod.namespace: stalwart-edge
-            k8s:app: stalwart-edge
-      toPorts:
-        - ports:
-            - port: "24"
-              protocol: TCP
-            - port: "443"
-              protocol: TCP
     # PROXY sender assertions are trusted only from this exact workload identity.
     # No HTTP/JMAP access is needed by Postfix.
     - fromEndpoints:

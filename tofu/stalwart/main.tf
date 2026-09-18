@@ -433,6 +433,12 @@ resource "stalwart_system_settings" "this" {
   provider_info          = {}
   proxy_trusted_networks = null
   thread_pool_size       = null
+  lifecycle {
+    postcondition {
+      condition     = self.proxy_trusted_networks == null ? true : length(self.proxy_trusted_networks) == 0
+      error_message = "Global PROXY trust is forbidden; scope it to the private smtp-edge listener."
+    }
+  }
 }
 
 # __generated__ by OpenTofu from "jdzlxs2qagaa"
