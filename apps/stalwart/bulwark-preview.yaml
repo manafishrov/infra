@@ -140,6 +140,7 @@ spec:
       sectionName: https
   hostnames:
     - mail.manafishrov.com
+    - webmail.manafishrov.com
   rules:
     - backendRefs:
         - name: bulwark-preview
@@ -174,6 +175,10 @@ metadata:
   namespace: manafishrov-stalwart
 spec:
   endpoints:
+    - dnsName: webmail.manafishrov.com
+      recordType: CNAME
+      targets:
+        - router.asgard.michaelbrusegard.com
     - dnsName: mail-preview.manafishrov.com
       recordType: CNAME
       targets:
