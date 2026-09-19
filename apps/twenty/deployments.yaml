@@ -21,7 +21,7 @@ spec:
         runAsGroup: 1000
       containers:
         - name: worker
-          image: twentycrm/twenty:v2.25.1@sha256:c843b9ef94390e3e56d99e26397baec528ffd1d7d02c9b677f0589159d20a215
+          image: twentycrm/twenty:v2.41.0@sha256:47bcefe4e497ceef232f149153a4a61379830f5c898b7da71a5b0e21fd5ea916
           command: ["yarn", "worker:prod"]
           envFrom:
             - secretRef:
