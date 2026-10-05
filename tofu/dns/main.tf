@@ -232,6 +232,25 @@ locals {
       type    = "TXT"
       content = "v=spf1 include:amazonses.com ~all"
     }
+
+    lovable_email = {
+      name    = "_lovable-email"
+      type    = "TXT"
+      content = "lovable_email_verify=db706f0f543b6750fefd12a755663b5fd2743aac7cf616352551f193ed35e17f"
+      ttl     = 300
+    }
+    lovable_email_ns3 = {
+      name    = "notify"
+      type    = "NS"
+      content = "ns3.lovable.cloud"
+      ttl     = 300
+    }
+    lovable_email_ns4 = {
+      name    = "notify"
+      type    = "NS"
+      content = "ns4.lovable.cloud"
+      ttl     = 300
+    }
   }
 }
 
