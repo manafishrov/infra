@@ -40,6 +40,12 @@ locals {
       content = "lovable_verify=868dafebfa40ff43475f6a3a4c9c535837b9a2f7ecd4dc245bf2a50034863bf0"
     }
 
+    shopline = {
+      name    = "shop"
+      type    = "CNAME"
+      content = "vip.myshopline.shop"
+    }
+
     beta = {
       name    = "beta"
       type    = "CNAME"
