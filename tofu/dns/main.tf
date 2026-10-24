@@ -58,6 +58,12 @@ locals {
       content = "cname.tally.so"
     }
 
+    vip = {
+      name    = "vip"
+      type    = "CNAME"
+      content = "vip.myshopline.shop"
+    }
+
     landing = {
       name    = "landing"
       type    = "CNAME"
