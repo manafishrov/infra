@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: valkey
-          image: valkey/valkey:9.1.2-alpine@sha256:b2c234ceca8ab66d00074c63ddeb4a81193f489311fbd17f680155ab5cdd22ed
+          image: valkey/valkey:9.1.2-alpine@sha256:3b83b0b6a598bb390c8186a408a69949772f439548a81c5ea0ab7ccf102c248d
           args:
             - --maxmemory
             - 256mb
@@ -111,7 +111,7 @@ spec:
           # 26.04.2.2.1 drops probe connections to /hosting/discovery (EOF)
           # so kubelet liveness-kills an otherwise healthy server in a loop.
           # Verify the probes stay green before accepting the next bump.
-          image: collabora/code:26.04.4.1.1@sha256:1efda3043e8b9cb437d1b6c6efe20cc3753760e634de012b8dac391da488bf97
+          image: collabora/code:26.04.5.2.1@sha256:c7415b963e32eb0986a562583f154d36d3d7a461e1ddfb660a95e87094328acb
           env:
             - name: aliasgroup1
               value: https://cloud.manafishrov.com
@@ -166,7 +166,7 @@ spec:
     spec:
       containers:
         - name: whiteboard
-          image: ghcr.io/nextcloud-releases/whiteboard:v1.5.9@sha256:b60b7633f90d106ac6922f9bc27e1a1ca2442488b740fefdae4c812f34e9cebc
+          image: ghcr.io/nextcloud-releases/whiteboard:v2.1.2@sha256:fd714528ae29beb9e9ad56589c031f7c6c688979b5e0cfbba7bb546cf75a0e43
           env:
             - name: NEXTCLOUD_URL
               value: http://nextcloud
