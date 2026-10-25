@@ -84,10 +84,10 @@
       "automerge": false
     },
     {
-      "description": "Keep Pocket ID compatible with official trozz/pocketid 2.3.0: 2.14 replaces the singular client-secret endpoint. Lift after provider compatibility and recovery qualification.",
+      "description": "Keep Pocket ID compatible with trozz/pocketid 2.5.0: 2.19 renames required application config fields the provider still sends. Lift after a provider release models the new fields.",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["ghcr.io/pocket-id/pocket-id"],
-      "allowedVersions": "<2.14.0"
+      "allowedVersions": "<2.19.0"
     },
     {
       "enabled": false,
