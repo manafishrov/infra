@@ -96,6 +96,17 @@
       "allowedVersions": "<2.45.0"
     },
     {
+      "description": "Stalwart is absent from the OpenTofu registry. Discover official GitHub releases; qualify each update with the pinned CI mirror and provider lock.",
+      "matchDatasources": ["terraform-provider"],
+      "matchPackageNames": ["tahacodes/stalwart"],
+      "overrideDatasource": "github-releases",
+      "overridePackageName": "tahacodes/terraform-provider-stalwart",
+      "registryUrls": ["https://github.com"],
+      "versioning": "semver",
+      "extractVersion": "^v(?<version>.*)$",
+      "automerge": false
+    },
+    {
       "enabled": false,
       "matchManagers": ["terraform"],
       "matchDepTypes": ["required_version"],
