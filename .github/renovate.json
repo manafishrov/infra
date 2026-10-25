@@ -90,6 +90,12 @@
       "allowedVersions": "<2.19.0"
     },
     {
+      "description": "Follow n8n's stable line. Numeric 2.45 Docker tags are GitHub prereleases; raise once n8n moves its stable tag to 2.45.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["docker.io/n8nio/n8n"],
+      "allowedVersions": "<2.45.0"
+    },
+    {
       "enabled": false,
       "matchManagers": ["terraform"],
       "matchDepTypes": ["required_version"],
