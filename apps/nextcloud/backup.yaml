@@ -284,7 +284,7 @@ spec:
                   mountPath: /cache
           containers:
             - name: trigger-volsync
-              image: docker.io/library/python:3.14-slim@sha256:0214bda9af2652a418f2bf34373a4d3ca00a5f4784081e040049433ac9cc79d5
+              image: docker.io/library/python:3.15-slim@sha256:b23bb42e5298783f81e7e6f09e1175f68eb46000a789b3ee272ac231c212c4cf
               command:
                 - python
                 - /scripts/trigger-volsync.py
