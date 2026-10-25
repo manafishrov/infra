@@ -166,7 +166,7 @@ spec:
     spec:
       containers:
         - name: whiteboard
-          image: ghcr.io/nextcloud-releases/whiteboard:v1.5.9@sha256:b60b7633f90d106ac6922f9bc27e1a1ca2442488b740fefdae4c812f34e9cebc
+          image: ghcr.io/nextcloud-releases/whiteboard:v2.1.2@sha256:fd714528ae29beb9e9ad56589c031f7c6c688979b5e0cfbba7bb546cf75a0e43
           env:
             - name: NEXTCLOUD_URL
               value: http://nextcloud
