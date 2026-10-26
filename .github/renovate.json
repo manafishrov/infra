@@ -12,6 +12,7 @@
   "schedule": ["before 09:00 on monday"],
   "prConcurrentLimit": 10,
   "prHourlyLimit": 10,
+  "platformAutomerge": false,
   "labels": ["dependencies"],
   "commitMessagePrefix": "chore(deps): ",
   "osvVulnerabilityAlerts": true,
@@ -41,14 +42,12 @@
     {
       "matchUpdateTypes": ["digest", "pinDigest"],
       "groupName": "container & action digests",
-      "automerge": true,
-      "platformAutomerge": true
+      "automerge": true
     },
     {
       "matchUpdateTypes": ["patch"],
       "groupName": "all patch dependencies",
-      "automerge": true,
-      "platformAutomerge": true
+      "automerge": true
     },
     {
       "matchUpdateTypes": ["minor"],
@@ -57,20 +56,17 @@
     {
       "matchUpdateTypes": ["lockFileMaintenance"],
       "groupName": "lock file maintenance",
-      "automerge": true,
-      "platformAutomerge": true
+      "automerge": true
     },
     {
       "matchManagers": ["github-actions"],
       "groupName": "github actions",
-      "automerge": true,
-      "platformAutomerge": true
+      "automerge": true
     },
     {
       "matchManagers": ["nix"],
       "groupName": "nix flake updates",
-      "automerge": true,
-      "platformAutomerge": true
+      "automerge": true
     },
     {
       "matchManagers": ["helmv3", "flux"],
