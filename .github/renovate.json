@@ -12,6 +12,7 @@
   "schedule": ["before 09:00 on monday"],
   "prConcurrentLimit": 10,
   "prHourlyLimit": 10,
+  "platformAutomerge": false,
   "labels": ["dependencies"],
   "commitMessagePrefix": "chore(deps): ",
   "osvVulnerabilityAlerts": true,
@@ -42,13 +43,15 @@
       "matchUpdateTypes": ["digest", "pinDigest"],
       "groupName": "container & action digests",
       "automerge": true,
-      "platformAutomerge": true
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
       "matchUpdateTypes": ["patch"],
       "groupName": "all patch dependencies",
       "automerge": true,
-      "platformAutomerge": true
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
       "matchUpdateTypes": ["minor"],
@@ -57,20 +60,19 @@
     {
       "matchUpdateTypes": ["lockFileMaintenance"],
       "groupName": "lock file maintenance",
-      "automerge": true,
-      "platformAutomerge": true
+      "automerge": true
     },
     {
       "matchManagers": ["github-actions"],
       "groupName": "github actions",
       "automerge": true,
-      "platformAutomerge": true
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
       "matchManagers": ["nix"],
       "groupName": "nix flake updates",
-      "automerge": true,
-      "platformAutomerge": true
+      "automerge": true
     },
     {
       "matchManagers": ["helmv3", "flux"],
@@ -111,6 +113,22 @@
       "matchManagers": ["terraform"],
       "matchDepTypes": ["required_version"],
       "matchPackageNames": ["hashicorp/terraform"]
+    },
+    {
+      "description": "michaelbrusegard/infra builds and tests Stalwart, then moves its version tag. Roll each image out on its own as soon as it is published.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/michaelbrusegard/stalwart-native-scim"],
+      "groupName": "stalwart image",
+      "groupSlug": "stalwart-image",
+      "schedule": ["at any time"],
+      "minimumReleaseAge": "0 days"
+    },
+    {
+      "description": "Review Stalwart version upgrades; rebuilds of the running version merge automatically.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/michaelbrusegard/stalwart-native-scim"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "automerge": false
     }
   ]
 }
