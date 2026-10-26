@@ -42,12 +42,16 @@
     {
       "matchUpdateTypes": ["digest", "pinDigest"],
       "groupName": "container & action digests",
-      "automerge": true
+      "automerge": true,
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
       "matchUpdateTypes": ["patch"],
       "groupName": "all patch dependencies",
-      "automerge": true
+      "automerge": true,
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
       "matchUpdateTypes": ["minor"],
@@ -61,7 +65,9 @@
     {
       "matchManagers": ["github-actions"],
       "groupName": "github actions",
-      "automerge": true
+      "automerge": true,
+      "minimumReleaseAge": "3 days",
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
     },
     {
       "matchManagers": ["nix"],
