@@ -113,6 +113,22 @@
       "matchManagers": ["terraform"],
       "matchDepTypes": ["required_version"],
       "matchPackageNames": ["hashicorp/terraform"]
+    },
+    {
+      "description": "michaelbrusegard/infra builds and tests Stalwart, then moves its version tag. Roll each image out on its own as soon as it is published.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/michaelbrusegard/stalwart-native-scim"],
+      "groupName": "stalwart image",
+      "groupSlug": "stalwart-image",
+      "schedule": ["at any time"],
+      "minimumReleaseAge": "0 days"
+    },
+    {
+      "description": "Review Stalwart version upgrades; rebuilds of the running version merge automatically.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/michaelbrusegard/stalwart-native-scim"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "automerge": false
     }
   ]
 }
