@@ -4,7 +4,7 @@ terraform {
   required_providers {
     stalwart = {
       source  = "tahacodes/stalwart"
-      version = "0.2.3"
+      version = "0.2.4"
     }
   }
 }
