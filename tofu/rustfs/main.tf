@@ -46,6 +46,13 @@ locals {
         ]
         Resource = "${minio_s3_bucket.firmware.arn}/*"
       },
+      # Firmware v1.1.6 is the last release for ROVs with the IMU on the white
+      # JST connector (I2C). The app always offers it, so CI may never delete it.
+      {
+        Effect   = "Deny"
+        Action   = ["s3:DeleteObject"]
+        Resource = "${minio_s3_bucket.firmware.arn}/releases/v1.1.6/*"
+      },
     ]
   })
 
