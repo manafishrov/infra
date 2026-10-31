@@ -22,7 +22,7 @@ spec:
         runAsGroup: 1000
       containers:
         - name: n8n
-          image: docker.io/n8nio/n8n:2.39.8@sha256:b73045abaddb40cb4024e86eea1b1f69093501a7339f685a4cd486b7743d23ae
+          image: docker.io/n8nio/n8n:2.44.7@sha256:942bc274709f27f99f7c6024a785d8e8f75ac06838cabcba448abb8d9127ec7b
           envFrom:
             - secretRef:
                 name: n8n-env
