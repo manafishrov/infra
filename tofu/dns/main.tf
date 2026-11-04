@@ -239,6 +239,38 @@ locals {
       content = "v=spf1 include:amazonses.com ~all"
     }
 
+    shopline_dkim_1 = {
+      name    = "p2gdop53qr32xn65dpvz4p43yqbqn5ah._domainkey"
+      type    = "CNAME"
+      content = "p2gdop53qr32xn65dpvz4p43yqbqn5ah.dkim.amazonses.com"
+    }
+    shopline_dkim_2 = {
+      name    = "dhcqvqxogor3tkiee5mse4jy6kcr6itx._domainkey"
+      type    = "CNAME"
+      content = "dhcqvqxogor3tkiee5mse4jy6kcr6itx.dkim.amazonses.com"
+    }
+    shopline_dkim_3 = {
+      name    = "trj447hf7zklabqe2g7hzvraus4gwskq._domainkey"
+      type    = "CNAME"
+      content = "trj447hf7zklabqe2g7hzvraus4gwskq.dkim.amazonses.com"
+    }
+    shopline_edms_spf = {
+      name    = "edms"
+      type    = "TXT"
+      content = "v=spf1 include:amazonses.com ~all"
+    }
+    shopline_edms_mx = {
+      name     = "edms"
+      type     = "MX"
+      content  = "feedback-smtp.ap-northeast-2.amazonses.com"
+      priority = 10
+    }
+    shopline_smartpush_verification = {
+      name    = "smartpush"
+      type    = "TXT"
+      content = "v=d8ffe70d89347e3821f035bb2dc01a95"
+    }
+
     lovable_email = {
       name    = "_lovable-email"
       type    = "TXT"
