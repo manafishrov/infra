@@ -41,7 +41,7 @@ locals {
     }
 
     shopline = {
-      name    = "shop"
+      name    = "vip"
       type    = "CNAME"
       content = "vip.myshopline.shop"
     }
