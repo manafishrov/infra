@@ -24,8 +24,7 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: stalwart
-          # CUTOVER: fill both placeholders from the patched v1.0.3 build.
-          image: ghcr.io/michaelbrusegard/stalwart-native-scim:REPLACE_WITH_V1_TAG@sha256:REPLACE_WITH_V1_DIGEST
+          image: ghcr.io/michaelbrusegard/stalwart-native-scim:1.0.3@sha256:4768386422419ea1e0a6c424ee317b455c12cd4dfff3242be9524bc410860eff
           command:
             - /usr/local/bin/stalwart
             - --config
