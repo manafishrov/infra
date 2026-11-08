@@ -344,6 +344,9 @@ resource "stalwart_application" "webui" {
   auto_update_interval = 2592000000
   description          = "Stalwart Web Interface"
   enable               = true
+  # Pocket ID releases the groups claim only for this scope; OIDC admin
+  # rights depend on it. Migrated records do not get the fork's default.
+  oauth_scopes = ["groups"]
   # CUTOVER: use the 2.x WebUI archive path shipped in the patched v1 image.
   resource_url     = "file:///nix/store/REPLACE_WITH_V1_WEBUI_2_X_STORE_PATH"
   unpack_directory = null
