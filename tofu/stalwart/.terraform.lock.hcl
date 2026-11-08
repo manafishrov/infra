@@ -5,7 +5,7 @@ provider "registry.opentofu.org/michaelbrusegard/stalwart" {
   version     = "1.0.3"
   constraints = "1.0.3"
   hashes = [
-    "h1:TQF40ORP9k7NsOLocXkfUg+SoB9FPJ7jsYZhPHrvwrU=",
-    "h1:ubzA/FW3koa0Bvs22QR6Qmzg4p1pF0swu/Q5sZNSdjs=",
+    "h1:GQDru7tZkgGKzpaS7zi6wJxgTAKMwCcurwcGWqaZjhg=",
+    "h1:L+VAY++ZY0IvjM03QbzKAV+Hrcl9qWb18gU/eGGseqc=",
   ]
 }
