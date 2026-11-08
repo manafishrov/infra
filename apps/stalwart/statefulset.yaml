@@ -24,7 +24,7 @@ spec:
         fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: stalwart
-          image: ghcr.io/michaelbrusegard/stalwart-native-scim:0.16.21@sha256:ee91efd83fd1c4ab51d1462e7b0188546449093e7960ead09f4917c068dbbd2d
+          image: ghcr.io/michaelbrusegard/stalwart-native-scim:0.16.27@sha256:87c8a91e4bdf02bf5daa3be45fc0dc12a605d6aedf395b1bd3e224c2b16820ad
           command:
             - /usr/local/bin/stalwart
             - --config
