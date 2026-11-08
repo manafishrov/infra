@@ -37,7 +37,10 @@ class ScimFieldsTest(unittest.TestCase):
 
     def urlopen(self, req, timeout):
         if req.data is None:
-            body = {"primaryAccounts": {"urn:stalwart:jmap": "admin"}, "apiUrl": "/jmap/"}
+            body = {"primaryAccounts": {"urn:stalwart:jmap": "admin"},
+                    "apiUrl": "https://mail.example.com/jmap/"}
+        elif not req.full_url.startswith("https://mail.manafishrov.com/"):
+            raise AssertionError(f"request left --url: {req.full_url}")
         else:
             method, args, call_id = json.loads(req.data)["methodCalls"][0]
             kind, action = method.split("/")

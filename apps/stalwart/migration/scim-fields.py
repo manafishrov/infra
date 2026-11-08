@@ -8,7 +8,7 @@ import argparse
 import json
 import os
 from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 from urllib.request import Request, urlopen
 
 
@@ -30,7 +30,9 @@ def main():
 
     session = request(args.url.rstrip("/") + "/.well-known/jmap")
     account = session["primaryAccounts"]["urn:stalwart:jmap"]
-    api = urljoin(args.url, session["apiUrl"])
+    # Keep every call on --url: the session's apiUrl names the public host,
+    # which would send rehearsal writes to production.
+    api = urljoin(args.url, urlsplit(session["apiUrl"]).path)
 
     def call(method, **params):
         response = request(api, {
