@@ -347,8 +347,7 @@ resource "stalwart_application" "webui" {
   # Pocket ID releases the groups claim only for this scope; OIDC admin
   # rights depend on it. Migrated records do not get the fork's default.
   oauth_scopes = ["groups"]
-  # CUTOVER: use the 2.x WebUI archive path shipped in the patched v1 image.
-  resource_url     = "file:///nix/store/REPLACE_WITH_V1_WEBUI_2_X_STORE_PATH"
+  resource_url     = "file:///nix/store/qs0lm3w840jrb48z2a488zpfw0yfz6fr-stalwart-webui-no-upsell-2.0.5"
   unpack_directory = null
   url_prefix       = ["/account", "/admin"]
 }
