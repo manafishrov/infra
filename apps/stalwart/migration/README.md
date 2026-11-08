@@ -102,7 +102,10 @@ unanswered questions; review `prepare-report.txt` before accepting new ones.
    Application at the v2 bundle; that is expected.
 7. Restore SCIM fields with the patched v1 server, before re-enabling Pocket ID
    provisioning or applying Tofu. Only a superuser can grant `scimAccess`, so
-   restore as the recovery admin, then verify with the Tofu key:
+   restore as the recovery admin, then verify with the Tofu key. Restore also
+   grants the `tofu` account v1's reload actions (`actionReloadSettings`,
+   `actionReloadTlsCertificates`, `actionReloadBlockedIps`,
+   `actionReloadLookupStores`); without them applies persist but stay inactive:
 
    ```sh
    STALWART_RECOVERY_ADMIN="$(kubectl -n manafishrov-stalwart get secret stalwart-recovery \

@@ -2,7 +2,9 @@
 """Capture, restore, or verify fork-only SCIM fields through native JMAP.
 
 Covers Account.externalId, Domain.allowScimProvisioning and the scimAccess
-permission, all of which the OSS migrator drops as Enterprise-only.
+permission, all of which the OSS migrator drops as Enterprise-only. Restore
+also grants the Tofu account v1's per-action reload permissions, which the
+migration does not derive from its v0.16 permissions.
 """
 import argparse
 import base64
@@ -54,21 +56,28 @@ def main():
                 raise RuntimeError(f"{method} returned {key}; stop and inspect securely")
         return result
 
-    def restore_scim_access(account_id):
+    def grant(account_id, names):
         def enabled():
             permissions = call("x:Account/get", ids=[account_id],
                                properties=["permissions"])["list"][0]["permissions"]
             return permissions, (permissions or {}).get("enabledPermissions") or {}
 
         permissions, granted = enabled()
-        if args.action == "restore" and not granted.get("scimAccess"):
+        missing = [name for name in names if not granted.get(name)]
+        if args.action == "restore" and missing:
             if (permissions or {}).get("@type") != "Replace":
                 raise RuntimeError(f"x:Account/{account_id}: unexpected permissions shape; stop")
-            call("x:Account/set", update={account_id: {
-                "permissions": {**permissions, "enabledPermissions": {**granted, "scimAccess": True}}}})
+            call("x:Account/set", update={account_id: {"permissions": {
+                **permissions, "enabledPermissions": {**granted, **dict.fromkeys(missing, True)}}}})
             permissions, granted = enabled()
-        if not granted.get("scimAccess"):
-            raise RuntimeError(f"x:Account/{account_id}: scimAccess missing")
+            missing = [name for name in names if not granted.get(name)]
+        if missing:
+            raise RuntimeError(f"x:Account/{account_id}: {', '.join(missing)} missing")
+
+    # The provider reloads after applying settings, certificates, blocked IPs
+    # and lookup stores; without these, applied changes stay inactive.
+    tofu_actions = ["actionReloadSettings", "actionReloadTlsCertificates",
+                    "actionReloadBlockedIps", "actionReloadLookupStores"]
 
     objects = {"x:Account": "externalId", "x:Domain": "allowScimProvisioning"}
     if args.action == "capture":
@@ -126,7 +135,9 @@ def main():
                 if field not in current or current[field] != row[field]:
                     raise RuntimeError(f"{kind}/{row['id']}: SCIM value differs")
                 if kind == "x:Account" and row["scimAccess"]:
-                    restore_scim_access(row["id"])
+                    grant(row["id"], ["scimAccess"])
+                if kind == "x:Account" and row["name"] == "tofu":
+                    grant(row["id"], tofu_actions)
     print(f"SCIM {args.action} completed")
 
 

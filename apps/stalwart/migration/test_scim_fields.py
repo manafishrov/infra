@@ -29,6 +29,10 @@ class ScimFieldsTest(unittest.TestCase):
             "x:Domain": [{"id": "c", "name": "example.com", "allowScimProvisioning": True},
                          {"id": "b", "name": "system.example.com", "allowScimProvisioning": False}],
         }
+        self.rows["x:Account"][3]["name"] = "tofu"
+        self.rows["x:Account"][3]["permissions"] = {
+            "@type": "Replace", "disabledPermissions": {"sysEmailUpdate": True},
+            "enabledPermissions": {"authenticate": True, "sysActionCreate": True}}
         self.rows["x:Account"][1]["permissions"] = {
             "@type": "Replace", "disabledPermissions": {},
             "enabledPermissions": {"authenticate": True, "scimAccess": True}}
@@ -83,6 +87,10 @@ class ScimFieldsTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "SCIM value differs"):
             self.run_helper("verify")
         self.run_helper("restore")
+        # Restore adds only the reload grants and keeps every other permission.
+        original["x:Account"][3]["permissions"]["enabledPermissions"].update(dict.fromkeys(
+            ["actionReloadSettings", "actionReloadTlsCertificates",
+             "actionReloadBlockedIps", "actionReloadLookupStores"], True))
         self.assertEqual(self.rows, original)
         self.run_helper("verify")
 
