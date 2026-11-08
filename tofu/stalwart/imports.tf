@@ -86,6 +86,24 @@ import {
   id = "singleton"
 }
 
+import {
+  to = stalwart_http.server
+  id = "singleton"
+}
+
+# Fresh state would otherwise plan creates for these existing listeners.
+import {
+  for_each = var.smtp_edge_activation_ready ? toset(["jfhnfsjeabqa"]) : toset([])
+  to       = stalwart_network_listener.smtp_edge[0]
+  id       = each.value
+}
+
+import {
+  for_each = var.smtp_edge_activation_ready ? toset(["jfhnfsjeaaqa"]) : toset([])
+  to       = stalwart_network_listener.smtp_edge_local[0]
+  id       = each.value
+}
+
 # Production DKIM publisher, recorded in docs/dkim-handoff/production-handoff.json.
 # DNS servers have no unique key and would duplicate from fresh state.
 import {

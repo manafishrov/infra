@@ -5,7 +5,7 @@ resource "stalwart_mta_stage_rcpt" "server" {
   # recipients, but an edge connection must never relay to an external domain.
   allow_relaying = {
     else  = "!is_empty(authenticated_as)"
-    match = []
+    match = null
   }
   wait_on_fail = {
     match = [{

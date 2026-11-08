@@ -10,7 +10,6 @@ resource "stalwart_mta_sts" "this" {
 resource "stalwart_authentication" "this" {
   default_admin_role_ids  = ["b", "e"]
   default_group_role_ids  = ["c"]
-  default_tenant_role_ids = ["b", "d"]
   default_user_role_ids   = ["b"]
   directory_id            = stalwart_directory_oidc.pocket_id.id
   max_api_keys            = 5
@@ -346,7 +345,7 @@ resource "stalwart_application" "webui" {
   enable               = true
   # Pocket ID releases the groups claim only for this scope; OIDC admin
   # rights depend on it. Migrated records do not get the fork's default.
-  oauth_scopes = ["groups"]
+  oauth_scopes     = ["groups"]
   resource_url     = "file:///nix/store/qs0lm3w840jrb48z2a488zpfw0yfz6fr-stalwart-webui-no-upsell-2.0.5"
   unpack_directory = null
   url_prefix       = ["/account", "/admin"]

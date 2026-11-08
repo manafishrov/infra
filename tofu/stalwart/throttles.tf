@@ -5,7 +5,7 @@ resource "stalwart_mta_inbound_throttle" "sender_recipient" {
   description = "Sender address to recipient throttle"
   enable      = true
   key         = ["senderDomain", "rcpt"]
-  match       = { else = "listener != 'edge-lmtp' && listener != 'smtp-edge-local'", match = [] }
+  match       = { else = "listener != 'edge-lmtp' && listener != 'smtp-edge-local'", match = null }
   rate        = { count = 25, period = 3600000 }
 }
 
@@ -13,7 +13,7 @@ resource "stalwart_mta_inbound_throttle" "sender_ip" {
   description = "Sender IP throttle"
   enable      = true
   key         = ["remoteIp"]
-  match       = { else = "listener != 'edge-lmtp' && listener != 'smtp-edge-local'", match = [] }
+  match       = { else = "listener != 'edge-lmtp' && listener != 'smtp-edge-local'", match = null }
   rate        = { count = 5, period = 1000 }
 }
 

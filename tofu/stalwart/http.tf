@@ -11,7 +11,7 @@ resource "stalwart_http" "server" {
   redirect_root    = "/account"
   allowed_endpoints = {
     else  = "200"
-    match = []
+    match = null
   }
   rate_limit_authenticated = {
     count  = 1000
