@@ -23,11 +23,15 @@ class ScimFieldsTest(unittest.TestCase):
         self.rows = {
             "x:Account": [{"id": str(i), "@type": "Group" if i == 0 else "User",
                            "name": f"account-{i}", "domainId": "c",
-                           "externalId": None if i == 0 else f"external-{i}"}
+                           "externalId": None if i == 0 else f"external-{i}",
+                           "permissions": {"@type": "Inherit"}}
                           for i in range(101)],
             "x:Domain": [{"id": "c", "name": "example.com", "allowScimProvisioning": True},
                          {"id": "b", "name": "system.example.com", "allowScimProvisioning": False}],
         }
+        self.rows["x:Account"][1]["permissions"] = {
+            "@type": "Replace", "disabledPermissions": {},
+            "enabledPermissions": {"authenticate": True, "scimAccess": True}}
         self.writes = []
         self.refuse_updates = False
 
@@ -70,9 +74,26 @@ class ScimFieldsTest(unittest.TestCase):
             row["externalId"] = "lost"
         for row in self.rows["x:Domain"]:
             row["allowScimProvisioning"] = not row["allowScimProvisioning"]
+        del self.rows["x:Account"][1]["permissions"]["enabledPermissions"]["scimAccess"]
+        with self.assertRaisesRegex(RuntimeError, "SCIM value differs"):
+            self.run_helper("verify")
         self.run_helper("restore")
         self.assertEqual(self.rows, original)
         self.run_helper("verify")
+
+    def test_missing_scim_access_fails_verify(self):
+        self.run_helper("capture")
+        del self.rows["x:Account"][1]["permissions"]["enabledPermissions"]["scimAccess"]
+        with self.assertRaisesRegex(RuntimeError, "scimAccess missing"):
+            self.run_helper("verify")
+
+    def test_suspended_account_refuses_capture(self):
+        self.rows["x:Account"][2]["permissions"] = {
+            "@type": "Replace", "enabledPermissions": {},
+            "disabledPermissions": {"authenticate": True}}
+        with self.assertRaisesRegex(RuntimeError, "suspended"):
+            self.run_helper("capture")
+        self.assertFalse(self.file.exists())
 
     def test_capture_never_overwrites_original(self):
         self.run_helper("capture")

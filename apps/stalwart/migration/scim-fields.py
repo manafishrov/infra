@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Capture, restore, or verify fork-only SCIM fields through native JMAP."""
+"""Capture, restore, or verify fork-only SCIM fields through native JMAP.
+
+Covers Account.externalId, Domain.allowScimProvisioning and the scimAccess
+permission, all of which the OSS migrator drops as Enterprise-only.
+"""
 import argparse
 import json
 import os
@@ -41,6 +45,22 @@ def main():
                 raise RuntimeError(f"{method} returned {key}; stop and inspect securely")
         return result
 
+    def restore_scim_access(account_id):
+        def enabled():
+            permissions = call("x:Account/get", ids=[account_id],
+                               properties=["permissions"])["list"][0]["permissions"]
+            return permissions, (permissions or {}).get("enabledPermissions") or {}
+
+        permissions, granted = enabled()
+        if args.action == "restore" and not granted.get("scimAccess"):
+            if (permissions or {}).get("@type") != "Replace":
+                raise RuntimeError(f"x:Account/{account_id}: unexpected permissions shape; stop")
+            call("x:Account/set", update={account_id: {
+                "permissions": {**permissions, "enabledPermissions": {**granted, "scimAccess": True}}}})
+            permissions, granted = enabled()
+        if not granted.get("scimAccess"):
+            raise RuntimeError(f"x:Account/{account_id}: scimAccess missing")
+
     objects = {"x:Account": "externalId", "x:Domain": "allowScimProvisioning"}
     if args.action == "capture":
         saved = {"url": args.url, "objects": {}}
@@ -54,10 +74,19 @@ def main():
                 if ids:
                     props = ["id", "name", field]
                     if kind == "x:Account":
-                        props += ["@type", "domainId"]
+                        props += ["@type", "domainId", "permissions"]
                     batch = call(kind + "/get", ids=ids, properties=props)["list"]
                     if len(batch) != len(ids) or any(field not in row for row in batch):
                         raise RuntimeError(f"{kind}: SCIM field missing; check fork/permissions")
+                    if kind == "x:Account":
+                        for row in batch:
+                            permissions = row.pop("permissions") or {}
+                            # v1 keeps suspension state elsewhere; a suspended
+                            # account could not be reactivated through SCIM.
+                            if (permissions.get("disabledPermissions") or {}).get("authenticate"):
+                                raise RuntimeError(f"{kind}/{row['id']}: suspended; reactivate or delete first")
+                            enabled = permissions.get("enabledPermissions") or {}
+                            row["scimAccess"] = bool(enabled.get("scimAccess"))
                     rows.extend(batch)
                 position += len(ids)
                 if position >= page["total"]:
@@ -87,6 +116,8 @@ def main():
                     current = call(kind + "/get", ids=[row["id"]], properties=props)["list"][0]
                 if field not in current or current[field] != row[field]:
                     raise RuntimeError(f"{kind}/{row['id']}: SCIM value differs")
+                if kind == "x:Account" and row["scimAccess"]:
+                    restore_scim_access(row["id"])
     print(f"SCIM {args.action} completed")
 
 

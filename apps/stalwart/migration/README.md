@@ -103,7 +103,10 @@ unanswered questions; review `prepare-report.txt` before accepting new ones.
    IDs differ. The OSS tool does **not** preserve these fields: its v0.16
    reader knows them, but the v1 OSS mapping schema omits them and its v1
    writer gates them behind `enterprise`. The fork reintroduces them; the
-   migration binary does not.
+   migration binary does not. The same applies to the `scimAccess` permission
+   on the `scim` account (Pocket ID's credential); without it SCIM returns 403.
+   Capture refuses suspended accounts, because the fork's v0.16 suspension
+   state is not migrated and SCIM could not reactivate them.
 8. While Terraform and its parent remain suspended, stage both repositories'
    v1 changes. Verify the runner renders the provider mirror and fresh suffix,
    every import matches the migrated IDs, and the plan contains adoption and
