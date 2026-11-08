@@ -74,10 +74,11 @@ def main():
         if missing:
             raise RuntimeError(f"x:Account/{account_id}: {', '.join(missing)} missing")
 
-    # The provider reloads after applying settings, certificates, blocked IPs
-    # and lookup stores; without these, applied changes stay inactive.
+    # The provider reloads after applying settings, certificates, blocked IPs,
+    # lookup stores and web apps; without these, applied changes stay inactive.
     tofu_actions = ["actionReloadSettings", "actionReloadTlsCertificates",
-                    "actionReloadBlockedIps", "actionReloadLookupStores"]
+                    "actionReloadBlockedIps", "actionReloadLookupStores",
+                    "actionUpdateApps"]
 
     objects = {"x:Account": "externalId", "x:Domain": "allowScimProvisioning"}
     if args.action == "capture":

@@ -90,7 +90,8 @@ class ScimFieldsTest(unittest.TestCase):
         # Restore adds only the reload grants and keeps every other permission.
         original["x:Account"][3]["permissions"]["enabledPermissions"].update(dict.fromkeys(
             ["actionReloadSettings", "actionReloadTlsCertificates",
-             "actionReloadBlockedIps", "actionReloadLookupStores"], True))
+             "actionReloadBlockedIps", "actionReloadLookupStores",
+             "actionUpdateApps"], True))
         self.assertEqual(self.rows, original)
         self.run_helper("verify")
 
