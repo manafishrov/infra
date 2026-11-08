@@ -11,6 +11,10 @@ migration or start v1 on an empty target before the copy.
 
 ## Before the window
 
+- Production must already run the patched v0.16.27 image, pinned by digest,
+  and have been healthy (mail, SCIM, WebUI/OAuth login) since the upgrade.
+  0.16.21 shares database schema 6, so the migrator may not reject it. Confirm
+  the running image again before step 3.
 - Rehearse against a restored PVC snapshot with the patched v0.16.27 and v1.0.3
   builds. Confirm object IDs, SCIM restoration, OAuth login, DKIM custody and
   all listeners. The 97 MB source size is not a timing guarantee.
@@ -66,11 +70,22 @@ unanswered questions; review `prepare-report.txt` before accepting new ones.
 5. Create `config.yaml`, then `job.yaml` manually. The pinned OSS tool runs as
    UID/GID 2000 with fsGroup 2000, matching Stalwart, so no root `--owner` is
    needed. It validates prepare answers, runs `run --final --yes`, explicitly
-   runs `verify`, then `status` and `report`. No error-bypass flags are used.
+   runs `verify`, then `status` and `report`. Both verify every account
+   (`--verify-full`, `verify --full`); the default 1% sample would skip
+   accounts finished by an earlier attempt. No error-bypass flags are used.
    Wait for Job completion and its Pod/volume release before starting Stalwart.
    A failed prepare never starts the copy. Review the persistent prepare report,
    final report and verification results securely; the tool's stdout alone is
    insufficient. Reports/state can contain sensitive settings.
+
+   The Job never retries (`backoffLimit: 0`). On failure, read
+   `stalwart-migrate status` and the reports first, fix the cause, and make
+   sure no migration Pod still holds the PVC. If the final run did not
+   complete, delete and recreate the Job; `migration-v1/` resumes it. If the
+   final run completed but verify/status/report failed, do not rerun
+   `run --final`: run only the remaining commands in a one-off Pod with the
+   same mounts. Never run two migration Pods at once or delete
+   `migration-v1/` to force a retry.
 6. Stage the filled v1 StatefulSet image and bootstrap ConfigMap together while
    replicas remain zero. Start one replica only after the Job has succeeded
    and released the PVC. The bootstrap remains `{"@type":"RocksDb","path":...}`;

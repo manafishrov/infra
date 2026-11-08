@@ -41,11 +41,11 @@ spec:
                 --source /migration/source.json --state "$state"
               # Never bypass errors, mass-removal guards or final-run guards.
               result=0
-              stalwart-migrate run --final --yes --concurrency 2 \
+              stalwart-migrate run --final --yes --verify-full --concurrency 2 \
                 --source /migration/source.json --target /migration/target.json \
                 --state "$state" || result=$?
               if [ "$result" -eq 0 ]; then
-                stalwart-migrate verify --concurrency 2 \
+                stalwart-migrate verify --full --concurrency 2 \
                   --source /migration/source.json --target /migration/target.json \
                   --state "$state" || result=$?
               fi
