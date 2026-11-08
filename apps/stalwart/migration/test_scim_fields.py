@@ -34,8 +34,10 @@ class ScimFieldsTest(unittest.TestCase):
             "enabledPermissions": {"authenticate": True, "scimAccess": True}}
         self.writes = []
         self.refuse_updates = False
+        self.authorizations = set()
 
     def urlopen(self, req, timeout):
+        self.authorizations.add(req.get_header("Authorization"))
         if req.data is None:
             body = {"primaryAccounts": {"urn:stalwart:jmap": "admin"},
                     "apiUrl": "https://mail.example.com/jmap/"}
@@ -60,11 +62,11 @@ class ScimFieldsTest(unittest.TestCase):
             body = {"methodResponses": [[method, result, call_id]]}
         return io.StringIO(json.dumps(body))
 
-    def run_helper(self, action):
+    def run_helper(self, action, env=None):
         old_umask = os.umask(0o077)
         self.addCleanup(os.umask, old_umask)
         with patch.object(helper, "urlopen", self.urlopen), \
-             patch.dict(os.environ, {"STALWART_TOKEN": "fixture-token"}), \
+             patch.dict(os.environ, env or {"STALWART_TOKEN": "fixture-token"}, clear=True), \
              patch("sys.argv", ["scim-fields.py", action, str(self.file)]), \
              contextlib.redirect_stdout(io.StringIO()):
             helper.main()
@@ -97,6 +99,10 @@ class ScimFieldsTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "suspended"):
             self.run_helper("capture")
         self.assertFalse(self.file.exists())
+
+    def test_recovery_admin_uses_basic_auth(self):
+        self.run_helper("capture", {"STALWART_RECOVERY_ADMIN": "admin:secret"})
+        self.assertEqual(self.authorizations, {"Basic YWRtaW46c2VjcmV0"})
 
     def test_capture_never_overwrites_original(self):
         self.run_helper("capture")

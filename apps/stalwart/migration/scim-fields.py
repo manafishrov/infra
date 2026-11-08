@@ -5,6 +5,7 @@ Covers Account.externalId, Domain.allowScimProvisioning and the scimAccess
 permission, all of which the OSS migrator drops as Enterprise-only.
 """
 import argparse
+import base64
 import json
 import os
 from pathlib import Path
@@ -19,11 +20,17 @@ def main():
     parser.add_argument("--url", default="https://mail.manafishrov.com")
     args = parser.parse_args()
     os.umask(0o077)
-    token = os.environ["STALWART_TOKEN"]
+    # Only a superuser can grant scimAccess, so restore uses the temporary
+    # recovery admin (user:password); capture and verify can use the API key.
+    recovery = os.environ.get("STALWART_RECOVERY_ADMIN")
+    if recovery:
+        authorization = "Basic " + base64.b64encode(recovery.encode()).decode()
+    else:
+        authorization = "Bearer " + os.environ["STALWART_TOKEN"]
 
     def request(url, body=None):
         data = None if body is None else json.dumps(body).encode()
-        req = Request(url, data, {"Authorization": f"Bearer {token}",
+        req = Request(url, data, {"Authorization": authorization,
                                  "Content-Type": "application/json"})
         with urlopen(req, timeout=60) as response:
             return json.load(response)

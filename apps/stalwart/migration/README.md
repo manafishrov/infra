@@ -90,13 +90,30 @@ unanswered questions; review `prepare-report.txt` before accepting new ones.
    replicas remain zero. Start one replica only after the Job has succeeded
    and released the PVC. The bootstrap remains `{"@type":"RocksDb","path":...}`;
    only its path changes to `data-v1/`. Check logs and `/healthz/ready` locally.
-7. Restore SCIM fields with the patched v1 server, before re-enabling Pocket ID
-   provisioning or applying Tofu:
+   Before starting it, create the temporary recovery admin that step 7 needs
+   (the StatefulSet reads this optional Secret):
 
    ```sh
-   python3 apps/stalwart/migration/scim-fields.py restore /secure/scim-fields.json
-   python3 apps/stalwart/migration/scim-fields.py verify /secure/scim-fields.json
+   kubectl -n manafishrov-stalwart create secret generic stalwart-recovery \
+     --from-literal=STALWART_RECOVERY_ADMIN="recovery:$(openssl rand -hex 24)"
    ```
+
+   `/admin` and `/account` return 404 until step 8 points the migrated WebUI
+   Application at the v2 bundle; that is expected.
+7. Restore SCIM fields with the patched v1 server, before re-enabling Pocket ID
+   provisioning or applying Tofu. Only a superuser can grant `scimAccess`, so
+   restore as the recovery admin, then verify with the Tofu key:
+
+   ```sh
+   STALWART_RECOVERY_ADMIN="$(kubectl -n manafishrov-stalwart get secret stalwart-recovery \
+     -o jsonpath='{.data.STALWART_RECOVERY_ADMIN}' | base64 -d)" \
+     python3 apps/stalwart/migration/scim-fields.py restore /secure/scim-fields.json
+   python3 apps/stalwart/migration/scim-fields.py verify /secure/scim-fields.json
+   kubectl -n manafishrov-stalwart delete secret stalwart-recovery
+   kubectl -n manafishrov-stalwart rollout restart statefulset/stalwart
+   ```
+
+   Confirm the recovery login fails after the restart.
 
    The helper checks ID/name/type/domain identity before each update, restores
    null/false as well as populated values, and reads each field back. Stop if
