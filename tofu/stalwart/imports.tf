@@ -85,3 +85,10 @@ import {
   to = stalwart_imap.this
   id = "singleton"
 }
+
+# Production DKIM publisher, recorded in docs/dkim-handoff/production-handoff.json.
+# DNS servers have no unique key and would duplicate from fresh state.
+import {
+  to = stalwart_dns_server_cloudflare.dkim
+  id = "jfi2hgdoabaa"
+}

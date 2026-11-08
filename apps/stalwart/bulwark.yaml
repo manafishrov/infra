@@ -29,7 +29,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: webmail
-          image: ghcr.io/bulwarkmail/webmail:1.17.2@sha256:395232a8b62c371619c3692f63c42ee26bd0258faa5d60d4c9132948c8418729
+          image: ghcr.io/bulwarkmail/webmail:1.21.0@sha256:420069671e7776f49cf40882f35bc37b57593f224c7dddbeb6f78e52341fa207
           ports:
             - name: http
               containerPort: 3000
@@ -84,16 +84,17 @@ spec:
               memory: 1Gi
           startupProbe:
             httpGet:
-              path: /api/config
+              path: /api/health/ready
               port: http
             failureThreshold: 30
             periodSeconds: 5
           readinessProbe:
             httpGet:
-              path: /api/config
+              path: /api/health/ready
               port: http
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /api/health/live
               port: http
           volumeMounts:
             - name: data

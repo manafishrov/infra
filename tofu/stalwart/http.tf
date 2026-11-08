@@ -3,8 +3,12 @@
 resource "stalwart_http" "server" {
   use_permissive_cors = false
   enable_hsts         = false
-  use_x_forwarded     = false
-  redirect_root       = "/account"
+  # Envoy appends the real client on the right. Trust exactly that hop;
+  # earlier client-supplied XFF entries cannot choose the address. Missing
+  # headers fall back to the TCP peer. HTTP ingress is Gateway-restricted.
+  client_ip_source = "xForwardedFor"
+  forwarded_hops   = 1
+  redirect_root    = "/account"
   allowed_endpoints = {
     else  = "200"
     match = []
@@ -16,7 +20,7 @@ resource "stalwart_http" "server" {
   # Known OIDC tokens use admission-only hints, not cached authorization.
   # Every request still revalidates claims/account state and uses the account
   # budget (including privileged OIDC sessions). Unknown tokens remain subject
-  # to this original IP-based budget; forwarding headers remain untrusted.
+  # to this IP budget, using the Gateway-appended client address.
   rate_limit_anonymous = {
     count  = 100
     period = 60000

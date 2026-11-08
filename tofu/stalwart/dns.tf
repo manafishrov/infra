@@ -8,7 +8,7 @@ resource "stalwart_dns_server_cloudflare" "dkim" {
   # Native Duration values are milliseconds.
   ttl                 = 300000
   timeout             = 30000
-  polling_interval    = 2000
+  poll_interval       = 2000
   propagation_delay   = 1000
   propagation_timeout = 120000
 }

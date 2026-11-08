@@ -5,4 +5,4 @@ metadata:
   namespace: manafishrov-stalwart
 data:
   config.json: |
-    {"@type":"RocksDb","path":"/var/lib/stalwart/data/"}
+    {"@type":"RocksDb","path":"/var/lib/stalwart/data-v1/"}

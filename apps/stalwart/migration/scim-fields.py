@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""Capture, restore, or verify fork-only SCIM fields through native JMAP."""
+import argparse
+import json
+import os
+from pathlib import Path
+from urllib.parse import urljoin
+from urllib.request import Request, urlopen
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("action", choices=["capture", "restore", "verify"])
+    parser.add_argument("file", type=Path)
+    parser.add_argument("--url", default="https://mail.manafishrov.com")
+    args = parser.parse_args()
+    os.umask(0o077)
+    token = os.environ["STALWART_TOKEN"]
+
+    def request(url, body=None):
+        data = None if body is None else json.dumps(body).encode()
+        req = Request(url, data, {"Authorization": f"Bearer {token}",
+                                 "Content-Type": "application/json"})
+        with urlopen(req, timeout=60) as response:
+            return json.load(response)
+
+    session = request(args.url.rstrip("/") + "/.well-known/jmap")
+    account = session["primaryAccounts"]["urn:stalwart:jmap"]
+    api = urljoin(args.url, session["apiUrl"])
+
+    def call(method, **params):
+        response = request(api, {
+            "using": ["urn:ietf:params:jmap:core", "urn:stalwart:jmap"],
+            "methodCalls": [[method, {"accountId": account, **params}, "0"]],
+        })["methodResponses"][0]
+        if response[0] != method:
+            raise RuntimeError(f"{method} failed: {response[0]}")
+        result = response[1]
+        for key in ("notFound", "notCreated", "notUpdated", "notDestroyed"):
+            if result.get(key):
+                raise RuntimeError(f"{method} returned {key}; stop and inspect securely")
+        return result
+
+    objects = {"x:Account": "externalId", "x:Domain": "allowScimProvisioning"}
+    if args.action == "capture":
+        saved = {"url": args.url, "objects": {}}
+        for kind, field in objects.items():
+            rows = []
+            position = 0
+            while True:
+                page = call(kind + "/query", position=position, limit=100,
+                            calculateTotal=True)
+                ids = page["ids"]
+                if ids:
+                    props = ["id", "name", field]
+                    if kind == "x:Account":
+                        props += ["@type", "domainId"]
+                    batch = call(kind + "/get", ids=ids, properties=props)["list"]
+                    if len(batch) != len(ids) or any(field not in row for row in batch):
+                        raise RuntimeError(f"{kind}: SCIM field missing; check fork/permissions")
+                    rows.extend(batch)
+                position += len(ids)
+                if position >= page["total"]:
+                    break
+                if not ids:
+                    raise RuntimeError(f"{kind}: incomplete pagination")
+            saved["objects"][kind] = rows
+        # Never overwrite the pre-migration capture with post-migration values.
+        with args.file.open("x") as out:
+            json.dump(saved, out, indent=2)
+            out.write("\n")
+    else:
+        saved = json.loads(args.file.read_text())
+        if saved["url"] != args.url:
+            raise RuntimeError("Export belongs to another endpoint")
+        for kind, field in objects.items():
+            for row in saved["objects"][kind]:
+                props = ["id", "name", field]
+                if kind == "x:Account":
+                    props += ["@type", "domainId"]
+                current = call(kind + "/get", ids=[row["id"]], properties=props)["list"][0]
+                identity = ("name", "@type", "domainId") if kind == "x:Account" else ("name",)
+                if any(current.get(key) != row.get(key) for key in identity):
+                    raise RuntimeError(f"{kind}/{row['id']}: identity changed; stop")
+                if args.action == "restore":
+                    call(kind + "/set", update={row["id"]: {field: row[field]}})
+                    current = call(kind + "/get", ids=[row["id"]], properties=props)["list"][0]
+                if field not in current or current[field] != row[field]:
+                    raise RuntimeError(f"{kind}/{row['id']}: SCIM value differs")
+    print(f"SCIM {args.action} completed")
+
+
+if __name__ == "__main__":
+    main()

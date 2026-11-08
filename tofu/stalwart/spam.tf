@@ -14,10 +14,6 @@ resource "stalwart_spam_pyzor" "this" {
   enable = false
 }
 
-resource "stalwart_spam_llm" "this" {
-  type = "Disable"
-}
-
 # Convert the existing Reject variant in place BEFORE importing this resource.
 # Preserve its ID and all other Score weights. Do not create a duplicate tag.
 resource "stalwart_spam_tag_score" "blocked_domain" {
@@ -37,10 +33,6 @@ import {
 }
 import {
   to = stalwart_spam_pyzor.this
-  id = "singleton"
-}
-import {
-  to = stalwart_spam_llm.this
   id = "singleton"
 }
 import {

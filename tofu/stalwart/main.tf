@@ -17,22 +17,29 @@ resource "stalwart_authentication" "this" {
   max_app_passwords       = 5
   password_default_expiry = null
   password_hash_algorithm = "argon2id"
-  password_max_length     = 128
-  password_min_length     = 8
-  password_min_strength   = "three"
+  max_password_length     = 128
+  min_password_length     = 8
+  min_password_strength   = "three"
 }
 
 # __generated__ by OpenTofu from "jdzlxs2sajaa"
 resource "stalwart_directory_oidc" "pocket_id" {
-  claim_groups     = "groups"
-  claim_name       = "name"
-  claim_username   = "email"
-  description      = "Pocket ID for manafishrov.com"
-  issuer_url       = "https://id.manafishrov.com"
-  member_tenant_id = null
-  require_audience = "stalwart"
-  require_scopes   = ["email", "openid"]
-  username_domain  = "manafishrov.com"
+  claim_groups             = "groups"
+  claim_name               = "name"
+  claim_username           = "email"
+  description              = "Pocket ID for manafishrov.com"
+  issuer_url               = "https://id.manafishrov.com"
+  member_tenant_id         = null
+  accepted_audiences       = ["stalwart"]
+  skip_audience_validation = false
+  opaque_token_validation  = "userInfo"
+  # Preserve Pocket ID administration as well as webmail. These tokens have
+  # openid/email scopes, not Stalwart scopes; account roles still bound access.
+  unscoped_tokens       = "full"
+  allow_id_token_claims = false
+  lenient_issuer_match  = false
+  allow_invalid_certs   = false
+  username_domain       = "manafishrov.com"
 }
 
 # __generated__ by OpenTofu from "b"
@@ -59,7 +66,7 @@ resource "stalwart_tracer_stdout" "stdout" {
 
 # __generated__ by OpenTofu from "jdzlxtboapaa"
 resource "stalwart_mta_route_relay" "mx" {
-  address             = "smtp.resend.com"
+  host                = "smtp.resend.com"
   allow_invalid_certs = false
   # The API returns write-only values masked. Keeping the imported Value
   # source with a null secret makes the provider preserve the existing value.
@@ -95,21 +102,21 @@ resource "stalwart_certificate" "wildcard" {
 
 # __generated__ by OpenTofu from "singleton"
 resource "stalwart_imap" "this" {
-  allow_plain_text_auth    = false
-  max_auth_failures        = 30
-  max_concurrent           = 16
-  max_messages_per_command = 1000000
-  max_messages_per_save    = 1000000
-  max_request_rate = {
+  allow_plain_text_auth      = false
+  max_auth_failures          = 30
+  max_concurrent_connections = 16
+  max_messages_per_command   = 1000000
+  max_messages_per_save      = 1000000
+  rate_limit = {
     count  = 2000
     period = 60000
   }
   max_request_size      = 52428800
   max_uid_batches       = 10000
   min_uid_batch_size    = 500
-  timeout_anonymous     = 60000
-  timeout_authenticated = 1800000
-  timeout_idle          = 1800000
+  anonymous_timeout     = 60000
+  authenticated_timeout = 1800000
+  idle_timeout          = 1800000
 }
 
 # __generated__ by OpenTofu from "jdzlxs2qadaa"
@@ -130,7 +137,7 @@ resource "stalwart_network_listener" "submission" {
   tls_disable_cipher_suites       = null
   tls_disable_protocols           = null
   tls_ignore_client_order         = true
-  tls_implicit                    = false
+  implicit_tls                    = false
   tls_timeout                     = 60000
   use_tls                         = true
 }
@@ -153,7 +160,7 @@ resource "stalwart_network_listener" "submissions" {
   tls_disable_cipher_suites       = null
   tls_disable_protocols           = null
   tls_ignore_client_order         = true
-  tls_implicit                    = true
+  implicit_tls                    = true
   tls_timeout                     = 60000
   use_tls                         = true
 }
@@ -163,15 +170,6 @@ resource "stalwart_sender_auth" "this" {
   arc_verify = {
     else  = "disable"
     match = null
-  }
-  dkim_sign_domain = {
-    else = "false"
-    match = [
-      {
-        if   = "is_local_domain(sender_domain) && !is_empty(authenticated_as)"
-        then = "sender_domain"
-      },
-    ]
   }
   dkim_strict = true
   dkim_verify = {
@@ -247,7 +245,7 @@ resource "stalwart_domain" "manafishrov" {
     publish_records = ["dkim"]
     type            = "Automatic"
   }
-  is_enabled         = true
+  enable             = true
   logo               = null
   member_tenant_id   = null
   name               = "manafishrov.com"
@@ -276,7 +274,7 @@ resource "stalwart_network_listener" "imaps" {
   tls_disable_cipher_suites       = null
   tls_disable_protocols           = null
   tls_ignore_client_order         = true
-  tls_implicit                    = true
+  implicit_tls                    = true
   tls_timeout                     = 60000
   use_tls                         = true
 }
@@ -299,7 +297,7 @@ resource "stalwart_network_listener" "edge_lmtp" {
   tls_disable_cipher_suites       = null
   tls_disable_protocols           = null
   tls_ignore_client_order         = true
-  tls_implicit                    = true
+  implicit_tls                    = true
   tls_timeout                     = 60000
   use_tls                         = true
 }
@@ -330,7 +328,7 @@ resource "stalwart_domain" "system" {
     publish_records = null
     type            = "Manual"
   }
-  is_enabled         = true
+  enable             = true
   logo               = null
   member_tenant_id   = null
   name               = "system.manafishrov.com"
@@ -343,12 +341,13 @@ resource "stalwart_domain" "system" {
 
 # __generated__ by OpenTofu from "jdzlxlo7aaab"
 resource "stalwart_application" "webui" {
-  auto_update_frequency = 2592000000
-  description           = "Stalwart Web Interface"
-  enabled               = true
-  resource_url          = "file:///nix/store/vp7f65is8mhqfnlb26z463jgrdbxbcr4-stalwart-webui-no-upsell-1.0.10"
-  unpack_directory      = null
-  url_prefix            = ["/account", "/admin"]
+  auto_update_interval = 2592000000
+  description          = "Stalwart Web Interface"
+  enable               = true
+  # CUTOVER: use the 2.x WebUI archive path shipped in the patched v1 image.
+  resource_url     = "file:///nix/store/REPLACE_WITH_V1_WEBUI_2_X_STORE_PATH"
+  unpack_directory = null
+  url_prefix       = ["/account", "/admin"]
 }
 
 # __generated__ by OpenTofu from "jdzlxs2qafaa"
@@ -369,7 +368,7 @@ resource "stalwart_network_listener" "sieve" {
   tls_disable_cipher_suites       = null
   tls_disable_protocols           = null
   tls_ignore_client_order         = true
-  tls_implicit                    = false
+  implicit_tls                    = false
   tls_timeout                     = 60000
   use_tls                         = true
 }
@@ -388,7 +387,6 @@ resource "stalwart_system_settings" "this" {
   max_connections        = 8192
   provider_info          = {}
   proxy_trusted_networks = null
-  thread_pool_size       = null
   lifecycle {
     postcondition {
       condition     = self.proxy_trusted_networks == null ? true : length(self.proxy_trusted_networks) == 0
@@ -415,7 +413,7 @@ resource "stalwart_network_listener" "http" {
   tls_disable_cipher_suites       = null
   tls_disable_protocols           = null
   tls_ignore_client_order         = true
-  tls_implicit                    = false
+  implicit_tls                    = false
   tls_timeout                     = 60000
   use_tls                         = false
 }
@@ -438,18 +436,27 @@ resource "stalwart_network_listener" "https" {
   tls_disable_cipher_suites       = null
   tls_disable_protocols           = null
   tls_ignore_client_order         = true
-  tls_implicit                    = true
+  implicit_tls                    = true
   tls_timeout                     = 60000
   use_tls                         = true
 }
 
 # __generated__ by OpenTofu from "singleton"
 resource "stalwart_mta_stage_data" "this" {
+  dkim_sign_domain = {
+    else = "false"
+    match = [
+      {
+        if   = "is_local_domain(sender_domain) && !is_empty(authenticated_as)"
+        then = "sender_domain"
+      },
+    ]
+  }
+
   depends_on = [
     stalwart_spam_settings.this,
     stalwart_spam_tag_score.blocked_domain,
     stalwart_spam_pyzor.this,
-    stalwart_spam_llm.this,
   ]
   add_auth_results_header = {
     else = "false"

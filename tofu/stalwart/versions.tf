@@ -3,8 +3,8 @@ terraform {
 
   required_providers {
     stalwart = {
-      source  = "tahacodes/stalwart"
-      version = "0.2.3"
+      source  = "michaelbrusegard/stalwart"
+      version = "1.0.3"
     }
   }
 }

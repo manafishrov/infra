@@ -4,7 +4,7 @@ Stalwart owns mailboxes, native SCIM/OIDC, authenticated submission, DKIM,
 spam classification and learning. Public incoming mail arrives through the
 personal infrastructure's routing-only Postfix edge.
 
-Bulwark 1.9.2 serves `https://webmail.manafishrov.com`, pinned by image digest.
+Bulwark 1.21.0 serves `https://webmail.manafishrov.com`, pinned by image digest.
 Stalwart JMAP and administration use `https://mail.manafishrov.com`.
 The Deployment and Secret are named `bulwark`; the existing settings PVC
 and session-key material are preserved. Retired hostnames have no aliases.
@@ -65,7 +65,14 @@ reconstruct authorization. Every request revalidates issuer claims and native
 permissions; failures evict admission. The account budget is checked before IdP
 work and charged after authentication, at 1,000 requests/minute, including
 privileged OIDC sessions. Unknown tokens use the IP budget. Failed-login
-protections and forwarding-header trust are unchanged.
+protections remain enabled. HTTP client addresses come from the rightmost
+`X-Forwarded-For` entry with `forwarded_hops = 1`: Cilium's Envoy Gateway
+appends the real client there (`use_remote_address: true`,
+`xff_num_trusted_hops: 0`). Earlier entries supplied by a client do not select
+the ban/rate-limit address. A missing header falls back to the TCP peer.
+Keep HTTP access restricted to the Gateway and existing trusted internal
+workloads. SMTP PROXY trust is independent and remains listener-scoped;
+shared LMTP recipient probes still require `abuse_ban_rate = null`.
 
 ## User acceptance
 
@@ -96,6 +103,20 @@ therefore requires a one-time recovery bootstrap to create that principal and
 API key; remove the temporary recovery credential immediately after OpenTofu
 has adopted the server.
 
-`tahacodes/stalwart` is pinned to `0.2.3`. Because it is not published in the
-OpenTofu registry, the runner installs the upstream release into a filesystem
-mirror after verifying the architecture-specific SHA-256 digest.
+The provider is `michaelbrusegard/stalwart` 1.0.3, built in the personal infra
+repo and installed into the runner's filesystem mirror from a pinned image. The
+committed lock holds its Darwin arm64 and Linux amd64 `h1` checksums; update
+both and the runner image pin whenever the provider binary changes.
+
+## Stalwart v1
+
+The patched v1.0.3 server opens `/var/lib/stalwart/data-v1/` on the existing
+PVC; `data/` is the v0.16 rollback store. [Migration instructions](migration/README.md)
+cover snapshots, prepare answers, SCIM restoration, fresh Tofu state and
+rollback. Users sign in again after migration and search reindexes.
+
+HTTP clients are identified by the rightmost `X-Forwarded-For` hop, which the
+Gateway sets, so bans and rate limits apply to real client addresses.
+
+Bulwark 1.21 supports v1. Its issuer remains Pocket ID; do not run Bulwark's
+OAuth auto-setup, which configures Stalwart as the issuer.

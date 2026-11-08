@@ -8,7 +8,7 @@ resource "stalwart_network_listener" "smtp_edge" {
   protocol                        = "smtp"
   bind                            = ["[::]:25"]
   use_tls                         = true
-  tls_implicit                    = false
+  implicit_tls                    = false
   override_proxy_trusted_networks = var.smtp_edge_proxy_networks
   depends_on = [
     stalwart_mta_stage_auth.server,
@@ -28,7 +28,7 @@ resource "stalwart_network_listener" "smtp_edge_local" {
   protocol     = "smtp"
   bind         = ["[::]:26"]
   use_tls      = true
-  tls_implicit = false
+  implicit_tls = false
   # Native readback normalizes an empty list to null. Guard it explicitly
   # instead of generating perpetual [] -> null reconciliation changes.
   override_proxy_trusted_networks = null
