@@ -110,10 +110,10 @@ both and the runner image pin whenever the provider binary changes.
 
 ## Stalwart v1
 
-The patched v1.0.3 server opens `/var/lib/stalwart/data-v1/` on the existing
-PVC; `data/` is the v0.16 rollback store. [Migration instructions](migration/README.md)
-cover snapshots, prepare answers, SCIM restoration, fresh Tofu state and
-rollback. Users sign in again after migration and search reindexes.
+The patched v1.0.3 server stores mail and configuration in
+`/var/lib/stalwart/data-v1/` on the `data-stalwart-0` PVC. OpenTofu uses the
+`manafishrov-stalwart-v1` backend suffix. Retained imports adopt existing
+objects by ID and prevent duplicate resources when rebuilding state.
 
 HTTP clients are identified by the rightmost `X-Forwarded-For` hop, which the
 Gateway sets, so bans and rate limits apply to real client addresses.

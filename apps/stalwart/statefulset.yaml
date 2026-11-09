@@ -37,11 +37,6 @@ spec:
           envFrom:
             - secretRef:
                 name: stalwart-env
-            # Created only while restoring fork permissions after a migration;
-            # see migration/README.md. Absent in normal operation.
-            - secretRef:
-                name: stalwart-recovery
-                optional: true
           ports:
             - containerPort: 8080
               name: http
