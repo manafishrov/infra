@@ -61,21 +61,20 @@ jobs:
       - name: Install Stalwart provider mirror
         if: matrix.stack == 'stalwart'
         run: |
-          version=0.2.3
-          archive="terraform-provider-stalwart_${version}_linux_amd64.zip"
-          mirror="$RUNNER_TEMP/provider-mirror/registry.opentofu.org/tahacodes/stalwart/${version}/linux_amd64"
-          curl -fsSL "https://github.com/tahacodes/terraform-provider-stalwart/releases/download/v${version}/${archive}" -o "$RUNNER_TEMP/$archive"
-          echo "9b4b3dc07a73055d7116fc426c6009de86479df7776ab23b6795132eeca8c119  $RUNNER_TEMP/$archive" | sha256sum -c -
+          image=ghcr.io/michaelbrusegard/terraform-provider-stalwart:1.0.3@sha256:4832706a856de04f0af6a1a7b4aee5277f74eab0285f089b3c585de3cf7dd1aa
+          mirror="$RUNNER_TEMP/provider-mirror"
           mkdir -p "$mirror"
-          unzip -q "$RUNNER_TEMP/$archive" -d "$mirror"
+          container=$(docker create --platform linux/amd64 "$image" /bin/true)
+          trap 'docker rm "$container"' EXIT
+          docker cp "$container:/provider-mirror/." "$mirror/"
           cat > "$RUNNER_TEMP/tofurc" <<EOF
           provider_installation {
             filesystem_mirror {
               path    = "$RUNNER_TEMP/provider-mirror"
-              include = ["registry.opentofu.org/tahacodes/stalwart"]
+              include = ["registry.opentofu.org/michaelbrusegard/stalwart"]
             }
             direct {
-              exclude = ["registry.opentofu.org/tahacodes/stalwart"]
+              exclude = ["registry.opentofu.org/michaelbrusegard/stalwart"]
             }
           }
           EOF
