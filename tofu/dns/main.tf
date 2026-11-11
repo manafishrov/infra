@@ -289,6 +289,12 @@ locals {
       content = "ns4.lovable.cloud"
       ttl     = 300
     }
+
+    openai_business_profile_verification = {
+      name    = "openai-business-profile"
+      type    = "TXT"
+      content = "openai-business-profile=dk5ZOGpoCbg5RYoUT6O-KivLALiBmMCMw10wG4Pw6vU"
+    }
   }
 }
 
