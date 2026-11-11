@@ -293,7 +293,7 @@ locals {
     openai_business_profile_verification = {
       name    = "openai-business-profile"
       type    = "TXT"
-      content = "openai-business-profile=dk5ZOGpoCbg5RYoUT6O-KivLALiBmMCMw10wG4Pw6vU"
+      content = "openai-business-profile=2R7lszMMpC4kWyNjrFpboZOXf4IiHL33Ip1eA44ZMv4"
     }
   }
 }
