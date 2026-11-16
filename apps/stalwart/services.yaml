@@ -45,7 +45,8 @@ metadata:
   annotations:
     lbipam.cilium.io/ips: 10.0.188.14,fd7a:115c:a1e0:188::14
     # k8s-gateway publishes this LAN-only name; it matches the wildcard TLS certificate.
-    coredns.io/hostname: backend.manafishrov.com
+    # backend.manafishrov.com is kept until every client uses the new name.
+    coredns.io/hostname: mail-backend.manafishrov.com,backend.manafishrov.com
 spec:
   type: LoadBalancer
   ipFamilyPolicy: PreferDualStack
