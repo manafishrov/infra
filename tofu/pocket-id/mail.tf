@@ -56,7 +56,7 @@ resource "pocketid_client" "stalwart" {
 resource "pocketid_client" "stalwart_scim" {
   client_id     = "stalwart-scim"
   name          = "Stalwart SCIM scope"
-  callback_urls = ["https://backend.manafishrov.com/scim-unused"]
+  callback_urls = ["https://mail-backend.manafishrov.com/scim-unused"]
   is_public     = true
   pkce_enabled  = true
   allowed_user_groups = sort([
@@ -66,6 +66,6 @@ resource "pocketid_client" "stalwart_scim" {
 
 resource "pocketid_scim_service_provider" "stalwart" {
   client_id = pocketid_client.stalwart_scim.id
-  endpoint  = "https://backend.manafishrov.com/scim/v2"
+  endpoint  = "https://mail-backend.manafishrov.com/scim/v2"
   token     = var.manafishrov_stalwart_scim_token
 }
