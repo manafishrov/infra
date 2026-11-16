@@ -195,8 +195,8 @@ locals {
     stalwart_mta_sts_policy = {
       name = "_mta-sts"
       type = "TXT"
-      # Refresh cached policy after retiring the transitional personal MX.
-      content = "v=STSv1; id=${var.mta_sts_id_manafishrov}-mx-20260918"
+      # Refresh cached policy after adding the backup MX.
+      content = "v=STSv1; id=${var.mta_sts_id_manafishrov}-mx-20261116"
     }
     stalwart_mta_sts = {
       name = "mta-sts"
@@ -209,6 +209,14 @@ locals {
       type     = "MX"
       content  = "mx.manafishrov.com"
       priority = 10
+    }
+    # Backup MX on cortado: queues mail while the primary is unreachable and
+    # hands it back over the pinned handoff; it never delivers locally.
+    stalwart_backup_mx = {
+      name     = "@"
+      type     = "MX"
+      content  = "router.midgard.michaelbrusegard.com"
+      priority = 20
     }
     stalwart_spf = {
       name    = "@"

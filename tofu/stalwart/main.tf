@@ -2,8 +2,8 @@
 resource "stalwart_mta_sts" "this" {
   max_age = 604800000
   mode    = "testing"
-  # Publish both names while cached policies and the branded MX converge.
-  mx_hosts = ["mx.manafishrov.com"]
+  # The backup MX on cortado must be listed or enforcing senders skip it.
+  mx_hosts = ["mx.manafishrov.com", "router.midgard.michaelbrusegard.com"]
 }
 
 # __generated__ by OpenTofu from "singleton"
