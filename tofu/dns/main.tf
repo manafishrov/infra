@@ -195,8 +195,9 @@ locals {
     stalwart_mta_sts_policy = {
       name = "_mta-sts"
       type = "TXT"
-      # Refresh cached policy after adding the backup MX.
-      content = "v=STSv1; id=${var.mta_sts_id_manafishrov}-mx-20261116"
+      # Senders refetch the policy when this id changes: set it to the date
+      # whenever tofu/stalwart's stalwart_mta_sts changes.
+      content = "v=STSv1; id=20261116"
     }
     stalwart_mta_sts = {
       name = "mta-sts"
