@@ -1,9 +1,22 @@
+# Files belong in Nextcloud, so webmail hides its Files app. Bulwark reads
+# this from its default admin config directory (ADMIN_CONFIG_READONLY).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bulwark-policy
+  namespace: manafishrov-stalwart
+data:
+  policy.json: |
+    {"features": {"filesEnabled": false}}
+---
 # Production webmail; existing settings PVC and session-key material are preserved.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bulwark
   namespace: manafishrov-stalwart
+  annotations:
+    configmap.reloader.stakater.com/reload: bulwark-policy
 spec:
   replicas: 1
   strategy:
@@ -101,11 +114,17 @@ spec:
               mountPath: /app/data
             - name: settings
               mountPath: /app/data/settings
+            - name: policy
+              mountPath: /app/data/admin
+              readOnly: true
             - name: tmp
               mountPath: /tmp
             - name: cache
               mountPath: /app/.next/cache
       volumes:
+        - name: policy
+          configMap:
+            name: bulwark-policy
         # Settings persist; runtime audit/setup state remains ephemeral.
         - name: settings
           persistentVolumeClaim:
