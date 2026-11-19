@@ -50,7 +50,7 @@ resource "stalwart_address_book" "this" {
 # __generated__ by OpenTofu from "singleton"
 resource "stalwart_mta_sts" "this" {
   max_age = 604800000
-  mode    = "testing"
+  mode    = "enforce"
   # The backup MX on cortado must be listed or enforcing senders skip it.
   mx_hosts = ["mx.manafishrov.com", "router.midgard.michaelbrusegard.com"]
 }
