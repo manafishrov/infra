@@ -134,7 +134,7 @@ locals {
     dmarc = {
       name    = "_dmarc"
       type    = "TXT"
-      content = "v=DMARC1; p=quarantine;"
+      content = "v=DMARC1; p=reject; adkim=s; rua=mailto:postmaster@manafishrov.com"
     }
 
     dkim_k2_updates = {
@@ -197,7 +197,7 @@ locals {
       type = "TXT"
       # Senders refetch the policy when this id changes: set it to the date
       # whenever tofu/stalwart's stalwart_mta_sts changes.
-      content = "v=STSv1; id=20261116"
+      content = "v=STSv1; id=20261119"
     }
     stalwart_mta_sts = {
       name = "mta-sts"
