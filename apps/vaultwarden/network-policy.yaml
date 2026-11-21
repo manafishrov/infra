@@ -13,13 +13,13 @@ spec:
         - remote-node
       toPorts:
         - ports:
-            - port: "80"
+            - port: "8080"
               protocol: TCP
     - fromEntities:
         - ingress
       toPorts:
         - ports:
-            - port: "80"
+            - port: "8080"
               protocol: TCP
   egress:
     - toEndpoints:
