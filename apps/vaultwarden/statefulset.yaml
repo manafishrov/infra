@@ -16,11 +16,36 @@ spec:
     spec:
       containers:
         - name: vaultwarden
-          image: vaultwarden/server:1.37.4@sha256:2bb2e0344616c62a6d76ea10558497499f8ed3f731400e143dc7bf17b757b5b9
-          envFrom:
-            - secretRef:
-                name: vaultwarden-env
+          image: vaultwarden/server:1.37.5@sha256:4fe17f415f90087377d37c755e0ea3cf189dcc6794e49cdd2a9adbb4937d9e1f
           env:
+            - name: DOMAIN
+              value: https://vault.manafishrov.com
+            # SSO_ONLY blocks password login but not password registration,
+            # so accounts must come from Pocket ID alone. Organizations can
+            # still invite users who have already signed in through it.
+            - name: SIGNUPS_ALLOWED
+              value: "false"
+            - name: INVITATIONS_ALLOWED
+              value: "false"
+            - name: SSO_ENABLED
+              value: "true"
+            - name: SSO_ONLY
+              value: "true"
+            - name: SSO_AUTHORITY
+              value: https://id.manafishrov.com
+            - name: SSO_PKCE
+              value: "true"
+            - name: SSO_SCOPES
+              value: openid email profile
+            - name: SSO_SIGNUPS_MATCH_EMAIL
+              value: "true"
+            - name: SSO_ALLOW_UNKNOWN_EMAIL_VERIFICATION
+              value: "false"
+            - name: ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vaultwarden-env
+                  key: ADMIN_TOKEN
             - name: SSO_CLIENT_ID
               valueFrom:
                 secretKeyRef:
