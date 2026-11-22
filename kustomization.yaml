@@ -5,7 +5,6 @@ resources:
   - apps/nextcloud
   - apps/pocket-id
   - apps/stalwart
-  - apps/twenty
   - apps/uptime-kuma-monitors
   - apps/uptime-kuma-status-pages
   - apps/vaultwarden

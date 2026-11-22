@@ -15,9 +15,3 @@ variable "manafishrov_nextcloud_db_password" {
   type        = string
   sensitive   = true
 }
-
-variable "manafishrov_twenty_db_password" {
-  description = "Twenty CRM application role password"
-  type        = string
-  sensitive   = true
-}

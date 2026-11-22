@@ -17,9 +17,3 @@ variable "manafishrov_firmware_ci_secret_key" {
   type      = string
   sensitive = true
 }
-
-variable "manafishrov_twenty_app_secret_key" {
-  description = "Secret key for the Twenty CRM application IAM user (RustFS access to manafishrov-twenty bucket)"
-  type        = string
-  sensitive   = true
-}
