@@ -288,10 +288,10 @@ resource "stalwart_domain" "manafishrov" {
     type              = "Manual"
   }
   dns_management = {
-    dns_server_id   = stalwart_dns_server_cloudflare.dkim.id
-    origin          = "manafishrov.com"
-    publish_records = ["dkim"]
-    type            = "Automatic"
+    dns_server_id   = null
+    origin          = null
+    publish_records = null
+    type            = "Manual"
   }
   enable             = true
   logo               = null
@@ -348,6 +348,52 @@ resource "stalwart_network_listener" "edge_lmtp" {
   implicit_tls                    = true
   tls_timeout                     = 60000
   use_tls                         = true
+}
+
+# Signing keys come from the stalwart-dkim Secret in infra-secrets; the dns
+# stack publishes the matching public keys.
+# __generated__ by OpenTofu from "jdzlxs2uamqa"
+resource "stalwart_dkim_signature_dkim1_ed25519_sha256" "manafishrov" {
+  auid               = null
+  canonicalization   = "relaxed/relaxed"
+  domain_id          = stalwart_domain.manafishrov.id
+  expire             = null
+  headers            = ["Date", "From", "Message-ID", "Subject", "To"]
+  member_tenant_id   = null
+  next_transition_at = null
+  private_key = {
+    file_path     = "/var/lib/stalwart/private/dkim/manafishrov.com.ed25519.key"
+    secret        = null # sensitive
+    type          = "File"
+    variable_name = null
+  }
+  report           = true
+  selector         = "stalwart-ed25519"
+  stage            = "active"
+  third_party      = null
+  third_party_hash = null
+}
+
+# __generated__ by OpenTofu from "jdzlxs2ualqa"
+resource "stalwart_dkim_signature_dkim1_rsa_sha256" "manafishrov" {
+  auid               = null
+  canonicalization   = "relaxed/relaxed"
+  domain_id          = stalwart_domain.manafishrov.id
+  expire             = null
+  headers            = ["Date", "From", "Message-ID", "Subject", "To"]
+  member_tenant_id   = null
+  next_transition_at = null
+  private_key = {
+    file_path     = "/var/lib/stalwart/private/dkim/manafishrov.com.rsa.key"
+    secret        = null # sensitive
+    type          = "File"
+    variable_name = null
+  }
+  report           = true
+  selector         = "stalwart-rsa"
+  stage            = "active"
+  third_party      = null
+  third_party_hash = null
 }
 
 # __generated__ by OpenTofu from "b"

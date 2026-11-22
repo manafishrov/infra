@@ -104,8 +104,17 @@ import {
   id       = each.value
 }
 
-# Production DKIM publisher, recorded in docs/dkim-handoff/production-handoff.json.
-# DNS servers have no unique key and would duplicate from fresh state.
+import {
+  to = stalwart_dkim_signature_dkim1_rsa_sha256.manafishrov
+  id = "jdzlxs2ualqa"
+}
+import {
+  to = stalwart_dkim_signature_dkim1_ed25519_sha256.manafishrov
+  id = "jdzlxs2uamqa"
+}
+
+# The former DKIM publisher. Kept until the domain no longer links to it, since
+# Stalwart refuses to delete a linked DNS server.
 import {
   to = stalwart_dns_server_cloudflare.dkim
   id = "jfi2hgdoabaa"
