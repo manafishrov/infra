@@ -34,11 +34,14 @@ mail back; account for new mail and queues before any rollback.
 
 ## DKIM ownership
 
-Stalwart holds the original keys in native Text custody and publishes only DKIM
-DNS records using its dedicated Cloudflare credential. The old key mount/Secret
-and Terraform key/record ownership are retired. Key rotation and certificate
-management remain Manual. See [DKIM operations](../../docs/dkim-handoff/README.md)
-for refresh permissions, exact-content checks and the production receipt.
+This matches the personal mail server. The private keys live in the
+`stalwart-dkim` Secret in the sibling secrets repository and are mounted into
+the pod; `tofu/stalwart` points the two signatures (`stalwart-rsa`,
+`stalwart-ed25519`) at those files. `tofu/dns` publishes the matching public
+keys. Stalwart has no DNS credential and manages no DNS records.
+
+To rotate a key, replace it in the Secret and update its public key in
+`tofu/dns/main.tf` together. Rotation is otherwise Manual.
 
 ## Authentication and configuration
 

@@ -225,6 +225,18 @@ locals {
       content = "v=spf1 mx -all"
     }
 
+    # Stalwart signs with these; the private keys live in infra-secrets.
+    stalwart_dkim_rsa = {
+      name    = "stalwart-rsa._domainkey"
+      type    = "TXT"
+      content = "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAslFxpHYTY4Py1ITq+Siz5HYm/xDuj9eB6a+xqCkkvuVaB7laI2vpqre7A/BaDCIYcusNTdY/bHYM+ZOjD7/V0b/x1OShYh7nMd52gAAIot67OaO5tKdEkHUu9UOUm71MVGXud4LCFqcW1pj/mFxYw7NCibJU2gDNvWjWUnbFgt5pUwU+iJLM0GSdvCCaWbwzgIUuKNFQjJNnfsMCZfJPLfj4aKG5Mw8YD7DEaSYRgY1ThJygOE3JKm8tUHQ4fvRlH85T5unS5ahMVRTb3fZs4/IPhUxjTkAmCo6pZAt3GvznZYXEUZkHMZKNmKJpZR/GOv7ty6JQ2CrxtWg8wkOjpQIDAQAB"
+    }
+    stalwart_dkim_ed25519 = {
+      name    = "stalwart-ed25519._domainkey"
+      type    = "TXT"
+      content = "v=DKIM1; k=ed25519; p=lkxrpwQPeXQR8sppBRJKTkOOE+ZX9BDpeRLhithgrSU="
+    }
+
     resend_links = {
       name    = "links"
       type    = "CNAME"
