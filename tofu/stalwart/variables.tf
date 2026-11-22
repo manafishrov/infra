@@ -12,7 +12,7 @@ variable "smtp_edge_proxy_networks" {
   }
 }
 
-# Leave false during preparation. See ACTIVATION.md before setting true.
+# Leave false during preparation; production sets it in the tf-controller vars.
 variable "smtp_edge_activation_ready" {
   description = "Attest that BLOCKED_DOMAIN is Score 1000 at its existing ID, runtime safety/restart is verified, and private listener identity policy is installed. Enables import and new listeners; keep true after activation."
   type        = bool
