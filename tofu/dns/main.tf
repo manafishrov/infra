@@ -7,6 +7,14 @@ data "cloudflare_zone" "manafishrov" {
 locals {
   dns_records = {
 
+    # Cloudflare flattens the CNAME, so it can sit next to the apex MX and
+    # TXT records. The gateway redirects it to the website and, for JMAP
+    # discovery, to the mail server.
+    apex = {
+      name    = "@"
+      type    = "CNAME"
+      content = "router.asgard.michaelbrusegard.com"
+    }
     website = {
       name    = "www"
       type    = "A"
