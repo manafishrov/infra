@@ -11,9 +11,42 @@ spec:
   hostnames:
     - id.manafishrov.com
     - vault.manafishrov.com
+    - manafishrov.com
   rules:
     - filters:
         - type: RequestRedirect
           requestRedirect:
             scheme: https
             statusCode: 301
+---
+# The apex serves nothing itself. JMAP clients that only know an address ask
+# it where the mail server is; that is redirected, not proxied, so the
+# session's URLs stay on the host the client ends up fetching it from.
+# Everything else goes to the website.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: apex-redirect
+  namespace: manafishrov-public
+spec:
+  parentRefs:
+    - name: public
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - manafishrov.com
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /.well-known/jmap
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            hostname: mail.manafishrov.com
+            statusCode: 302
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            hostname: www.manafishrov.com
+            statusCode: 302
