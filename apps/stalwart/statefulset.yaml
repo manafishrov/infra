@@ -28,7 +28,7 @@ spec:
         # Cilium converges after a node reboot) otherwise leaves every OIDC
         # login failing until the next restart.
         - name: wait-for-oidc
-          image: ghcr.io/michaelbrusegard/stalwart-native-scim:1.0.3@sha256:67083aba390b26e3ee97c0f3c016bc473f10831dad4f7244b979e5dfcaf29ad8
+          image: ghcr.io/michaelbrusegard/stalwart-native-scim:1.0.3@sha256:7c857c6411b5a44ea2c0d28f84433365554465008fe85a89faf1a09f73489ac5
           command:
             - /bin/sh
             - -c
@@ -39,7 +39,7 @@ spec:
               done
       containers:
         - name: stalwart
-          image: ghcr.io/michaelbrusegard/stalwart-native-scim:1.0.3@sha256:67083aba390b26e3ee97c0f3c016bc473f10831dad4f7244b979e5dfcaf29ad8
+          image: ghcr.io/michaelbrusegard/stalwart-native-scim:1.0.3@sha256:7c857c6411b5a44ea2c0d28f84433365554465008fe85a89faf1a09f73489ac5
           command:
             - /usr/local/bin/stalwart
             - --config
