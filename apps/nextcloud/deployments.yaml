@@ -111,7 +111,7 @@ spec:
           # 26.04.2.2.1 drops probe connections to /hosting/discovery (EOF)
           # so kubelet liveness-kills an otherwise healthy server in a loop.
           # Verify the probes stay green before accepting the next bump.
-          image: collabora/code:26.04.5.2.1@sha256:c7415b963e32eb0986a562583f154d36d3d7a461e1ddfb660a95e87094328acb
+          image: collabora/code:26.04.6.2.1@sha256:a2f5d4e88addd46033d8440f7a13b82f7e6fe444bf8c6b5a3eadc789f0b5342b
           env:
             - name: aliasgroup1
               value: https://cloud.manafishrov.com
